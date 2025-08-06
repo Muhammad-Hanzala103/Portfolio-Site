@@ -1,0 +1,335 @@
+{% extends 'base.html' %}
+
+{% block title %}About Me - Muhammad Hanzala{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="page-header-content">
+                    <h1>About Me</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">About</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- About Section -->
+<section class="about-page section-padding">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6" data-aos="fade-right">
+                <div class="about-image">
+                    <img src="{{ url_for('static', filename='img/about.jpg') }}" alt="Muhammad Hanzala" class="img-fluid rounded">
+                    <div class="experience-badge">
+                        <span class="number">2+</span>
+                        <span class="text">Years of Experience</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6" data-aos="fade-left">
+                <div class="about-content">
+                    <h2>Muhammad Hanzala</h2>
+                    <h4>Computer Science Student & Freelance Developer</h4>
+                    <p>I am a passionate Computer Science student at KICSIT with a strong interest in web development, 3D design, and video editing. My journey in the digital world has equipped me with a diverse skill set that allows me to create engaging and functional digital experiences.</p>
+                    <p>I specialize in Python development with Flask, front-end technologies like HTML5, CSS3, and JavaScript, as well as 3D modeling with Blender and video editing with DaVinci Resolve.</p>
+                    <p>As a freelancer on platforms like Fiverr and Upwork, I've had the opportunity to work with clients from around the world, helping them bring their ideas to life through code and design.</p>
+                    <div class="row about-info mt-4">
+                        <div class="col-md-6">
+                            <ul>
+                                <li><strong>Name:</strong> Muhammad Hanzala</li>
+                                <li><strong>Email:</strong> hani75384@gmail.com</li>
+                                <li><strong>Phone:</strong> +92 301 5855940</li>
+                                <li><strong>Location:</strong> Lahore, Pakistan</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul>
+                                <li><strong>Degree:</strong> BSCS (In Progress)</li>
+                                <li><strong>Experience:</strong> 2+ Years</li>
+                                <li><strong>Freelance:</strong> Available</li>
+                                <li><strong>Languages:</strong> English, Urdu</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="about-btns mt-4">
+                        <a href="{{ url_for('main.download_cv') }}" class="btn btn-primary"><i class="fas fa-download"></i> Download CV</a>
+                        <a href="{{ url_for('main.contact') }}" class="btn btn-outline-primary">Hire Me</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Education & Experience Section -->
+<section class="education-experience section-padding bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="section-title text-center" data-aos="fade-up">
+                    <h2>Education & Experience</h2>
+                    <div class="divider"></div>
+                    <p>My academic and professional journey</p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <!-- Education Timeline -->
+            <div class="col-lg-6" data-aos="fade-right">
+                <div class="timeline education">
+                    <h3 class="timeline-title"><i class="fas fa-graduation-cap"></i> Education</h3>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <h4>Bachelor of Science in Computer Science</h4>
+                            <p class="timeline-date">2020 - Present</p>
+                            <p class="timeline-institution">Dr. A. Q. Khan Institute of Computer Sciences & Information Technology (KICSIT)</p>
+                            <p>Studying core computer science subjects including algorithms, data structures, database systems, web development, and software engineering.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <h4>Higher Secondary Education</h4>
+                            <p class="timeline-date">2018 - 2020</p>
+                            <p class="timeline-institution">City College</p>
+                            <p>Completed pre-engineering with focus on Mathematics, Physics, and Computer Science.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <h4>Secondary School Certificate</h4>
+                            <p class="timeline-date">2016 - 2018</p>
+                            <p class="timeline-institution">City School</p>
+                            <p>Completed matriculation with Science subjects.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Experience Timeline -->
+            <div class="col-lg-6" data-aos="fade-left">
+                <div class="timeline experience">
+                    <h3 class="timeline-title"><i class="fas fa-briefcase"></i> Experience</h3>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <h4>Freelance Web Developer</h4>
+                            <p class="timeline-date">2021 - Present</p>
+                            <p class="timeline-institution">Fiverr & Upwork</p>
+                            <p>Developing custom websites and web applications for clients worldwide. Specializing in Python (Flask), HTML, CSS, and JavaScript.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <h4>3D Artist & Video Editor</h4>
+                            <p class="timeline-date">2020 - Present</p>
+                            <p class="timeline-institution">Freelance</p>
+                            <p>Creating 3D models and animations using Blender. Editing videos and creating visual effects using DaVinci Resolve.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <h4>WordPress Developer</h4>
+                            <p class="timeline-date">2019 - Present</p>
+                            <p class="timeline-institution">Freelance</p>
+                            <p>Building and customizing WordPress websites for small businesses and individuals.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Skills Section -->
+<section class="skills-section section-padding" id="skills">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="section-title text-center" data-aos="fade-up">
+                    <h2>My Skills</h2>
+                    <div class="divider"></div>
+                    <p>What I'm good at</p>
+                </div>
+            </div>
+        </div>
+        
+        {% for category, skills in skill_categories.items() %}
+            {% if category %}
+                <div class="row">
+                    <div class="col-lg-12 mb-4" data-aos="fade-up">
+                        <h3 class="skill-category">{{ category }}</h3>
+                    </div>
+                </div>
+            {% endif %}
+            
+            <div class="row mb-5">
+                {% for skill in skills %}
+                    <div class="col-md-6" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+                        <div class="skill-item">
+                            <div class="skill-info">
+                                <h4>{{ skill.name }}</h4>
+                                <span>{{ skill.proficiency }}%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar" role="progressbar" style="width: {{ skill.proficiency }}%" aria-valuenow="{{ skill.proficiency }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Tools & Technologies -->
+<section class="tools-section section-padding bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="section-title text-center" data-aos="fade-up">
+                    <h2>Tools & Technologies</h2>
+                    <div class="divider"></div>
+                    <p>Software and technologies I use</p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="tools-container" data-aos="fade-up">
+                    <!-- Development Tools -->
+                    <div class="tool-category">
+                        <h3>Development</h3>
+                        <div class="tools-grid">
+                            <div class="tool-item">
+                                <i class="fab fa-python"></i>
+                                <span>Python</span>
+                            </div>
+                            <div class="tool-item">
+                                <i class="fab fa-html5"></i>
+                                <span>HTML5</span>
+                            </div>
+                            <div class="tool-item">
+                                <i class="fab fa-css3-alt"></i>
+                                <span>CSS3</span>
+                            </div>
+                            <div class="tool-item">
+                                <i class="fab fa-js"></i>
+                                <span>JavaScript</span>
+                            </div>
+                            <div class="tool-item">
+                                <i class="fab fa-bootstrap"></i>
+                                <span>Bootstrap</span>
+                            </div>
+                            <div class="tool-item">
+                                <i class="fas fa-flask"></i>
+                                <span>Flask</span>
+                            </div>
+                            <div class="tool-item">
+                                <i class="fas fa-database"></i>
+                                <span>SQL</span>
+                            </div>
+                            <div class="tool-item">
+                                <i class="fab fa-git-alt"></i>
+                                <span>Git</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Design Tools -->
+                    <div class="tool-category">
+                        <h3>Design & Media</h3>
+                        <div class="tools-grid">
+                            <div class="tool-item">
+                                <i class="fas fa-cube"></i>
+                                <span>Blender</span>
+                            </div>
+                            <div class="tool-item">
+                                <i class="fas fa-video"></i>
+                                <span>DaVinci Resolve</span>
+                            </div>
+                            <div class="tool-item">
+                                <i class="fas fa-paint-brush"></i>
+                                <span>Photoshop</span>
+                            </div>
+                            <div class="tool-item">
+                                <i class="fas fa-pencil-ruler"></i>
+                                <span>Illustrator</span>
+                            </div>
+                            <div class="tool-item">
+                                <i class="fas fa-photo-video"></i>
+                                <span>After Effects</span>
+                            </div>
+                            <div class="tool-item">
+                                <i class="fas fa-palette"></i>
+                                <span>Figma</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- CMS & Other -->
+                    <div class="tool-category">
+                        <h3>CMS & Other</h3>
+                        <div class="tools-grid">
+                            <div class="tool-item">
+                                <i class="fab fa-wordpress"></i>
+                                <span>WordPress</span>
+                            </div>
+                            <div class="tool-item">
+                                <i class="fab fa-shopify"></i>
+                                <span>Shopify</span>
+                            </div>
+                            <div class="tool-item">
+                                <i class="fas fa-server"></i>
+                                <span>cPanel</span>
+                            </div>
+                            <div class="tool-item">
+                                <i class="fas fa-terminal"></i>
+                                <span>Command Line</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="cta-section section-padding bg-primary text-white">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8 col-md-7">
+                <div class="cta-content" data-aos="fade-right">
+                    <h2>Interested in working together?</h2>
+                    <p>Let's discuss your project and see how I can help you achieve your goals.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-5">
+                <div class="cta-btn text-md-end" data-aos="fade-left">
+                    <a href="{{ url_for('main.contact') }}" class="btn btn-light">Get In Touch</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

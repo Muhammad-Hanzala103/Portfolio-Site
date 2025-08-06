@@ -1,0 +1,587 @@
+{% extends 'base.html' %}
+
+{% block title %}Blog - Muhammad Hanzala{% endblock %}
+
+{% block extra_css %}
+<style>
+    .blog-card {
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+        margin-bottom: 30px;
+        background: #fff;
+    }
+    
+    .blog-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    }
+    
+    .blog-img {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .blog-img img {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+        transition: all 0.5s ease;
+    }
+    
+    .blog-card:hover .blog-img img {
+        transform: scale(1.1);
+    }
+    
+    .blog-date {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        background: var(--primary-color);
+        color: #fff;
+        padding: 8px 15px;
+        border-radius: 30px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+    
+    .blog-category {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: rgba(0,0,0,0.7);
+        color: #fff;
+        padding: 5px 15px;
+        border-radius: 30px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    
+    .blog-content {
+        padding: 25px;
+    }
+    
+    .blog-title {
+        font-size: 22px;
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+    
+    .blog-title a {
+        color: #333;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+    
+    .blog-title a:hover {
+        color: var(--primary-color);
+    }
+    
+    .blog-excerpt {
+        margin-bottom: 20px;
+        color: #666;
+    }
+    
+    .blog-meta {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+        font-size: 14px;
+        color: #777;
+    }
+    
+    .blog-meta-item {
+        margin-right: 20px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .blog-meta-item i {
+        margin-right: 5px;
+        color: var(--primary-color);
+    }
+    
+    .blog-read-more {
+        display: inline-block;
+        padding: 8px 20px;
+        background: transparent;
+        color: var(--primary-color);
+        border: 1px solid var(--primary-color);
+        border-radius: 30px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+    }
+    
+    .blog-read-more:hover {
+        background: var(--primary-color);
+        color: #fff;
+    }
+    
+    .blog-sidebar {
+        position: sticky;
+        top: 100px;
+    }
+    
+    .sidebar-widget {
+        background: #fff;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        margin-bottom: 30px;
+    }
+    
+    .widget-title {
+        font-size: 20px;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+        position: relative;
+    }
+    
+    .widget-title::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        width: 50px;
+        height: 2px;
+        background: var(--primary-color);
+    }
+    
+    .search-form {
+        position: relative;
+    }
+    
+    .search-form input {
+        width: 100%;
+        padding: 12px 20px;
+        border: 1px solid #ddd;
+        border-radius: 30px;
+        font-size: 14px;
+        outline: none;
+        transition: all 0.3s ease;
+    }
+    
+    .search-form input:focus {
+        border-color: var(--primary-color);
+    }
+    
+    .search-form button {
+        position: absolute;
+        top: 0;
+        right: 0;
+        height: 100%;
+        width: 50px;
+        background: var(--primary-color);
+        border: none;
+        border-radius: 0 30px 30px 0;
+        color: #fff;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .search-form button:hover {
+        background: #333;
+    }
+    
+    .category-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .category-list li {
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px dashed #eee;
+    }
+    
+    .category-list li:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+    
+    .category-list a {
+        color: #333;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: flex;
+        justify-content: space-between;
+    }
+    
+    .category-list a:hover {
+        color: var(--primary-color);
+    }
+    
+    .category-count {
+        background: #f5f5f5;
+        padding: 2px 8px;
+        border-radius: 30px;
+        font-size: 12px;
+        color: #777;
+    }
+    
+    .recent-post {
+        display: flex;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px dashed #eee;
+    }
+    
+    .recent-post:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+    
+    .recent-post-img {
+        width: 80px;
+        height: 60px;
+        border-radius: 5px;
+        overflow: hidden;
+        margin-right: 15px;
+    }
+    
+    .recent-post-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .recent-post-info h6 {
+        margin-bottom: 5px;
+        font-size: 16px;
+        font-weight: 500;
+    }
+    
+    .recent-post-info h6 a {
+        color: #333;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+    
+    .recent-post-info h6 a:hover {
+        color: var(--primary-color);
+    }
+    
+    .recent-post-date {
+        font-size: 12px;
+        color: #777;
+    }
+    
+    .tag-cloud a {
+        display: inline-block;
+        padding: 5px 15px;
+        background: #f5f5f5;
+        color: #333;
+        border-radius: 30px;
+        margin: 0 5px 10px 0;
+        font-size: 12px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+    
+    .tag-cloud a:hover {
+        background: var(--primary-color);
+        color: #fff;
+    }
+    
+    .pagination-wrapper {
+        margin-top: 50px;
+    }
+    
+    .pagination .page-item .page-link {
+        color: #333;
+        border: none;
+        margin: 0 5px;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-weight: 500;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .pagination .page-item.active .page-link {
+        background: var(--primary-color);
+        color: #fff;
+    }
+    
+    .pagination .page-item .page-link:hover {
+        background: var(--primary-color);
+        color: #fff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="page-header-content">
+                    <h1>Blog</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Blog</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Blog Section -->
+<section class="blog-section section-padding">
+    <div class="container">
+        <div class="row">
+            <!-- Blog Posts -->
+            <div class="col-lg-8">
+
+                <div class="row">
+                    {% if posts.items %}
+                    {% for post in posts.items %}
+                        <div class="col-lg-6" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+                            <div class="blog-card">
+                                <div class="blog-img">
+                                    {% if post.featured_image %}
+                                        <img src="{{ url_for('static', filename=post.featured_image) }}" alt="{{ post.title }}">
+                                    {% else %}
+                                        <img src="{{ url_for('static', filename='img/blog-placeholder.svg') }}" alt="{{ post.title }}">
+                                    {% endif %}
+                                    <div class="blog-date">{{ post.created_at.strftime('%b %d, %Y') }}</div>
+                                    <div class="blog-category">{{ post.category }}</div>
+                                </div>
+                                <div class="blog-content">
+                                    <div class="blog-meta">
+                                        <div class="blog-meta-item">
+                                            <i class="fas fa-user"></i>
+                                            <span>Muhammad Hanzala</span>
+                                        </div>
+                                        <div class="blog-meta-item">
+                                            <i class="fas fa-comments"></i>
+                                            <span>{{ post.comments|default(0) }}</span>
+                                        </div>
+                                    </div>
+                                    <h3 class="blog-title">
+                                        <a href="{{ url_for('main.blog_post', slug=post.slug) }}">{{ post.title }}</a>
+                                    </h3>
+                                    <div class="blog-excerpt">
+                                        {{ post.content|striptags|truncate(150) }}
+                                    </div>
+                                    <a href="{{ url_for('main.blog_post', slug=post.slug) }}" class="blog-read-more">Read More</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                        <!-- Placeholder Blog Posts -->
+                        {% set blog_data = [
+                            {
+                                'title': 'How to Create a Responsive Website with Bootstrap 5',
+                                'excerpt': 'Learn how to create a fully responsive website using Bootstrap 5, the most popular CSS framework for developing responsive and mobile-first websites.',
+                                'date': 'Jun 15, 2023',
+                                'category': 'Web Development',
+                                'comments': 8,
+                                'image': 'img/blog-1.jpg'
+                            },
+                            {
+                                'title': 'Getting Started with 3D Modeling in Blender',
+                                'excerpt': 'A beginner\'s guide to 3D modeling in Blender. Learn the basics of the interface, tools, and techniques to create your first 3D model.',
+                                'date': 'May 28, 2023',
+                                'category': '3D Design',
+                                'comments': 12,
+                                'image': 'img/blog-2.jpg'
+                            },
+                            {
+                                'title': 'Python Flask vs Django: Which Framework to Choose?',
+                                'excerpt': 'A comparison of two popular Python web frameworks: Flask and Django. Learn the pros and cons of each to make an informed decision for your next project.',
+                                'date': 'May 10, 2023',
+                                'category': 'Python',
+                                'comments': 15,
+                                'image': 'img/blog-3.jpg'
+                            },
+                            {
+                                'title': 'Video Editing Tips for Beginners Using DaVinci Resolve',
+                                'excerpt': 'Essential video editing tips and tricks for beginners using DaVinci Resolve. Learn how to edit, color grade, and add effects to your videos.',
+                                'date': 'Apr 22, 2023',
+                                'category': 'Video Editing',
+                                'comments': 6,
+                                'image': 'img/blog-4.jpg'
+                            },
+                            {
+                                'title': 'How to Build a Portfolio Website That Stands Out',
+                                'excerpt': 'Tips and strategies for creating a portfolio website that showcases your skills and attracts potential clients. Learn what to include and what to avoid.',
+                                'date': 'Apr 05, 2023',
+                                'category': 'Web Design',
+                                'comments': 10,
+                                'image': 'img/blog-5.jpg'
+                            },
+                            {
+                                'title': 'Freelancing Tips: How to Find and Keep Clients',
+                                'excerpt': 'Practical advice for freelancers on finding clients, building relationships, and creating a sustainable freelance business. Based on my experience working on Fiverr and Upwork.',
+                                'date': 'Mar 18, 2023',
+                                'category': 'Freelancing',
+                                'comments': 18,
+                                'image': 'img/blog-6.jpg'
+                            }
+                        ] %}
+                        
+                        {% for post in blog_data %}
+                            <div class="col-lg-6" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+                                <div class="blog-card">
+                                    <div class="blog-img">
+                                        <img src="{{ url_for('static', filename=post.image) }}" alt="{{ post.title }}">
+                                        <div class="blog-date">{{ post.date }}</div>
+                                        <div class="blog-category">{{ post.category }}</div>
+                                    </div>
+                                    <div class="blog-content">
+                                        <div class="blog-meta">
+                                            <div class="blog-meta-item">
+                                                <i class="fas fa-user"></i>
+                                                <span>Muhammad Hanzala</span>
+                                            </div>
+                                            <div class="blog-meta-item">
+                                                <i class="fas fa-comments"></i>
+                                                <span>{{ post.comments }}</span>
+                                            </div>
+                                        </div>
+                                        <h3 class="blog-title">
+                                            <a href="#">{{ post.title }}</a>
+                                        </h3>
+                                        <div class="blog-excerpt">
+                                            {{ post.excerpt }}
+                                        </div>
+                                        <a href="#" class="blog-read-more">Read More</a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                <!-- Pagination -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        {% if posts.pages > 1 %}
+                        <div class="pagination-wrapper text-center" data-aos="fade-up">
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination justify-content-center">
+                                    {% if posts.has_prev %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('main.blog', page=posts.prev_num) }}" aria-label="Previous">
+                                            <i class="fas fa-chevron-left"></i>
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                    
+                                    {% for page_num in posts.iter_pages() %}
+                                        {% if page_num %}
+                                            {% if page_num != posts.page %}
+                                                <li class="page-item"><a class="page-link" href="{{ url_for('main.blog', page=page_num) }}">{{ page_num }}</a></li>
+                                            {% else %}
+                                                <li class="page-item active"><a class="page-link" href="#">{{ page_num }}</a></li>
+                                            {% endif %}
+                                        {% else %}
+                                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {% if posts.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('main.blog', page=posts.next_num) }}" aria-label="Next">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <div class="blog-sidebar">
+                    <!-- Search Widget -->
+                    <div class="sidebar-widget" data-aos="fade-up">
+                        <h3 class="widget-title">Search</h3>
+                        <form class="search-form">
+                            <input type="text" placeholder="Search...">
+                            <button type="submit"><i class="fas fa-search"></i></button>
+                        </form>
+                    </div>
+                    
+                    <!-- Categories Widget -->
+                    <div class="sidebar-widget" data-aos="fade-up">
+                        <h3 class="widget-title">Categories</h3>
+                        <ul class="category-list">
+                            {% set categories = [
+                                {'name': 'Web Development', 'count': 8},
+                                {'name': 'Python', 'count': 6},
+                                {'name': '3D Design', 'count': 4},
+                                {'name': 'Video Editing', 'count': 5},
+                                {'name': 'Freelancing', 'count': 3},
+                                {'name': 'Web Design', 'count': 7}
+                            ] %}
+                            
+                            {% for category in categories %}
+                                <li>
+                                    <a href="#">
+                                        {{ category.name }}
+                                        <span class="category-count">{{ category.count }}</span>
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    
+                    <!-- Recent Posts Widget -->
+                    <div class="sidebar-widget" data-aos="fade-up">
+                        <h3 class="widget-title">Recent Posts</h3>
+                        {% if posts.items %}
+                            {% set recent_posts = posts.items[:4] %}
+                        {% else %}
+                            {% set recent_posts = blog_data[:4] if blog_data else [] %}
+                        {% endif %}
+                        {% for post in recent_posts %}
+                            <div class="recent-post">
+                                <div class="recent-post-img">
+                                    <img src="{{ url_for('static', filename=post.image) }}" alt="{{ post.title }}">
+                                </div>
+                                <div class="recent-post-info">
+                                    <h6><a href="#">{{ post.title }}</a></h6>
+                                    <div class="recent-post-date">{{ post.date }}</div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Tags Widget -->
+                    <div class="sidebar-widget" data-aos="fade-up">
+                        <h3 class="widget-title">Tags</h3>
+                        <div class="tag-cloud">
+                            {% set tags = ['Web Development', 'Python', 'Flask', 'Django', 'HTML', 'CSS', 'JavaScript', 'Bootstrap', 'Tailwind', 'Blender', 'DaVinci Resolve', 'UI/UX', 'Freelancing', 'Portfolio', 'WordPress'] %}
+                            
+                            {% for tag in tags %}
+                                <a href="#">{{ tag }}</a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

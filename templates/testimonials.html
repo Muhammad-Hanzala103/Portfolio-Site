@@ -1,0 +1,408 @@
+{% extends 'base.html' %}
+
+{% block title %}Testimonials - Muhammad Hanzala{% endblock %}
+
+{% block extra_css %}
+<style>
+    .testimonial-card {
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+        margin-bottom: 30px;
+        position: relative;
+        background: #fff;
+        overflow: hidden;
+    }
+    
+    .testimonial-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    }
+    
+    .testimonial-card::before {
+        content: '\f10d';
+        font-family: 'Font Awesome 5 Free';
+        font-weight: 900;
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        font-size: 24px;
+        color: var(--primary-color);
+        opacity: 0.1;
+    }
+    
+    .testimonial-card::after {
+        content: '\f10e';
+        font-family: 'Font Awesome 5 Free';
+        font-weight: 900;
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        font-size: 24px;
+        color: var(--primary-color);
+        opacity: 0.1;
+    }
+    
+    .testimonial-content {
+        margin-bottom: 20px;
+        font-style: italic;
+        color: #555;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .testimonial-rating {
+        margin-bottom: 15px;
+        color: #ffc107;
+    }
+    
+    .testimonial-author {
+        display: flex;
+        align-items: center;
+    }
+    
+    .testimonial-author-img {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin-right: 15px;
+        border: 3px solid var(--primary-color);
+    }
+    
+    .testimonial-author-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .testimonial-author-info h4 {
+        margin-bottom: 5px;
+        font-size: 18px;
+        font-weight: 600;
+    }
+    
+    .testimonial-author-info p {
+        margin-bottom: 0;
+        font-size: 14px;
+        color: #777;
+    }
+    
+    .testimonial-filter {
+        margin-bottom: 30px;
+    }
+    
+    .testimonial-filter .filter-item {
+        display: inline-block;
+        margin: 0 5px;
+        padding: 8px 15px;
+        background: transparent;
+        border: 1px solid #ddd;
+        border-radius: 30px;
+        color: #333;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .testimonial-filter .filter-item:hover,
+    .testimonial-filter .filter-item.active {
+        background: var(--primary-color);
+        color: #fff;
+        border-color: var(--primary-color);
+    }
+    
+    .testimonial-platform {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 24px;
+        z-index: 2;
+    }
+    
+    .testimonial-platform .fab.fa-fiverr {
+        color: #1dbf73;
+    }
+    
+    .testimonial-platform .fab.fa-upwork {
+        color: #6fda44;
+    }
+    
+    .testimonial-platform .fab.fa-linkedin {
+        color: #0077b5;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="page-header-content">
+                    <h1>Client Testimonials</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Testimonials</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="testimonials-section section-padding">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="section-title text-center" data-aos="fade-up">
+                    <h2>What My Clients Say</h2>
+                    <div class="divider"></div>
+                    <p>Feedback from clients I've worked with</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Testimonial Filter -->
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="testimonial-filter text-center" data-aos="fade-up">
+                    <button class="filter-item active" data-filter="*">All</button>
+                    <button class="filter-item" data-filter=".fiverr">Fiverr</button>
+                    <button class="filter-item" data-filter=".upwork">Upwork</button>
+                    <button class="filter-item" data-filter=".linkedin">LinkedIn</button>
+                    <button class="filter-item" data-filter=".other">Other</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Testimonials Grid -->
+        <div class="row testimonials-container">
+            {% if testimonials %}
+                {% for testimonial in testimonials %}
+                    <div class="col-lg-4 col-md-6 testimonial-item {{ testimonial.platform|lower }}" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+                        <div class="testimonial-card">
+                            <div class="testimonial-platform">
+                                {% if testimonial.platform|lower == 'fiverr' %}
+                                    <i class="fab fa-fiverr"></i>
+                                {% elif testimonial.platform|lower == 'upwork' %}
+                                    <i class="fab fa-upwork"></i>
+                                {% elif testimonial.platform|lower == 'linkedin' %}
+                                    <i class="fab fa-linkedin"></i>
+                                {% else %}
+                                    <i class="fas fa-globe"></i>
+                                {% endif %}
+                            </div>
+                            <div class="testimonial-content">
+                                <p>{{ testimonial.content }}</p>
+                            </div>
+                            <div class="testimonial-rating">
+                                {% for i in range(testimonial.rating) %}
+                                    <i class="fas fa-star"></i>
+                                {% endfor %}
+                                {% for i in range(5 - testimonial.rating) %}
+                                    <i class="far fa-star"></i>
+                                {% endfor %}
+                            </div>
+                            <div class="testimonial-author">
+                                <div class="testimonial-author-img">
+                                    {% if testimonial.client_image %}
+                                        <img src="{{ url_for('static', filename=testimonial.client_image) }}" alt="{{ testimonial.client_name }}">
+                                    {% else %}
+                                        <img src="{{ url_for('static', filename='img/user-placeholder.jpg') }}" alt="{{ testimonial.client_name }}">
+                                    {% endif %}
+                                </div>
+                                <div class="testimonial-author-info">
+                                    <h4>{{ testimonial.client_name }}</h4>
+                                    <p>{{ testimonial.client_title }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <!-- Placeholder Testimonials -->
+                {% set testimonial_data = [
+                    {
+                        'client_name': 'John Smith',
+                        'client_title': 'CEO, Tech Innovations',
+                        'content': 'Working with Hani was a pleasure! He delivered our website ahead of schedule and exceeded our expectations. His attention to detail and problem-solving skills are impressive.',
+                        'rating': 5,
+                        'platform': 'fiverr'
+                    },
+                    {
+                        'client_name': 'Sarah Johnson',
+                        'client_title': 'Marketing Director',
+                        'content': 'Hani created an amazing portfolio website for me. His design skills are top-notch, and he was very responsive to my feedback. I highly recommend his services!',
+                        'rating': 5,
+                        'platform': 'upwork'
+                    },
+                    {
+                        'client_name': 'Michael Brown',
+                        'client_title': 'Startup Founder',
+                        'content': 'I hired Hani to develop a custom web application for my startup. He delivered a high-quality product on time and within budget. His technical skills and communication are excellent.',
+                        'rating': 4,
+                        'platform': 'linkedin'
+                    },
+                    {
+                        'client_name': 'Emily Davis',
+                        'client_title': 'E-commerce Manager',
+                        'content': 'Hani helped us optimize our e-commerce website, which resulted in a 30% increase in sales. His expertise in both design and development made a significant difference.',
+                        'rating': 5,
+                        'platform': 'fiverr'
+                    },
+                    {
+                        'client_name': 'David Wilson',
+                        'client_title': 'Photographer',
+                        'content': 'As a photographer, I needed a portfolio that would showcase my work effectively. Hani created a beautiful, responsive website that perfectly highlights my photography.',
+                        'rating': 5,
+                        'platform': 'upwork'
+                    },
+                    {
+                        'client_name': 'Jessica Martinez',
+                        'client_title': 'Small Business Owner',
+                        'content': 'Hani designed a logo and website for my new business. His creativity and professionalism made the process smooth and enjoyable. I\'m very happy with the results!',
+                        'rating': 4,
+                        'platform': 'other'
+                    },
+                    {
+                        'client_name': 'Robert Taylor',
+                        'client_title': 'Product Manager',
+                        'content': 'We hired Hani to create 3D models for our product visualization. The quality of his work is exceptional, and he delivered everything on schedule.',
+                        'rating': 5,
+                        'platform': 'fiverr'
+                    },
+                    {
+                        'client_name': 'Amanda Clark',
+                        'client_title': 'Digital Content Creator',
+                        'content': 'Hani edited several videos for my YouTube channel. His editing skills and creativity added a professional touch to my content. I\'ll definitely work with him again!',
+                        'rating': 5,
+                        'platform': 'upwork'
+                    },
+                    {
+                        'client_name': 'Daniel Lee',
+                        'client_title': 'Software Engineer',
+                        'content': 'I collaborated with Hani on a complex web application. His Python skills are impressive, and he\'s great at solving challenging problems. A true professional!',
+                        'rating': 4,
+                        'platform': 'linkedin'
+                    }
+                ] %}
+                
+                {% for testimonial in testimonial_data %}
+                    <div class="col-lg-4 col-md-6 testimonial-item {{ testimonial.platform }}" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+                        <div class="testimonial-card">
+                            <div class="testimonial-platform">
+                                {% if testimonial.platform == 'fiverr' %}
+                                    <i class="fab fa-fiverr"></i>
+                                {% elif testimonial.platform == 'upwork' %}
+                                    <i class="fab fa-upwork"></i>
+                                {% elif testimonial.platform == 'linkedin' %}
+                                    <i class="fab fa-linkedin"></i>
+                                {% else %}
+                                    <i class="fas fa-globe"></i>
+                                {% endif %}
+                            </div>
+                            <div class="testimonial-content">
+                                <p>{{ testimonial.content }}</p>
+                            </div>
+                            <div class="testimonial-rating">
+                                {% for i in range(testimonial.rating) %}
+                                    <i class="fas fa-star"></i>
+                                {% endfor %}
+                                {% for i in range(5 - testimonial.rating) %}
+                                    <i class="far fa-star"></i>
+                                {% endfor %}
+                            </div>
+                            <div class="testimonial-author">
+                                <div class="testimonial-author-img">
+                                    <img src="{{ url_for('static', filename='img/user-' ~ loop.index ~ '.jpg') }}" alt="{{ testimonial.client_name }}">
+                                </div>
+                                <div class="testimonial-author-info">
+                                    <h4>{{ testimonial.client_name }}</h4>
+                                    <p>{{ testimonial.client_title }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Client Logos Section -->
+<section class="client-logos section-padding bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="section-title text-center" data-aos="fade-up">
+                    <h2>Trusted By</h2>
+                    <div class="divider"></div>
+                    <p>Companies and individuals I've worked with</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="client-logo-slider" data-aos="fade-up">
+                    <div class="client-logo-wrapper">
+                        <div class="row align-items-center justify-content-center">
+                            {% for i in range(1, 7) %}
+                                <div class="col-lg-2 col-md-3 col-4 mb-4">
+                                    <div class="client-logo">
+                                        <img src="{{ url_for('static', filename='img/client-' ~ loop.index ~ '.png') }}" alt="Client Logo {{ loop.index }}" class="img-fluid">
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="cta-section section-padding bg-primary text-white">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8 col-md-7">
+                <div class="cta-content" data-aos="fade-right">
+                    <h2>Ready to join my satisfied clients?</h2>
+                    <p>Let's discuss your project and create something amazing together!</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-5">
+                <div class="cta-btn text-md-end" data-aos="fade-left">
+                    <a href="{{ url_for('main.contact') }}" class="btn btn-light">Get In Touch</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Isotope for filtering
+        var $grid = $('.testimonials-container').isotope({
+            itemSelector: '.testimonial-item',
+            layoutMode: 'fitRows'
+        });
+        
+        // Filter items on button click
+        $('.testimonial-filter').on('click', '.filter-item', function() {
+            var filterValue = $(this).attr('data-filter');
+            $grid.isotope({ filter: filterValue });
+            $('.filter-item').removeClass('active');
+            $(this).addClass('active');
+        });
+    });
+</script>
+{% endblock %}

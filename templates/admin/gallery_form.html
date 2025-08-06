@@ -1,0 +1,164 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}{% if item %}Edit Gallery Item{% else %}Add Gallery Item{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{% if item %}Edit Gallery Item{% else %}Add Gallery Item{% endif %}</h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('admin.gallery') }}">Gallery</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{% if item %}Edit{% else %}Add{% endif %} Gallery Item</li>
+        </ol>
+    </nav>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<div class="card">
+    <div class="card-header">
+        <h6>{% if item %}Edit Gallery Item: {{ item.title }}{% else %}Add New Gallery Item{% endif %}</h6>
+    </div>
+    <div class="card-body">
+        <form method="POST" enctype="multipart/form-data">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="title" name="title" value="{{ item.title if item else '' }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Category</label>
+                        <select class="form-select" id="category" name="category_id">
+                            <option value="" {% if not item or not item.category_id %}selected{% endif %}>No Category</option>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}" {% if item and item.category_id == category.id %}selected{% endif %}>
+                                    {{ category.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="4">{{ item.description if item else '' }}</textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="link" class="form-label">External Link (Optional)</label>
+                        <input type="url" class="form-control" id="link" name="link" value="{{ item.link if item else '' }}" placeholder="https://example.com">
+                        <div class="form-text">Add a link to the original work or more details</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="order" class="form-label">Display Order</label>
+                        <input type="number" class="form-control" id="order" name="order" value="{{ item.order if item else 0 }}" min="0">
+                        <div class="form-text">Lower numbers appear first</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="is_featured" name="is_featured" 
+                                   {% if item and item.is_featured %}checked{% endif %}>
+                            <label class="form-check-label" for="is_featured">Feature on Homepage</label>
+                        </div>
+                        <div class="form-text">Show this gallery item prominently on the homepage</div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Gallery Image</label>
+                        {% if item and item.image %}
+                            <div class="mb-3">
+                                <img src="{{ url_for('static', filename='uploads/gallery/' + item.image) }}" 
+                                     alt="{{ item.title }}" class="img-fluid img-thumbnail" id="image-preview">
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="replace_image" name="replace_image">
+                                <label class="form-check-label" for="replace_image">Replace existing image</label>
+                            </div>
+                            <div id="new-image-upload" style="display: none;">
+                        {% endif %}
+                        
+                        <input type="file" class="form-control" id="image" name="image" accept="image/*" {% if not item %}required{% endif %}>
+                        <div class="form-text">Recommended size: 800x600px or larger. Max file size: 5MB</div>
+                        
+                        {% if item and item.image %}
+                            </div>
+                        {% else %}
+                            <div class="mt-3">
+                                <img src="" alt="Image Preview" class="img-fluid img-thumbnail" id="image-preview" style="display: none;">
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="tags" class="form-label">Tags (Optional)</label>
+                        <input type="text" class="form-control" id="tags" name="tags" value="{{ item.tags if item else '' }}" placeholder="design, 3d, blender">
+                        <div class="form-text">Comma-separated tags to help with filtering</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('admin.gallery') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Gallery
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> {% if item %}Update{% else %}Save{% endif %} Gallery Item
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Image preview functionality for new uploads
+        const imageInput = document.getElementById('image');
+        const imagePreview = document.getElementById('image-preview');
+        
+        imageInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                }
+                
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+        
+        // Toggle for replacing existing image
+        const replaceImageCheckbox = document.getElementById('replace_image');
+        const newImageUpload = document.getElementById('new-image-upload');
+        
+        if (replaceImageCheckbox && newImageUpload) {
+            replaceImageCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    newImageUpload.style.display = 'block';
+                } else {
+                    newImageUpload.style.display = 'none';
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

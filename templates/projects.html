@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block title %}Projects - Muhammad Hanzala{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="page-header-content">
+                    <h1>My Projects</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Projects</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Projects Section -->
+<section class="projects-page section-padding">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="section-title text-center" data-aos="fade-up">
+                    <h2>My Projects</h2>
+                    <div class="divider"></div>
+                    <p>Showcasing my best work</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Project Filters -->
+        <div class="row">
+            <div class="col-lg-12" data-aos="fade-up">
+                <div class="project-filters">
+                    <ul class="filters-list">
+                        <li class="active" data-filter="*">All</li>
+                        <li data-filter=".web-development">Web Development</li>
+                        <li data-filter=".design">Design</li>
+                        <li data-filter=".3d">3D Modeling</li>
+                        <li data-filter=".video">Video Editing</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Projects Grid -->
+        <div class="row projects-grid">
+            {% for project in projects %}
+                <div class="col-lg-4 col-md-6 project-item {% if project.technologies %}{{ project.technologies.split(',')[0]|lower|replace(' ', '-') }}{% endif %}" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+                    <div class="project-box">
+                        <div class="project-img">
+                            {% if project.image %}
+                                <img src="{{ url_for('static', filename=project.image) }}" alt="{{ project.title }}" class="img-fluid">
+                            {% else %}
+                                <img src="{{ url_for('static', filename='img/project-placeholder.jpg') }}" alt="{{ project.title }}" class="img-fluid">
+                            {% endif %}
+                            <div class="project-overlay">
+                                <div class="project-links">
+                                    {% if project.github_link %}
+                                        <a href="{{ project.github_link }}" target="_blank"><i class="fab fa-github"></i></a>
+                                    {% endif %}
+                                    {% if project.live_link %}
+                                        <a href="{{ project.live_link }}" target="_blank"><i class="fas fa-external-link-alt"></i></a>
+                                    {% endif %}
+                                    <a href="{{ url_for('main.project_detail', project_id=project.id) }}"><i class="fas fa-info-circle"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="project-info">
+                            <h3>{{ project.title }}</h3>
+                            <p>{{ project.description|truncate(100) }}</p>
+                            <div class="project-tech">
+                                {% if project.technologies %}
+                                    {% for tech in project.technologies.split(',') %}
+                                        <span class="badge bg-primary">{{ tech.strip() }}</span>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="cta-section section-padding bg-primary text-white">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8 col-md-7">
+                <div class="cta-content" data-aos="fade-right">
+                    <h2>Have a project in mind?</h2>
+                    <p>Let's discuss your ideas and turn them into reality.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-5">
+                <div class="cta-btn text-md-end" data-aos="fade-left">
+                    <a href="{{ url_for('main.contact') }}" class="btn btn-light">Get In Touch</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize Isotope for project filtering
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Isotope after images are loaded
+        var grid = document.querySelector('.projects-grid');
+        var iso = new Isotope(grid, {
+            itemSelector: '.project-item',
+            layoutMode: 'fitRows'
+        });
+        
+        // Filter items on button click
+        var filterBtns = document.querySelectorAll('.filters-list li');
+        filterBtns.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var filterValue = this.getAttribute('data-filter');
+                
+                // Remove active class from all buttons
+                filterBtns.forEach(function(btn) {
+                    btn.classList.remove('active');
+                });
+                
+                // Add active class to current button
+                this.classList.add('active');
+                
+                // Filter items
+                iso.arrange({
+                    filter: filterValue === '*' ? null : filterValue
+                });
+            });
+        });
+    });
+</script>
+{% endblock %}

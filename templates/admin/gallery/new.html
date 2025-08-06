@@ -1,0 +1,485 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Add New Image - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Add New Image to Gallery</h2>
+    <a href="{{ url_for('admin.gallery') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Gallery
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    
+                    <!-- Image Upload -->
+                    <div class="mb-4">
+                        <label for="image" class="form-label">Select Image *</label>
+                        {{ form.image(class="form-control", accept="image/*") }}
+                        {% if form.image.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.image.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Supported formats: JPG, PNG, GIF, WebP. Max size: 5MB. Recommended: 1200x800px or higher.</div>
+                        
+                        <!-- Image Preview -->
+                        <div id="image-preview" class="mt-3" style="display: none;">
+                            <img id="preview-img" class="img-fluid rounded" style="max-height: 300px;" alt="Preview">
+                        </div>
+                    </div>
+                    
+                    <!-- Basic Information -->
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <label for="title" class="form-label">Image Title *</label>
+                            {{ form.title(class="form-control", placeholder="Enter a descriptive title for the image") }}
+                            {% if form.title.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.title.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="category" class="form-label">Category *</label>
+                            {{ form.category(class="form-select") }}
+                            {% if form.category.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.category.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        {{ form.description(class="form-control", rows="3", placeholder="Describe the image, context, or story behind it") }}
+                        {% if form.description.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.description.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Optional: Provide context or details about the image.</div>
+                    </div>
+                    
+                    <!-- Options -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                {{ form.featured(class="form-check-input") }}
+                                <label class="form-check-label" for="featured">
+                                    Featured Image
+                                </label>
+                            </div>
+                            <div class="form-text">Featured images will be highlighted in the gallery.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="order_index" class="form-label">Display Order</label>
+                            {{ form.order_index(class="form-control", placeholder="0") }}
+                            {% if form.order_index.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.order_index.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Lower numbers appear first. Leave empty for automatic ordering.</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Buttons -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin.gallery') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                        <div>
+                            <button type="submit" name="action" value="save_and_new" class="btn btn-outline-primary">
+                                <i class="fas fa-plus"></i> Save & Add Another
+                            </button>
+                            <button type="submit" name="action" value="save" class="btn btn-primary">
+                                <i class="fas fa-check"></i> Save Image
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Upload Tips -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Upload Tips</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6 class="text-primary">Image Guidelines:</h6>
+                    <ul class="small mb-0">
+                        <li><strong>Resolution:</strong> 1200x800px or higher recommended</li>
+                        <li><strong>Format:</strong> JPG, PNG, GIF, or WebP</li>
+                        <li><strong>Size:</strong> Maximum 5MB per image</li>
+                        <li><strong>Quality:</strong> High-quality images look better</li>
+                        <li><strong>Orientation:</strong> Both landscape and portrait work</li>
+                    </ul>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="text-success">Categories:</h6>
+                    <ul class="small mb-0">
+                        <li><strong>Project:</strong> Screenshots, demos, work samples</li>
+                        <li><strong>Personal:</strong> Profile photos, team pictures</li>
+                        <li><strong>Certificate:</strong> Awards, certifications, achievements</li>
+                        <li><strong>Other:</strong> Miscellaneous images</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h6 class="text-info">Best Practices:</h6>
+                    <ul class="small mb-0">
+                        <li>Use descriptive titles</li>
+                        <li>Add meaningful descriptions</li>
+                        <li>Organize with appropriate categories</li>
+                        <li>Mark important images as featured</li>
+                        <li>Optimize images before uploading</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Live Preview -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">Live Preview</h5>
+            </div>
+            <div class="card-body">
+                <div class="gallery-preview">
+                    <div class="preview-image mb-3">
+                        <img id="card-preview-img" src="{{ url_for('static', filename='img/blog-placeholder.svg') }}" class="img-fluid rounded" alt="Preview">
+                    </div>
+                    <h6 id="preview-title">Image Title</h6>
+                    <p id="preview-description" class="text-muted small">Image description will appear here...</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span id="preview-category" class="badge bg-primary">Category</span>
+                        <span id="preview-featured" class="badge bg-warning" style="display: none;">Featured</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-outline-info btn-sm" onclick="openImageOptimizer()">
+                        <i class="fas fa-compress-alt"></i> Image Optimizer Tips
+                    </button>
+                    <button type="button" class="btn btn-outline-success btn-sm" onclick="showBulkUpload()">
+                        <i class="fas fa-upload"></i> Bulk Upload Guide
+                    </button>
+                    <a href="{{ url_for('admin.gallery') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-images"></i> View Gallery
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Optimizer Modal -->
+<div class="modal fade" id="optimizerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Image Optimization Tips</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Online Tools:</h6>
+                <ul>
+                    <li><strong>TinyPNG:</strong> Compress PNG and JPG images</li>
+                    <li><strong>Squoosh:</strong> Google's image compression tool</li>
+                    <li><strong>ImageOptim:</strong> Mac app for image optimization</li>
+                    <li><strong>GIMP:</strong> Free alternative to Photoshop</li>
+                </ul>
+                
+                <h6 class="mt-3">Quick Tips:</h6>
+                <ul>
+                    <li>Resize images to appropriate dimensions before uploading</li>
+                    <li>Use JPG for photos, PNG for graphics with transparency</li>
+                    <li>Compress images to reduce file size without losing quality</li>
+                    <li>Consider WebP format for better compression</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Upload Modal -->
+<div class="modal fade" id="bulkUploadModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Bulk Upload Guide</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>For uploading multiple images efficiently:</p>
+                
+                <h6>Method 1: Multiple Single Uploads</h6>
+                <ol>
+                    <li>Upload and save your first image</li>
+                    <li>Click "Save & Add Another" to continue</li>
+                    <li>Repeat for each image</li>
+                </ol>
+                
+                <h6 class="mt-3">Method 2: Prepare in Advance</h6>
+                <ol>
+                    <li>Organize images in folders by category</li>
+                    <li>Rename files with descriptive names</li>
+                    <li>Optimize all images beforehand</li>
+                    <li>Upload one by one with consistent naming</li>
+                </ol>
+                
+                <div class="alert alert-info mt-3">
+                    <strong>Pro Tip:</strong> Use descriptive filenames as they can help auto-fill the title field!
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Image preview functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const imageInput = document.getElementById('image');
+    const titleInput = document.getElementById('title');
+    const categoryInput = document.getElementById('category');
+    const descriptionInput = document.getElementById('description');
+    const featuredInput = document.getElementById('featured');
+    
+    const previewImg = document.getElementById('preview-img');
+    const cardPreviewImg = document.getElementById('card-preview-img');
+    const imagePreview = document.getElementById('image-preview');
+    const previewTitle = document.getElementById('preview-title');
+    const previewDescription = document.getElementById('preview-description');
+    const previewCategory = document.getElementById('preview-category');
+    const previewFeatured = document.getElementById('preview-featured');
+    
+    // Image upload preview
+    imageInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                cardPreviewImg.src = e.target.result;
+                imagePreview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+            
+            // Auto-fill title from filename
+            if (!titleInput.value) {
+                const filename = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
+                const cleanTitle = filename.replace(/[_-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                titleInput.value = cleanTitle;
+                previewTitle.textContent = cleanTitle;
+            }
+        }
+    });
+    
+    // Update title preview
+    titleInput.addEventListener('input', function() {
+        previewTitle.textContent = this.value || 'Image Title';
+    });
+    
+    // Update category preview
+    categoryInput.addEventListener('change', function() {
+        const categoryText = this.options[this.selectedIndex].text;
+        previewCategory.textContent = categoryText;
+        
+        // Update badge color based on category
+        previewCategory.className = 'badge ';
+        switch(this.value) {
+            case 'Project':
+                previewCategory.className += 'bg-primary';
+                break;
+            case 'Personal':
+                previewCategory.className += 'bg-success';
+                break;
+            case 'Certificate':
+                previewCategory.className += 'bg-info';
+                break;
+            default:
+                previewCategory.className += 'bg-secondary';
+        }
+    });
+    
+    // Update description preview
+    descriptionInput.addEventListener('input', function() {
+        previewDescription.textContent = this.value || 'Image description will appear here...';
+    });
+    
+    // Update featured preview
+    featuredInput.addEventListener('change', function() {
+        if (this.checked) {
+            previewFeatured.style.display = 'inline-block';
+        } else {
+            previewFeatured.style.display = 'none';
+        }
+    });
+});
+
+// Modal functions
+function openImageOptimizer() {
+    new bootstrap.Modal(document.getElementById('optimizerModal')).show();
+}
+
+function showBulkUpload() {
+    new bootstrap.Modal(document.getElementById('bulkUploadModal')).show();
+}
+
+// Form validation
+document.querySelector('form').addEventListener('submit', function(e) {
+    const image = document.getElementById('image').files[0];
+    const title = document.getElementById('title').value.trim();
+    const category = document.getElementById('category').value;
+    
+    if (!image) {
+        e.preventDefault();
+        alert('Please select an image to upload.');
+        document.getElementById('image').focus();
+        return;
+    }
+    
+    if (!title) {
+        e.preventDefault();
+        alert('Please enter a title for the image.');
+        document.getElementById('title').focus();
+        return;
+    }
+    
+    if (!category) {
+        e.preventDefault();
+        alert('Please select a category.');
+        document.getElementById('category').focus();
+        return;
+    }
+    
+    // Check file size (5MB limit)
+    if (image.size > 5 * 1024 * 1024) {
+        e.preventDefault();
+        alert('Image file size must be less than 5MB. Please compress the image and try again.');
+        return;
+    }
+    
+    // Check file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(image.type)) {
+        e.preventDefault();
+        alert('Please select a valid image file (JPG, PNG, GIF, or WebP).');
+        return;
+    }
+});
+
+// Drag and drop functionality
+const imageInput = document.getElementById('image');
+const dropZone = imageInput.parentElement;
+
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, preventDefaults, false);
+});
+
+function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+}
+
+['dragenter', 'dragover'].forEach(eventName => {
+    dropZone.addEventListener(eventName, highlight, false);
+});
+
+['dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, unhighlight, false);
+});
+
+function highlight(e) {
+    dropZone.classList.add('border-primary', 'bg-light');
+}
+
+function unhighlight(e) {
+    dropZone.classList.remove('border-primary', 'bg-light');
+}
+
+dropZone.addEventListener('drop', handleDrop, false);
+
+function handleDrop(e) {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    
+    if (files.length > 0) {
+        imageInput.files = files;
+        imageInput.dispatchEvent(new Event('change'));
+    }
+}
+</script>
+{% endblock %}
+
+{% block styles %}
+<style>
+.gallery-preview {
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+}
+
+.preview-image img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.border-primary {
+    border-color: #0d6efd !important;
+}
+
+.bg-light {
+    background-color: #f8f9fa !important;
+}
+
+#image-preview img {
+    border: 2px solid #dee2e6;
+}
+
+@media (max-width: 768px) {
+    .col-lg-4 {
+        margin-top: 2rem;
+    }
+}
+</style>
+{% endblock %}

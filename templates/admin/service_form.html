@@ -1,0 +1,327 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}{% if service %}Edit Service{% else %}Add Service{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{% if service %}Edit Service{% else %}Add Service{% endif %}</h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('admin.services') }}">Services</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{% if service %}Edit{% else %}Add{% endif %} Service</li>
+        </ol>
+    </nav>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<div class="card">
+    <div class="card-header">
+        <h6>{% if service %}Edit Service: {{ service.title }}{% else %}Add New Service{% endif %}</h6>
+    </div>
+    <div class="card-body">
+        <form method="POST" enctype="multipart/form-data">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Service Title</label>
+                        <input type="text" class="form-control" id="title" name="title" value="{{ service.title if service else '' }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="slug" class="form-label">Slug</label>
+                        <input type="text" class="form-control" id="slug" name="slug" value="{{ service.slug if service else '' }}" readonly>
+                        <div class="form-text">Auto-generated from title. Used in URLs.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="short_description" class="form-label">Short Description</label>
+                        <textarea class="form-control" id="short_description" name="short_description" rows="2" maxlength="150" required>{{ service.short_description if service else '' }}</textarea>
+                        <div class="form-text">Brief description (max 150 characters) for service cards</div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="icon" class="form-label">Icon (Font Awesome Class)</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-icons"></i></span>
+                            <input type="text" class="form-control" id="icon" name="icon" 
+                                   value="{{ service.icon if service else '' }}" placeholder="fas fa-code" required>
+                        </div>
+                        <div class="form-text">
+                            Enter a Font Awesome icon class (e.g., fas fa-code, fab fa-wordpress). 
+                            <a href="https://fontawesome.com/icons" target="_blank">Browse icons</a>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="order" class="form-label">Display Order</label>
+                        <input type="number" class="form-control" id="order" name="order" 
+                               value="{{ service.order if service else 0 }}" min="0">
+                        <div class="form-text">Lower numbers appear first</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="is_featured" name="is_featured" 
+                                   {% if service and service.is_featured %}checked{% endif %}>
+                            <label class="form-check-label" for="is_featured">Feature on Homepage</label>
+                        </div>
+                        <div class="form-text">Show this service prominently on the homepage</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="description" class="form-label">Full Description</label>
+                <textarea class="form-control summernote" id="description" name="description" rows="10">{{ service.description if service else '' }}</textarea>
+                <div class="form-text">Detailed description of the service, including what you offer</div>
+            </div>
+            
+            <!-- Service Features Section -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6>Service Features</h6>
+                    <button type="button" class="btn btn-sm btn-primary" id="add-feature-btn">
+                        <i class="fas fa-plus"></i> Add Feature
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> Add key features or benefits of this service. Each feature should have an icon and description.
+                    </div>
+                    
+                    <div id="features-container">
+                        {% if service and service.features %}
+                            {% for feature in service.features %}
+                                <div class="feature-item card mb-3">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <h6>Feature #{{ loop.index }}</h6>
+                                            <button type="button" class="btn btn-sm btn-danger remove-feature-btn">
+                                                <i class="fas fa-times"></i> Remove
+                                            </button>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Icon</label>
+                                                    <input type="text" class="form-control feature-icon" name="feature_icons[]" value="{{ feature.icon }}" placeholder="fas fa-check">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-8">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Description</label>
+                                                    <input type="text" class="form-control" name="feature_descriptions[]" value="{{ feature.description }}">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Feature Template (hidden) -->
+                    <template id="feature-template">
+                        <div class="feature-item card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6>New Feature</h6>
+                                    <button type="button" class="btn btn-sm btn-danger remove-feature-btn">
+                                        <i class="fas fa-times"></i> Remove
+                                    </button>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">Icon</label>
+                                            <input type="text" class="form-control feature-icon" name="feature_icons[]" placeholder="fas fa-check">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="mb-3">
+                                            <label class="form-label">Description</label>
+                                            <input type="text" class="form-control" name="feature_descriptions[]" placeholder="Feature description">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+            
+            <!-- Pricing Section -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6>Pricing Information (Optional)</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="price" class="form-label">Starting Price</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="price" name="price" 
+                                           value="{{ service.price if service else '' }}" step="0.01" min="0">
+                                </div>
+                                <div class="form-text">Leave empty to show "Contact for Pricing"</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="price_suffix" class="form-label">Price Suffix</label>
+                                <input type="text" class="form-control" id="price_suffix" name="price_suffix" 
+                                       value="{{ service.price_suffix if service else '' }}" placeholder="/hour or /project">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="delivery_time" class="form-label">Delivery Time</label>
+                                <input type="text" class="form-control" id="delivery_time" name="delivery_time" 
+                                       value="{{ service.delivery_time if service else '' }}" placeholder="e.g., 2-3 days">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('admin.services') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Services
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> {% if service %}Update{% else %}Save{% endif %} Service
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Icon Preview -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h6>Icon Preview</h6>
+    </div>
+    <div class="card-body text-center">
+        <div class="mb-3">
+            <i id="icon-preview" class="{{ service.icon if service else 'fas fa-code' }} fa-3x"></i>
+        </div>
+        <div id="icon-name">{{ service.icon if service else 'fas fa-code' }}</div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Summernote
+        $('.summernote').summernote({
+            height: 300,
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'underline', 'clear']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['table', ['table']],
+                ['insert', ['link']],
+                ['view', ['fullscreen', 'codeview', 'help']]
+            ]
+        });
+        
+        // Auto-generate slug from title
+        const titleInput = document.getElementById('title');
+        const slugInput = document.getElementById('slug');
+        
+        titleInput.addEventListener('input', function() {
+            const slug = this.value.toLowerCase()
+                .replace(/[^\w\s-]/g, '') // Remove special characters
+                .replace(/\s+/g, '-')     // Replace spaces with hyphens
+                .replace(/-+/g, '-');     // Replace multiple hyphens with single hyphen
+            
+            slugInput.value = slug;
+        });
+        
+        // Icon preview functionality
+        const iconInput = document.getElementById('icon');
+        const iconPreview = document.getElementById('icon-preview');
+        const iconName = document.getElementById('icon-name');
+        
+        iconInput.addEventListener('input', function() {
+            // Remove all classes except fa-3x
+            iconPreview.className = 'fa-3x';
+            
+            // Add the new icon class
+            if (this.value) {
+                const iconClasses = this.value.trim().split(' ');
+                iconClasses.forEach(cls => {
+                    iconPreview.classList.add(cls);
+                });
+                iconName.textContent = this.value;
+            } else {
+                // Default icon if empty
+                iconPreview.classList.add('fas', 'fa-code');
+                iconName.textContent = 'fas fa-code';
+            }
+        });
+        
+        // Service Features functionality
+        const addFeatureBtn = document.getElementById('add-feature-btn');
+        const featuresContainer = document.getElementById('features-container');
+        const featureTemplate = document.getElementById('feature-template');
+        
+        // Add new feature
+        addFeatureBtn.addEventListener('click', function() {
+            const featureItem = document.importNode(featureTemplate.content, true);
+            featuresContainer.appendChild(featureItem);
+            
+            // Update feature numbers
+            updateFeatureNumbers();
+            
+            // Add event listener to the new remove button
+            const newFeature = featuresContainer.lastElementChild;
+            const removeBtn = newFeature.querySelector('.remove-feature-btn');
+            removeBtn.addEventListener('click', function() {
+                newFeature.remove();
+                updateFeatureNumbers();
+            });
+            
+            // Add event listener to the new icon input
+            const iconInput = newFeature.querySelector('.feature-icon');
+            iconInput.addEventListener('input', function() {
+                // You could add icon preview here if needed
+            });
+        });
+        
+        // Remove feature (for existing features)
+        document.querySelectorAll('.remove-feature-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.closest('.feature-item').remove();
+                updateFeatureNumbers();
+            });
+        });
+        
+        // Update feature numbers
+        function updateFeatureNumbers() {
+            document.querySelectorAll('.feature-item').forEach((item, index) => {
+                const heading = item.querySelector('h6');
+                heading.textContent = `Feature #${index + 1}`;
+            });
+        }
+    });
+</script>
+{% endblock %}

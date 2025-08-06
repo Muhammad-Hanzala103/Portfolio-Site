@@ -1,0 +1,396 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}{% if testimonial %}Edit Testimonial{% else %}Add Testimonial{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{% if testimonial %}Edit Testimonial{% else %}Add Testimonial{% endif %}</h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('admin.testimonials') }}">Testimonials</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{% if testimonial %}Edit{% else %}Add{% endif %} Testimonial</li>
+        </ol>
+    </nav>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<div class="card">
+    <div class="card-header">
+        <h6>{% if testimonial %}Edit Testimonial from {{ testimonial.client_name }}{% else %}Add New Testimonial{% endif %}</h6>
+    </div>
+    <div class="card-body">
+        <form method="POST" enctype="multipart/form-data">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="client_name" class="form-label">Client Name</label>
+                                <input type="text" class="form-control" id="client_name" name="client_name" 
+                                       value="{{ testimonial.client_name if testimonial else '' }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="client_title" class="form-label">Client Title/Company</label>
+                                <input type="text" class="form-control" id="client_title" name="client_title" 
+                                       value="{{ testimonial.client_title if testimonial else '' }}" 
+                                       placeholder="e.g., CEO at Company or Freelance Designer">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="content" class="form-label">Testimonial Content</label>
+                        <textarea class="form-control" id="content" name="content" rows="6" required>{{ testimonial.content if testimonial else '' }}</textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="platform" class="form-label">Platform</label>
+                                <select class="form-select" id="platform" name="platform">
+                                    <option value="fiverr" {% if testimonial and testimonial.platform == 'fiverr' %}selected{% endif %}>Fiverr</option>
+                                    <option value="upwork" {% if testimonial and testimonial.platform == 'upwork' %}selected{% endif %}>Upwork</option>
+                                    <option value="linkedin" {% if testimonial and testimonial.platform == 'linkedin' %}selected{% endif %}>LinkedIn</option>
+                                    <option value="direct" {% if testimonial and testimonial.platform == 'direct' %}selected{% endif %}>Direct Client</option>
+                                    <option value="other" {% if testimonial and testimonial.platform not in ['fiverr', 'upwork', 'linkedin', 'direct'] %}selected{% endif %}>Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="platform_link" class="form-label">Platform Link (Optional)</label>
+                                <input type="url" class="form-control" id="platform_link" name="platform_link" 
+                                       value="{{ testimonial.platform_link if testimonial else '' }}" 
+                                       placeholder="https://www.fiverr.com/review/...">
+                                <div class="form-text">Link to the original review if available</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="project_title" class="form-label">Project Title (Optional)</label>
+                                <input type="text" class="form-control" id="project_title" name="project_title" 
+                                       value="{{ testimonial.project_title if testimonial else '' }}" 
+                                       placeholder="e.g., Website Development">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="date" class="form-label">Date</label>
+                                <input type="date" class="form-control" id="date" name="date" 
+                                       value="{{ testimonial.date.strftime('%Y-%m-%d') if testimonial else '' }}" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Rating</label>
+                        <div class="rating-input">
+                            {% for i in range(1, 6) %}
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="rating" id="rating{{ i }}" value="{{ i }}" 
+                                           {% if testimonial and testimonial.rating == i %}checked{% elif not testimonial and i == 5 %}checked{% endif %}>
+                                    <label class="form-check-label" for="rating{{ i }}">
+                                        {{ i }} {% if i == 1 %}Star{% else %}Stars{% endif %}
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="rating-stars mt-2">
+                            {% for i in range(1, 6) %}
+                                <i class="star-icon fas fa-star{% if not testimonial or testimonial.rating < i %} text-muted{% else %} text-warning{% endif %}" data-rating="{{ i }}"></i>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="client_image" class="form-label">Client Image</label>
+                        {% if testimonial and testimonial.client_image %}
+                            <div class="mb-3">
+                                <img src="{{ url_for('static', filename='uploads/testimonials/' + testimonial.client_image) }}" 
+                                     alt="{{ testimonial.client_name }}" class="img-fluid img-thumbnail" id="image-preview">
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="replace_image" name="replace_image">
+                                <label class="form-check-label" for="replace_image">Replace existing image</label>
+                            </div>
+                            <div id="new-image-upload" style="display: none;">
+                        {% endif %}
+                        
+                        <input type="file" class="form-control" id="client_image" name="client_image" accept="image/*">
+                        <div class="form-text">Client photo or company logo (optional)</div>
+                        
+                        {% if testimonial and testimonial.client_image %}
+                            </div>
+                        {% else %}
+                            <div class="mt-3">
+                                <img src="" alt="Image Preview" class="img-fluid img-thumbnail" id="image-preview" style="display: none;">
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="is_featured" name="is_featured" 
+                                   {% if testimonial and testimonial.is_featured %}checked{% endif %}>
+                            <label class="form-check-label" for="is_featured">Feature on Homepage</label>
+                        </div>
+                        <div class="form-text">Show this testimonial prominently on the homepage</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="order" class="form-label">Display Order</label>
+                        <input type="number" class="form-control" id="order" name="order" 
+                               value="{{ testimonial.order if testimonial else 0 }}" min="0">
+                        <div class="form-text">Lower numbers appear first</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('admin.testimonials') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Testimonials
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> {% if testimonial %}Update{% else %}Save{% endif %} Testimonial
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Testimonial Preview -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h6>Testimonial Preview</h6>
+    </div>
+    <div class="card-body">
+        <div class="testimonial-preview">
+            <div class="row">
+                <div class="col-md-2 text-center">
+                    <div class="client-image mb-3">
+                        {% if testimonial and testimonial.client_image %}
+                            <img src="{{ url_for('static', filename='uploads/testimonials/' + testimonial.client_image) }}" 
+                                 alt="{{ testimonial.client_name }}" class="rounded-circle" id="preview-image" style="width: 80px; height: 80px; object-fit: cover;">
+                        {% else %}
+                            <div class="placeholder-image rounded-circle bg-light d-flex align-items-center justify-content-center" 
+                                 style="width: 80px; height: 80px; margin: 0 auto;">
+                                <i class="fas fa-user fa-2x text-muted"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-10">
+                    <div class="preview-rating mb-2">
+                        {% for i in range(1, 6) %}
+                            <i class="fas fa-star{% if not testimonial or testimonial.rating < i %} text-muted{% else %} text-warning{% endif %}" id="preview-star-{{ i }}"></i>
+                        {% endfor %}
+                    </div>
+                    <div class="preview-content mb-3">
+                        <p id="preview-content" class="fst-italic">
+                            {% if testimonial %}
+                                "{{ testimonial.content }}"
+                            {% else %}
+                                "Your testimonial content will appear here..."
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="preview-client">
+                        <h6 id="preview-client-name" class="mb-0">{{ testimonial.client_name if testimonial else 'Client Name' }}</h6>
+                        <p id="preview-client-title" class="text-muted small">{{ testimonial.client_title if testimonial else 'Client Title/Company' }}</p>
+                    </div>
+                    <div class="preview-platform">
+                        <span id="preview-platform" class="badge {% if testimonial and testimonial.platform == 'fiverr' %}bg-success{% elif testimonial and testimonial.platform == 'upwork' %}bg-primary{% elif testimonial and testimonial.platform == 'linkedin' %}bg-info{% else %}bg-secondary{% endif %}">
+                            {{ testimonial.platform|capitalize if testimonial else 'Platform' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Image preview functionality for new uploads
+        const imageInput = document.getElementById('client_image');
+        const imagePreview = document.getElementById('image-preview');
+        const previewImage = document.querySelector('.client-image img') || document.querySelector('.placeholder-image');
+        
+        imageInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                    
+                    // Update the preview section
+                    if (previewImage.tagName === 'IMG') {
+                        previewImage.src = e.target.result;
+                    } else {
+                        // Replace placeholder with actual image
+                        const parentDiv = previewImage.parentNode;
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.alt = 'Client';
+                        img.className = 'rounded-circle';
+                        img.style = 'width: 80px; height: 80px; object-fit: cover;';
+                        img.id = 'preview-image';
+                        parentDiv.innerHTML = '';
+                        parentDiv.appendChild(img);
+                    }
+                }
+                
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+        
+        // Toggle for replacing existing image
+        const replaceImageCheckbox = document.getElementById('replace_image');
+        const newImageUpload = document.getElementById('new-image-upload');
+        
+        if (replaceImageCheckbox && newImageUpload) {
+            replaceImageCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    newImageUpload.style.display = 'block';
+                } else {
+                    newImageUpload.style.display = 'none';
+                }
+            });
+        }
+        
+        // Star rating functionality
+        const ratingInputs = document.querySelectorAll('input[name="rating"]');
+        const starIcons = document.querySelectorAll('.star-icon');
+        const previewStars = document.querySelectorAll('[id^="preview-star-"]');
+        
+        // Update stars based on radio selection
+        ratingInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                const rating = parseInt(this.value);
+                updateStars(rating);
+            });
+        });
+        
+        // Click on stars to set rating
+        starIcons.forEach(star => {
+            star.addEventListener('click', function() {
+                const rating = parseInt(this.dataset.rating);
+                document.getElementById('rating' + rating).checked = true;
+                updateStars(rating);
+            });
+            
+            // Hover effect
+            star.addEventListener('mouseover', function() {
+                const rating = parseInt(this.dataset.rating);
+                starIcons.forEach((s, index) => {
+                    if (index < rating) {
+                        s.classList.add('text-warning');
+                        s.classList.remove('text-muted');
+                    } else {
+                        s.classList.add('text-muted');
+                        s.classList.remove('text-warning');
+                    }
+                });
+            });
+            
+            // Reset on mouseout
+            star.addEventListener('mouseout', function() {
+                const checkedInput = document.querySelector('input[name="rating"]:checked');
+                if (checkedInput) {
+                    const rating = parseInt(checkedInput.value);
+                    updateStars(rating);
+                }
+            });
+        });
+        
+        function updateStars(rating) {
+            // Update input stars
+            starIcons.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('text-warning');
+                    star.classList.remove('text-muted');
+                } else {
+                    star.classList.add('text-muted');
+                    star.classList.remove('text-warning');
+                }
+            });
+            
+            // Update preview stars
+            previewStars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('text-warning');
+                    star.classList.remove('text-muted');
+                } else {
+                    star.classList.add('text-muted');
+                    star.classList.remove('text-warning');
+                }
+            });
+        }
+        
+        // Live preview updates
+        const clientNameInput = document.getElementById('client_name');
+        const clientTitleInput = document.getElementById('client_title');
+        const contentInput = document.getElementById('content');
+        const platformSelect = document.getElementById('platform');
+        
+        const previewClientName = document.getElementById('preview-client-name');
+        const previewClientTitle = document.getElementById('preview-client-title');
+        const previewContent = document.getElementById('preview-content');
+        const previewPlatform = document.getElementById('preview-platform');
+        
+        clientNameInput.addEventListener('input', function() {
+            previewClientName.textContent = this.value || 'Client Name';
+        });
+        
+        clientTitleInput.addEventListener('input', function() {
+            previewClientTitle.textContent = this.value || 'Client Title/Company';
+        });
+        
+        contentInput.addEventListener('input', function() {
+            previewContent.textContent = '"' + (this.value || 'Your testimonial content will appear here...') + '"';
+        });
+        
+        platformSelect.addEventListener('change', function() {
+            previewPlatform.textContent = this.options[this.selectedIndex].text;
+            
+            // Update badge color
+            previewPlatform.className = 'badge';
+            switch(this.value) {
+                case 'fiverr':
+                    previewPlatform.classList.add('bg-success');
+                    break;
+                case 'upwork':
+                    previewPlatform.classList.add('bg-primary');
+                    break;
+                case 'linkedin':
+                    previewPlatform.classList.add('bg-info');
+                    break;
+                default:
+                    previewPlatform.classList.add('bg-secondary');
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,302 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Dashboard</h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Overview</li>
+        </ol>
+    </nav>
+</div>
+
+<!-- Stats Cards -->
+<div class="row">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card primary">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <div class="stat-card-title">Projects</div>
+                        <div class="stat-card-value">{{ stats.projects }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-project-diagram stat-card-icon"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card success">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <div class="stat-card-title">Skills</div>
+                        <div class="stat-card-value">{{ stats.skills }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-code stat-card-icon"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card info">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <div class="stat-card-title">Gallery Items</div>
+                        <div class="stat-card-value">{{ stats.gallery }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-images stat-card-icon"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card warning">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <div class="stat-card-title">Messages</div>
+                        <div class="stat-card-value">{{ stats.messages }} {% if stats.unread_messages > 0 %}<small class="text-danger">({{ stats.unread_messages }} unread)</small>{% endif %}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-envelope stat-card-icon"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Site Visits -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h6>Recent Site Visits</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-container" style="position: relative; height:300px;">
+                    <canvas id="visitsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Additional Stats -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6>Additional Stats</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6 mb-3">
+                        <div class="stat-card-title">Services</div>
+                        <div class="stat-card-value">{{ stats.services }}</div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="stat-card-title">Testimonials</div>
+                        <div class="stat-card-value">{{ stats.testimonials }}</div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="stat-card-title">Blog Posts</div>
+                        <div class="stat-card-value">{{ stats.blog_posts }}</div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="stat-card-title">Total Visits</div>
+                        <div class="stat-card-value">{{ stats.total_visits }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Messages -->
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h6>Recent Messages</h6>
+                <a href="{{ url_for('admin.messages') }}" class="btn btn-sm btn-primary">View All</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Subject</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if recent_messages %}
+                                {% for message in recent_messages %}
+                                    <tr>
+                                        <td>{{ message.name }}</td>
+                                        <td>
+                                            <a href="{{ url_for('admin.view_message', message_id=message.id) }}">
+                                                {{ message.subject }}
+                                            </a>
+                                        </td>
+                                        <td>{{ message.created_at.strftime('%Y-%m-%d') }}</td>
+                                        <td>
+                                            {% if message.is_read %}
+                                                <span class="badge bg-success">Read</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Unread</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No messages found</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Site Activity -->
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h6>Recent Site Activity</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Page</th>
+                                <th>Visits</th>
+                                <th>Last Visit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if recent_visits %}
+                                {% for visit in recent_visits %}
+                                    <tr>
+                                        <td>{{ visit.page }}</td>
+                                        <td>{{ visit.count }}</td>
+                                        <td>{{ visit.last_visit.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center">No activity found</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Visits Chart
+    var ctx = document.getElementById('visitsChart').getContext('2d');
+    var visitsChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{ visit_dates|tojson }},
+            datasets: [{
+                label: 'Site Visits',
+                data: {{ visit_counts|tojson }},
+                backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                borderColor: 'rgba(78, 115, 223, 1)',
+                pointBackgroundColor: 'rgba(78, 115, 223, 1)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgba(78, 115, 223, 1)',
+                borderWidth: 2,
+                fill: true
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            layout: {
+                padding: {
+                    left: 10,
+                    right: 25,
+                    top: 25,
+                    bottom: 0
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false,
+                        drawBorder: false
+                    },
+                    ticks: {
+                        maxTicksLimit: 7
+                    }
+                },
+                y: {
+                    ticks: {
+                        maxTicksLimit: 5,
+                        padding: 10,
+                        beginAtZero: true
+                    },
+                    grid: {
+                        color: "rgba(0, 0, 0, 0.05)",
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: "rgb(255, 255, 255)",
+                    bodyColor: "#858796",
+                    titleColor: "#6e707e",
+                    titleMarginBottom: 10,
+                    borderColor: '#dddfeb',
+                    borderWidth: 1,
+                    xPadding: 15,
+                    yPadding: 15,
+                    displayColors: false,
+                    caretPadding: 10,
+                    callbacks: {
+                        label: function(context) {
+                            var label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += context.parsed.y + ' visits';
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

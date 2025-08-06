@@ -1,0 +1,495 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Edit Skill: {{ skill.name }} - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Edit Skill: {{ skill.name }}</h2>
+    <div>
+        <a href="{{ url_for('admin.skills') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Skills
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <!-- Basic Information -->
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <label for="name" class="form-label">Skill Name *</label>
+                            {{ form.name(class="form-control", placeholder="e.g., Python, React, PostgreSQL") }}
+                            {% if form.name.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.name.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="category" class="form-label">Category *</label>
+                            {{ form.category(class="form-select") }}
+                            {% if form.category.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.category.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Proficiency and Experience -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="proficiency" class="form-label">Proficiency Level *</label>
+                            <div class="input-group">
+                                {{ form.proficiency(class="form-control", min="0", max="100", step="5") }}
+                                <span class="input-group-text">%</span>
+                            </div>
+                            {% if form.proficiency.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.proficiency.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Rate your proficiency from 0-100%</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="years_experience" class="form-label">Years of Experience</label>
+                            <div class="input-group">
+                                {{ form.years_experience(class="form-control", min="0", max="50", step="0.5") }}
+                                <span class="input-group-text">years</span>
+                            </div>
+                            {% if form.years_experience.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.years_experience.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">How long have you been using this skill?</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        {{ form.description(class="form-control", rows="3", placeholder="Describe your experience with this skill, projects you've used it in, etc.") }}
+                        {% if form.description.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.description.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Optional: Provide more details about your experience with this skill.</div>
+                    </div>
+                    
+                    <!-- Icon Selection -->
+                    <div class="mb-3">
+                        <label for="icon" class="form-label">Icon (Font Awesome)</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i id="icon-preview" class="{{ skill.icon or 'fas fa-code' }}"></i></span>
+                            {{ form.icon(class="form-control", placeholder="e.g., fab fa-python, fas fa-database, fab fa-react") }}
+                        </div>
+                        {% if form.icon.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.icon.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Use Font Awesome classes. Examples: 
+                            <code>fab fa-python</code>, 
+                            <code>fab fa-react</code>, 
+                            <code>fas fa-database</code>
+                        </div>
+                    </div>
+                    
+                    <!-- Display Order -->
+                    <div class="mb-4">
+                        <label for="order_index" class="form-label">Display Order</label>
+                        {{ form.order_index(class="form-control", placeholder="0") }}
+                        {% if form.order_index.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.order_index.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Lower numbers appear first. Leave empty for automatic ordering.</div>
+                    </div>
+                    
+                    <!-- Submit Buttons -->
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <a href="{{ url_for('admin.skills') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <a href="{{ url_for('admin.delete_skill', id=skill.id) }}" class="btn btn-outline-danger" onclick="return confirm('Are you sure you want to delete this skill?')">
+                                <i class="fas fa-trash"></i> Delete Skill
+                            </a>
+                        </div>
+                        <div>
+                            <button type="submit" name="action" value="save_and_continue" class="btn btn-outline-primary">
+                                <i class="fas fa-save"></i> Save & Continue Editing
+                            </button>
+                            <button type="submit" name="action" value="save" class="btn btn-primary">
+                                <i class="fas fa-check"></i> Update Skill
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Current Skill Info -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Skill Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Created:</strong><br>
+                    <small class="text-muted">{{ moment(skill.created_at).format('MMMM DD, YYYY [at] HH:mm') }}</small>
+                </div>
+                {% if skill.updated_at %}
+                <div class="mb-3">
+                    <strong>Last Updated:</strong><br>
+                    <small class="text-muted">{{ moment(skill.updated_at).format('MMMM DD, YYYY [at] HH:mm') }}</small>
+                </div>
+                {% endif %}
+                <div class="mb-3">
+                    <strong>Current Order:</strong><br>
+                    <span class="badge bg-secondary">{{ skill.order_index or 0 }}</span>
+                </div>
+                <div class="mb-3">
+                    <strong>Proficiency Level:</strong><br>
+                    <div class="progress mt-1" style="height: 20px;">
+                        <div class="progress-bar bg-{{ 'success' if skill.proficiency >= 80 else 'info' if skill.proficiency >= 60 else 'warning' if skill.proficiency >= 40 else 'danger' }}" 
+                             role="progressbar" 
+                             style="width: {{ skill.proficiency }}%">
+                            {{ skill.proficiency }}%
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Live Preview -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">Live Preview</h5>
+            </div>
+            <div class="card-body">
+                <div class="skill-preview">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="flex-grow-1">
+                            <h6 id="preview-name">{{ skill.name }}</h6>
+                            <span id="preview-category" class="badge bg-{{ 'primary' if skill.category == 'Programming' else 'success' if skill.category == 'Framework' else 'info' if skill.category == 'Database' else 'warning' if skill.category == 'Tool' else 'secondary' }}">{{ skill.category }}</span>
+                        </div>
+                        <div class="text-center">
+                            <i id="preview-icon" class="{{ skill.icon or 'fas fa-code' }} fa-2x text-primary"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- Proficiency Bar -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <small class="text-muted">Proficiency</small>
+                            <small class="fw-bold"><span id="preview-proficiency">{{ skill.proficiency }}</span>%</small>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div id="preview-progress-bar" class="progress-bar bg-{{ 'success' if skill.proficiency >= 80 else 'info' if skill.proficiency >= 60 else 'warning' if skill.proficiency >= 40 else 'danger' }}" 
+                                 role="progressbar" 
+                                 style="width: {{ skill.proficiency }}%" 
+                                 aria-valuenow="{{ skill.proficiency }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <p id="preview-description" class="text-muted small">{{ skill.description or 'No description provided.' }}</p>
+                    
+                    <!-- Years of Experience -->
+                    {% if skill.years_experience %}
+                    <div id="preview-experience" class="d-flex align-items-center">
+                        <i class="fas fa-calendar-alt text-muted me-2"></i>
+                        <small class="text-muted"><span id="preview-years">{{ skill.years_experience }}</span> year<span id="preview-years-plural">{{ 's' if skill.years_experience != 1 else '' }}</span> experience</small>
+                    </div>
+                    {% else %}
+                    <div id="preview-experience" class="d-flex align-items-center" style="display: none !important;">
+                        <i class="fas fa-calendar-alt text-muted me-2"></i>
+                        <small class="text-muted"><span id="preview-years">0</span> year<span id="preview-years-plural">s</span> experience</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Tips -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="duplicateSkill()">
+                        <i class="fas fa-copy"></i> Duplicate Skill
+                    </button>
+                    <a href="{{ url_for('admin.new_skill') }}" class="btn btn-outline-success btn-sm">
+                        <i class="fas fa-plus"></i> Add New Skill
+                    </a>
+                    <button type="button" class="btn btn-outline-info btn-sm" onclick="exportSkill()">
+                        <i class="fas fa-download"></i> Export Data
+                    </button>
+                </div>
+                
+                <hr>
+                
+                <div class="mb-3">
+                    <h6 class="text-success">Popular Icons:</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="badge bg-light text-dark" onclick="setIcon('fab fa-python')" style="cursor: pointer;"><i class="fab fa-python"></i> Python</span>
+                        <span class="badge bg-light text-dark" onclick="setIcon('fab fa-js-square')" style="cursor: pointer;"><i class="fab fa-js-square"></i> JavaScript</span>
+                        <span class="badge bg-light text-dark" onclick="setIcon('fab fa-react')" style="cursor: pointer;"><i class="fab fa-react"></i> React</span>
+                        <span class="badge bg-light text-dark" onclick="setIcon('fab fa-node-js')" style="cursor: pointer;"><i class="fab fa-node-js"></i> Node.js</span>
+                        <span class="badge bg-light text-dark" onclick="setIcon('fas fa-database')" style="cursor: pointer;"><i class="fas fa-database"></i> Database</span>
+                        <span class="badge bg-light text-dark" onclick="setIcon('fab fa-git-alt')" style="cursor: pointer;"><i class="fab fa-git-alt"></i> Git</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Real-time preview updates
+document.addEventListener('DOMContentLoaded', function() {
+    const nameInput = document.getElementById('name');
+    const categoryInput = document.getElementById('category');
+    const proficiencyInput = document.getElementById('proficiency');
+    const yearsInput = document.getElementById('years_experience');
+    const descriptionInput = document.getElementById('description');
+    const iconInput = document.getElementById('icon');
+    
+    const previewName = document.getElementById('preview-name');
+    const previewCategory = document.getElementById('preview-category');
+    const previewProficiency = document.getElementById('preview-proficiency');
+    const previewProgressBar = document.getElementById('preview-progress-bar');
+    const previewDescription = document.getElementById('preview-description');
+    const previewExperience = document.getElementById('preview-experience');
+    const previewYears = document.getElementById('preview-years');
+    const previewYearsPlural = document.getElementById('preview-years-plural');
+    const previewIcon = document.getElementById('preview-icon');
+    const iconPreview = document.getElementById('icon-preview');
+    
+    // Update name preview
+    nameInput.addEventListener('input', function() {
+        previewName.textContent = this.value || '{{ skill.name }}';
+    });
+    
+    // Update category preview
+    categoryInput.addEventListener('change', function() {
+        const categoryText = this.options[this.selectedIndex].text;
+        previewCategory.textContent = categoryText;
+        
+        // Update badge color based on category
+        previewCategory.className = 'badge ';
+        switch(this.value) {
+            case 'Programming':
+                previewCategory.className += 'bg-primary';
+                break;
+            case 'Framework':
+                previewCategory.className += 'bg-success';
+                break;
+            case 'Database':
+                previewCategory.className += 'bg-info';
+                break;
+            case 'Tool':
+                previewCategory.className += 'bg-warning';
+                break;
+            default:
+                previewCategory.className += 'bg-secondary';
+        }
+    });
+    
+    // Update proficiency preview
+    proficiencyInput.addEventListener('input', function() {
+        const value = parseInt(this.value) || 0;
+        previewProficiency.textContent = value;
+        previewProgressBar.style.width = value + '%';
+        previewProgressBar.setAttribute('aria-valuenow', value);
+        
+        // Update progress bar color based on proficiency
+        previewProgressBar.className = 'progress-bar ';
+        if (value >= 80) {
+            previewProgressBar.className += 'bg-success';
+        } else if (value >= 60) {
+            previewProgressBar.className += 'bg-info';
+        } else if (value >= 40) {
+            previewProgressBar.className += 'bg-warning';
+        } else {
+            previewProgressBar.className += 'bg-danger';
+        }
+    });
+    
+    // Update years experience preview
+    yearsInput.addEventListener('input', function() {
+        const value = parseFloat(this.value) || 0;
+        if (value > 0) {
+            previewYears.textContent = value;
+            previewYearsPlural.textContent = value === 1 ? '' : 's';
+            previewExperience.style.display = 'flex';
+        } else {
+            previewExperience.style.display = 'none';
+        }
+    });
+    
+    // Update description preview
+    descriptionInput.addEventListener('input', function() {
+        previewDescription.textContent = this.value || '{{ skill.description or "No description provided." }}';
+    });
+    
+    // Update icon preview
+    iconInput.addEventListener('input', function() {
+        const iconClass = this.value || '{{ skill.icon or "fas fa-code" }}';
+        previewIcon.className = iconClass + ' fa-2x text-primary';
+        iconPreview.className = iconClass;
+    });
+});
+
+// Function to set icon from quick selection
+function setIcon(iconClass) {
+    document.getElementById('icon').value = iconClass;
+    document.getElementById('preview-icon').className = iconClass + ' fa-2x text-primary';
+    document.getElementById('icon-preview').className = iconClass;
+}
+
+// Duplicate skill function
+function duplicateSkill() {
+    if (confirm('Create a copy of this skill?')) {
+        // Create a form to submit duplicate request
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ url_for("admin.duplicate_skill", id=skill.id) }}';
+        
+        const csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = 'csrf_token';
+        csrfToken.value = '{{ csrf_token() }}';
+        form.appendChild(csrfToken);
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Export skill function
+function exportSkill() {
+    const skillData = {
+        name: '{{ skill.name }}',
+        category: '{{ skill.category }}',
+        proficiency: {{ skill.proficiency }},
+        years_experience: {{ skill.years_experience or 0 }},
+        description: '{{ skill.description or "" }}',
+        icon: '{{ skill.icon or "" }}',
+        order_index: {{ skill.order_index or 0 }}
+    };
+    
+    const dataStr = JSON.stringify(skillData, null, 2);
+    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+    const url = URL.createObjectURL(dataBlob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = '{{ skill.name }}_skill_data.json';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+// Form validation
+document.querySelector('form').addEventListener('submit', function(e) {
+    const name = document.getElementById('name').value.trim();
+    const category = document.getElementById('category').value;
+    const proficiency = document.getElementById('proficiency').value;
+    
+    if (!name) {
+        e.preventDefault();
+        alert('Please enter a skill name.');
+        document.getElementById('name').focus();
+        return;
+    }
+    
+    if (!category) {
+        e.preventDefault();
+        alert('Please select a category.');
+        document.getElementById('category').focus();
+        return;
+    }
+    
+    if (!proficiency || proficiency < 0 || proficiency > 100) {
+        e.preventDefault();
+        alert('Please enter a valid proficiency level (0-100).');
+        document.getElementById('proficiency').focus();
+        return;
+    }
+});
+</script>
+{% endblock %}
+
+{% block styles %}
+<style>
+.skill-preview {
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+}
+
+.progress {
+    background-color: #e9ecef;
+}
+
+.badge {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.badge:hover {
+    transform: scale(1.05);
+}
+
+.form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.input-group-text {
+    background-color: #f8f9fa;
+    border-color: #ced4da;
+}
+
+@media (max-width: 768px) {
+    .col-lg-4 {
+        margin-top: 2rem;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="60" viewBox="0 0 200 60">
+  <rect width="200" height="60" fill="#1f2937" rx="8"/>
+  <circle cx="30" cy="30" r="15" fill="#3b82f6"/>
+  <text x="30" y="36" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="white">P</text>
+  <text x="60" y="25" font-family="Arial" font-size="18" font-weight="bold" fill="white">Portfolio</text>
+  <text x="60" y="42" font-family="Arial" font-size="12" fill="#9ca3af">Admin Panel</text>
+</svg>

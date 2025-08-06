@@ -1,0 +1,450 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}{% if post %}Edit Blog Post{% else %}Add Blog Post{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{% if post %}Edit Blog Post{% else %}Add Blog Post{% endif %}</h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('admin.blog_posts') }}">Blog Posts</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{% if post %}Edit{% else %}Add{% endif %} Post</li>
+        </ol>
+    </nav>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<form method="POST" enctype="multipart/form-data">
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Main Content -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">Post Content</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Post Title</label>
+                        <input type="text" class="form-control" id="title" name="title" value="{{ post.title if post else '' }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="slug" class="form-label">Slug</label>
+                        <input type="text" class="form-control" id="slug" name="slug" value="{{ post.slug if post else '' }}">
+                        <div class="form-text">URL-friendly version of the title. Leave blank to auto-generate.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="content" class="form-label">Content</label>
+                        <textarea class="form-control summernote" id="content" name="content" rows="15">{{ post.content if post else '' }}</textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="excerpt" class="form-label">Excerpt</label>
+                        <textarea class="form-control" id="excerpt" name="excerpt" rows="3">{{ post.excerpt if post else '' }}</textarea>
+                        <div class="form-text">A short summary of the post. If left empty, it will be generated from the content.</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SEO Settings -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">SEO Settings</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="meta_title" class="form-label">Meta Title</label>
+                        <input type="text" class="form-control" id="meta_title" name="meta_title" value="{{ post.meta_title if post else '' }}">
+                        <div class="form-text">If left empty, the post title will be used.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="meta_description" class="form-label">Meta Description</label>
+                        <textarea class="form-control" id="meta_description" name="meta_description" rows="2">{{ post.meta_description if post else '' }}</textarea>
+                        <div class="form-text">If left empty, the post excerpt will be used.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- Publish Settings -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">Publish Settings</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="is_published" name="is_published" {% if post and post.is_published %}checked{% endif %}>
+                            <label class="form-check-label" for="is_published">Publish Post</label>
+                        </div>
+                        <div class="form-text">If unchecked, the post will be saved as a draft.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="created_at" class="form-label">Publication Date</label>
+                        <input type="datetime-local" class="form-control" id="created_at" name="created_at" 
+                               value="{{ post.created_at.strftime('%Y-%m-%dT%H:%M') if post else '' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="is_featured" name="is_featured" {% if post and post.is_featured %}checked{% endif %}>
+                            <label class="form-check-label" for="is_featured">Feature on Homepage</label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="allow_comments" name="allow_comments" {% if not post or post.allow_comments %}checked{% endif %}>
+                            <label class="form-check-label" for="allow_comments">Allow Comments</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Categories & Tags -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">Categories & Tags</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="category_id" class="form-label">Category</label>
+                        <select class="form-select" id="category_id" name="category_id" required>
+                            <option value="" disabled {% if not post %}selected{% endif %}>Select a category</option>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}" {% if post and post.category_id == category.id %}selected{% endif %}>
+                                    {{ category.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="tags" class="form-label">Tags</label>
+                        <select class="form-select" id="tags" name="tags" multiple data-placeholder="Select tags">
+                            {% for tag in tags %}
+                                <option value="{{ tag.id }}" {% if post and tag in post.tags %}selected{% endif %}>
+                                    {{ tag.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Hold Ctrl (or Cmd) to select multiple tags.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="new_tags" class="form-label">Add New Tags</label>
+                        <input type="text" class="form-control" id="new_tags" name="new_tags" placeholder="Comma-separated tags">
+                        <div class="form-text">Add multiple tags separated by commas.</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Featured Image -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">Featured Image</h6>
+                </div>
+                <div class="card-body">
+                    {% if post and post.image %}
+                        <div class="mb-3">
+                            <img src="{{ url_for('static', filename='uploads/blog/' + post.image) }}" 
+                                 alt="{{ post.title }}" class="img-fluid img-thumbnail" id="image-preview">
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="replace_image" name="replace_image">
+                            <label class="form-check-label" for="replace_image">Replace existing image</label>
+                        </div>
+                        <div id="new-image-upload" style="display: none;">
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Upload Image</label>
+                        <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                    </div>
+                    
+                    {% if post and post.image %}
+                        </div>
+                    {% else %}
+                        <div class="mt-3">
+                            <img src="" alt="Image Preview" class="img-fluid img-thumbnail" id="image-preview" style="display: none;">
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label for="image_alt" class="form-label">Image Alt Text</label>
+                        <input type="text" class="form-control" id="image_alt" name="image_alt" value="{{ post.image_alt if post else '' }}">
+                        <div class="form-text">Describe the image for accessibility and SEO.</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Author Info -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">Author Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="author_name" class="form-label">Author Name</label>
+                        <input type="text" class="form-control" id="author_name" name="author_name" 
+                               value="{{ post.author_name if post else current_user.name }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="author_bio" class="form-label">Author Bio</label>
+                        <textarea class="form-control" id="author_bio" name="author_bio" rows="2">{{ post.author_bio if post else current_user.bio }}</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="d-flex justify-content-between mt-4 mb-5">
+        <a href="{{ url_for('admin.blog_posts') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Posts
+        </a>
+        <div>
+            {% if post %}
+                <button type="submit" name="save_draft" value="1" class="btn btn-outline-primary me-2">
+                    <i class="fas fa-save"></i> Save as Draft
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i> Update Post
+                </button>
+            {% else %}
+                <button type="submit" name="save_draft" value="1" class="btn btn-outline-primary me-2">
+                    <i class="fas fa-save"></i> Save as Draft
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i> Publish Post
+                </button>
+            {% endif %}
+        </div>
+    </div>
+</form>
+
+<!-- Post Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="previewModalLabel">Post Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-10 offset-md-1">
+                            <div class="blog-post-preview">
+                                <h1 id="preview-title" class="mb-3">{{ post.title if post else 'Post Title' }}</h1>
+                                
+                                <div class="post-meta mb-4">
+                                    <span><i class="fas fa-user"></i> <span id="preview-author">{{ post.author_name if post else current_user.name }}</span></span>
+                                    <span><i class="fas fa-calendar-alt"></i> <span id="preview-date">{{ post.created_at.strftime('%B %d, %Y') if post else 'Today' }}</span></span>
+                                    <span><i class="fas fa-folder"></i> <span id="preview-category">{{ post.category.name if post and post.category else 'Category' }}</span></span>
+                                </div>
+                                
+                                <div class="featured-image mb-4">
+                                    <img id="preview-image-full" src="{{ url_for('static', filename='uploads/blog/' + post.image) if post and post.image else '' }}" 
+                                         alt="{{ post.image_alt if post else '' }}" class="img-fluid rounded">
+                                </div>
+                                
+                                <div id="preview-content-html" class="post-content mb-4">
+                                    {{ post.content|safe if post else '<p>Your post content will appear here...</p>' }}
+                                </div>
+                                
+                                <div class="post-tags mb-4">
+                                    <strong><i class="fas fa-tags"></i> Tags:</strong>
+                                    <div id="preview-tags" class="d-inline">
+                                        {% if post and post.tags %}
+                                            {% for tag in post.tags %}
+                                                <span class="badge bg-secondary">{{ tag.name }}</span>
+                                            {% endfor %}
+                                        {% else %}
+                                            <span class="badge bg-secondary">Tag 1</span>
+                                            <span class="badge bg-secondary">Tag 2</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Summernote
+        $('.summernote').summernote({
+            height: 400,
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'underline', 'clear']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['table', ['table']],
+                ['insert', ['link', 'picture', 'video']],
+                ['view', ['fullscreen', 'codeview', 'help']]
+            ],
+            callbacks: {
+                onImageUpload: function(files) {
+                    // You can implement image upload functionality here
+                    // For now, we'll just show an alert
+                    alert('Please use the featured image uploader for images. For inline images, use external URLs.');
+                }
+            }
+        });
+        
+        // Slug generation
+        const titleInput = document.getElementById('title');
+        const slugInput = document.getElementById('slug');
+        
+        if (titleInput && slugInput) {
+            titleInput.addEventListener('input', function() {
+                if (!slugInput.value) {
+                    slugInput.value = this.value
+                        .toLowerCase()
+                        .replace(/[^\w\s-]/g, '') // Remove special characters
+                        .replace(/\s+/g, '-') // Replace spaces with hyphens
+                        .replace(/-+/g, '-'); // Replace multiple hyphens with single hyphen
+                }
+                
+                // Update preview title
+                document.getElementById('preview-title').textContent = this.value || 'Post Title';
+            });
+        }
+        
+        // Image preview functionality
+        const imageInput = document.getElementById('image');
+        const imagePreview = document.getElementById('image-preview');
+        const previewImageFull = document.getElementById('preview-image-full');
+        
+        if (imageInput && imagePreview) {
+            imageInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        imagePreview.src = e.target.result;
+                        imagePreview.style.display = 'block';
+                        
+                        // Update preview modal image
+                        if (previewImageFull) {
+                            previewImageFull.src = e.target.result;
+                        }
+                    }
+                    
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+        }
+        
+        // Toggle for replacing existing image
+        const replaceImageCheckbox = document.getElementById('replace_image');
+        const newImageUpload = document.getElementById('new-image-upload');
+        
+        if (replaceImageCheckbox && newImageUpload) {
+            replaceImageCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    newImageUpload.style.display = 'block';
+                } else {
+                    newImageUpload.style.display = 'none';
+                }
+            });
+        }
+        
+        // Preview button functionality
+        const previewButton = document.createElement('button');
+        previewButton.type = 'button';
+        previewButton.className = 'btn btn-outline-info me-2';
+        previewButton.innerHTML = '<i class="fas fa-eye"></i> Preview';
+        previewButton.setAttribute('data-bs-toggle', 'modal');
+        previewButton.setAttribute('data-bs-target', '#previewModal');
+        
+        // Add preview button next to the submit buttons
+        const submitButtons = document.querySelector('button[type="submit"]');
+        if (submitButtons) {
+            submitButtons.parentNode.insertBefore(previewButton, submitButtons);
+        }
+        
+        // Update preview content when clicking preview button
+        previewButton.addEventListener('click', function() {
+            // Update title
+            document.getElementById('preview-title').textContent = titleInput.value || 'Post Title';
+            
+            // Update author
+            const authorInput = document.getElementById('author_name');
+            if (authorInput) {
+                document.getElementById('preview-author').textContent = authorInput.value || 'Author';
+            }
+            
+            // Update category
+            const categorySelect = document.getElementById('category_id');
+            if (categorySelect && categorySelect.selectedIndex >= 0) {
+                document.getElementById('preview-category').textContent = 
+                    categorySelect.options[categorySelect.selectedIndex].text;
+            }
+            
+            // Update content
+            const contentHtml = $('.summernote').summernote('code');
+            document.getElementById('preview-content-html').innerHTML = contentHtml || '<p>Your post content will appear here...</p>';
+            
+            // Update tags
+            const newTagsInput = document.getElementById('new_tags');
+            const tagsSelect = document.getElementById('tags');
+            let tagsHtml = '';
+            
+            // Add existing selected tags
+            if (tagsSelect) {
+                for (let i = 0; i < tagsSelect.options.length; i++) {
+                    if (tagsSelect.options[i].selected) {
+                        tagsHtml += `<span class="badge bg-secondary">${tagsSelect.options[i].text}</span> `;
+                    }
+                }
+            }
+            
+            // Add new tags
+            if (newTagsInput && newTagsInput.value) {
+                const newTags = newTagsInput.value.split(',');
+                for (let tag of newTags) {
+                    tag = tag.trim();
+                    if (tag) {
+                        tagsHtml += `<span class="badge bg-secondary">${tag}</span> `;
+                    }
+                }
+            }
+            
+            // If no tags, show placeholders
+            if (!tagsHtml) {
+                tagsHtml = '<span class="badge bg-secondary">Tag 1</span> <span class="badge bg-secondary">Tag 2</span>';
+            }
+            
+            document.getElementById('preview-tags').innerHTML = tagsHtml;
+        });
+    });
+</script>
+{% endblock %}

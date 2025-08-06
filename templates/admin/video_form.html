@@ -1,0 +1,33 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}{% if video %}Edit Video{% else %}Add New Video{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{% if video %}Edit Video{% else %}Add New Video{% endif %}</h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('admin.videos') }}">Videos</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{% if video %}Edit{% else %}Add{% endif %}</li>
+        </ol>
+    </nav>
+</div>
+
+<form method="POST">
+    <div class="mb-3">
+        <label for="title" class="form-label">Title</label>
+        <input type="text" class="form-control" id="title" name="title" required value="{{ video.title if video else '' }}">
+    </div>
+    <div class="mb-3">
+        <label for="description" class="form-label">Description</label>
+        <textarea class="form-control" id="description" name="description" rows="3">{{ video.description if video else '' }}</textarea>
+    </div>
+    <div class="mb-3">
+        <label for="url" class="form-label">Video URL</label>
+        <input type="url" class="form-control" id="url" name="url" required value="{{ video.url if video else '' }}">
+        <div class="form-text">Enter the full URL to the video (e.g., YouTube or Vimeo link).</div>
+    </div>
+    <button type="submit" class="btn btn-primary">{% if video %}Update{% else %}Add{% endif %} Video</button>
+    <a href="{{ url_for('admin.videos') }}" class="btn btn-secondary ms-2">Cancel</a>
+</form>
+{% endblock %}

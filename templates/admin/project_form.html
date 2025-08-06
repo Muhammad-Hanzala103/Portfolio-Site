@@ -1,0 +1,181 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}{% if project %}Edit Project{% else %}Add Project{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{% if project %}Edit Project{% else %}Add New Project{% endif %}</h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('admin.projects') }}">Projects</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{% if project %}Edit{% else %}Add{% endif %} Project</li>
+        </ol>
+    </nav>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<div class="card">
+    <div class="card-header">
+        <h6>{% if project %}Edit Project Details{% else %}Project Details{% endif %}</h6>
+    </div>
+    <div class="card-body">
+        <form method="POST" enctype="multipart/form-data" action="{% if project %}{{ url_for('admin.edit_project', project_id=project.id) }}{% else %}{{ url_for('admin.new_project') }}{% endif %}">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Project Title *</label>
+                        <input type="text" class="form-control" id="title" name="title" value="{{ project.title if project else '' }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="slug" class="form-label">Slug (URL-friendly version of title)</label>
+                        <input type="text" class="form-control" id="slug" name="slug" value="{{ project.slug if project else '' }}" placeholder="Leave blank to auto-generate from title">
+                        <div class="form-text">If left blank, this will be automatically generated from the title.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Category *</label>
+                        <select class="form-select" id="category" name="category" required>
+                            <option value="" disabled {% if not project %}selected{% endif %}>Select a category</option>
+                            {% set categories = ['Web Development', 'Mobile App', 'UI/UX Design', '3D Modeling', 'Video Editing', 'WordPress', 'Other'] %}
+                            {% for category in categories %}
+                                <option value="{{ category }}" {% if project and project.category == category %}selected{% endif %}>{{ category }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description *</label>
+                        <textarea class="form-control summernote" id="description" name="description" rows="6" required>{{ project.description if project else '' }}</textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="technologies" class="form-label">Technologies Used</label>
+                        <input type="text" class="form-control" id="technologies" name="technologies" value="{{ project.technologies if project else '' }}" placeholder="e.g. HTML, CSS, JavaScript, Python, Flask">
+                        <div class="form-text">Comma-separated list of technologies used in this project.</div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="github_link" class="form-label">GitHub Link</label>
+                                <input type="url" class="form-control" id="github_link" name="github_link" value="{{ project.github_link if project else '' }}" placeholder="https://github.com/username/repo">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="live_link" class="form-label">Live Demo Link</label>
+                                <input type="url" class="form-control" id="live_link" name="live_link" value="{{ project.live_link if project else '' }}" placeholder="https://example.com">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h6>Project Image</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="image" class="form-label">Featured Image</label>
+                                <input class="form-control" type="file" id="image" name="image" accept="image/*">
+                                <div class="form-text">Recommended size: 800x600px. Max file size: 2MB.</div>
+                            </div>
+                            
+                            {% if project and project.image %}
+                                <div class="mb-3">
+                                    <label class="form-label">Current Image</label>
+                                    <div>
+                                        <img src="{{ url_for('static', filename='uploads/' + project.image) }}" alt="{{ project.title }}" class="img-fluid img-thumbnail image-preview">
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Image Preview</label>
+                                <div>
+                                    <img id="image-preview" src="#" alt="Preview" class="img-fluid img-thumbnail image-preview" style="display: none;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h6>Project Settings</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="is_featured" name="is_featured" {% if project and project.is_featured %}checked{% endif %}>
+                                <label class="form-check-label" for="is_featured">Feature on Homepage</label>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="order" class="form-label">Display Order</label>
+                                <input type="number" class="form-control" id="order" name="order" value="{{ project.order if project else 0 }}" min="0">
+                                <div class="form-text">Lower numbers appear first.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{{ url_for('admin.projects') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Projects
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> {% if project %}Update{% else %}Save{% endif %} Project
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Image Preview
+    document.getElementById('image').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('image-preview');
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+    
+    // Auto-generate slug from title
+    document.getElementById('title').addEventListener('blur', function() {
+        const slugField = document.getElementById('slug');
+        if (slugField.value === '') {
+            const titleValue = this.value.trim();
+            if (titleValue) {
+                // Convert to lowercase, replace spaces with hyphens, remove special chars
+                const slugValue = titleValue
+                    .toLowerCase()
+                    .replace(/[^\w\s-]/g, '') // Remove special characters
+                    .replace(/[\s_-]+/g, '-') // Replace spaces and underscores with hyphens
+                    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+                slugField.value = slugValue;
+            }
+        }
+    });
+</script>
+{% endblock %}

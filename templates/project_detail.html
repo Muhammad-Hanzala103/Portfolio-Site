@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ project.title }} - Muhammad Hanzala{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="page-header-content">
+                    <h1>{{ project.title }}</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+                            <li class="breadcrumb-item"><a href="{{ url_for('main.projects') }}">Projects</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">{{ project.title }}</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Project Detail Section -->
+<section class="project-detail section-padding">
+    <div class="container">
+        <div class="row">
+            <!-- Project Image -->
+            <div class="col-lg-8" data-aos="fade-right">
+                <div class="project-detail-image">
+                    {% if project.image %}
+                        <img src="{{ url_for('static', filename=project.image) }}" alt="{{ project.title }}" class="img-fluid rounded">
+                    {% else %}
+                        <img src="{{ url_for('static', filename='img/project-placeholder.jpg') }}" alt="{{ project.title }}" class="img-fluid rounded">
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Project Info -->
+            <div class="col-lg-4" data-aos="fade-left">
+                <div class="project-detail-info">
+                    <h2>Project Information</h2>
+                    <ul class="project-info-list">
+                        <li>
+                            <span class="info-label">Client:</span>
+                            <span class="info-value">Confidential</span>
+                        </li>
+                        <li>
+                            <span class="info-label">Date:</span>
+                            <span class="info-value">{{ project.created_at.strftime('%B %Y') }}</span>
+                        </li>
+                        <li>
+                            <span class="info-label">Technologies:</span>
+                            <span class="info-value">
+                                {% if project.technologies %}
+                                    {{ project.technologies }}
+                                {% else %}
+                                    Various Technologies
+                                {% endif %}
+                            </span>
+                        </li>
+                        <li>
+                            <span class="info-label">Category:</span>
+                            <span class="info-value">
+                                {% if project.technologies %}
+                                    {{ project.technologies.split(',')[0] }}
+                                {% else %}
+                                    Web Development
+                                {% endif %}
+                            </span>
+                        </li>
+                    </ul>
+                    
+                    <div class="project-links mt-4">
+                        {% if project.github_link %}
+                            <a href="{{ project.github_link }}" target="_blank" class="btn btn-outline-primary me-2">
+                                <i class="fab fa-github"></i> View Code
+                            </a>
+                        {% endif %}
+                        {% if project.live_link %}
+                            <a href="{{ project.live_link }}" target="_blank" class="btn btn-primary">
+                                <i class="fas fa-external-link-alt"></i> Live Demo
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Project Description -->
+        <div class="row mt-5">
+            <div class="col-lg-12" data-aos="fade-up">
+                <div class="project-detail-description">
+                    <h2>Project Overview</h2>
+                    <div class="project-description">
+                        {{ project.description|safe }}
+                    </div>
+                    
+                    <!-- Project Technologies -->
+                    <div class="project-technologies mt-5">
+                        <h3>Technologies Used</h3>
+                        <div class="tech-tags">
+                            {% if project.technologies %}
+                                {% for tech in project.technologies.split(',') %}
+                                    <span class="badge bg-primary">{{ tech.strip() }}</span>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Project Gallery -->
+        <div class="row mt-5">
+            <div class="col-lg-12" data-aos="fade-up">
+                <div class="project-gallery">
+                    <h3>Project Gallery</h3>
+                    <div class="row gallery-images mt-4">
+                        <!-- Placeholder for project gallery images -->
+                        <div class="col-md-4 mb-4">
+                            <a href="{{ url_for('static', filename='img/project-gallery-1.jpg') }}" class="gallery-item" data-lightbox="project-gallery">
+                                <img src="{{ url_for('static', filename='img/project-gallery-1.jpg') }}" alt="Gallery Image 1" class="img-fluid rounded">
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <a href="{{ url_for('static', filename='img/project-gallery-2.jpg') }}" class="gallery-item" data-lightbox="project-gallery">
+                                <img src="{{ url_for('static', filename='img/project-gallery-2.jpg') }}" alt="Gallery Image 2" class="img-fluid rounded">
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <a href="{{ url_for('static', filename='img/project-gallery-3.jpg') }}" class="gallery-item" data-lightbox="project-gallery">
+                                <img src="{{ url_for('static', filename='img/project-gallery-3.jpg') }}" alt="Gallery Image 3" class="img-fluid rounded">
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Related Projects -->
+<section class="related-projects section-padding bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="section-title text-center" data-aos="fade-up">
+                    <h2>Related Projects</h2>
+                    <div class="divider"></div>
+                    <p>You might also like these projects</p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <!-- Placeholder for related projects -->
+            {% for i in range(3) %}
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+                    <div class="project-box">
+                        <div class="project-img">
+                            <img src="{{ url_for('static', filename='img/project-placeholder.jpg') }}" alt="Related Project" class="img-fluid">
+                            <div class="project-overlay">
+                                <div class="project-links">
+                                    <a href="#"><i class="fas fa-info-circle"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="project-info">
+                            <h3>Related Project {{ loop.index }}</h3>
+                            <p>This is a placeholder for a related project.</p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="cta-section section-padding bg-primary text-white">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8 col-md-7">
+                <div class="cta-content" data-aos="fade-right">
+                    <h2>Like what you see?</h2>
+                    <p>Let's work together on your next project!</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-5">
+                <div class="cta-btn text-md-end" data-aos="fade-left">
+                    <a href="{{ url_for('main.contact') }}" class="btn btn-light">Get In Touch</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize lightbox for project gallery
+    document.addEventListener('DOMContentLoaded', function() {
+        lightbox.option({
+            'resizeDuration': 200,
+            'wrapAround': true,
+            'albumLabel': 'Image %1 of %2'
+        });
+    });
+</script>
+{% endblock %}

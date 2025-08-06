@@ -1,0 +1,304 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Add New Project - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Add New Project</h2>
+    <a href="{{ url_for('admin.projects') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Projects
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    
+                    <!-- Basic Information -->
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <label for="title" class="form-label">Project Title *</label>
+                            {{ form.title(class="form-control", placeholder="Enter project title") }}
+                            {% if form.title.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.title.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="category" class="form-label">Category *</label>
+                            {{ form.category(class="form-select") }}
+                            {% if form.category.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.category.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Short Description *</label>
+                        {{ form.description(class="form-control", rows="3", placeholder="Brief description of the project") }}
+                        {% if form.description.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.description.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">This will be shown in project cards and previews.</div>
+                    </div>
+                    
+                    <!-- Long Description -->
+                    <div class="mb-3">
+                        <label for="long_description" class="form-label">Detailed Description</label>
+                        {{ form.long_description(class="form-control") }}
+                        {% if form.long_description.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.long_description.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Detailed project description with rich text formatting.</div>
+                    </div>
+                    
+                    <!-- Technologies -->
+                    <div class="mb-3">
+                        <label for="technologies" class="form-label">Technologies Used *</label>
+                        {{ form.technologies(class="form-control", placeholder="e.g., Python, Flask, JavaScript, React, PostgreSQL") }}
+                        {% if form.technologies.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.technologies.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Separate technologies with commas.</div>
+                    </div>
+                    
+                    <!-- URLs -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="github_url" class="form-label">GitHub URL</label>
+                            {{ form.github_url(class="form-control", placeholder="https://github.com/username/project") }}
+                            {% if form.github_url.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.github_url.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="live_url" class="form-label">Live Demo URL</label>
+                            {{ form.live_url(class="form-control", placeholder="https://project-demo.com") }}
+                            {% if form.live_url.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.live_url.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Image Upload -->
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Project Image</label>
+                        {{ form.image(class="form-control", accept="image/*") }}
+                        {% if form.image.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.image.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Upload a screenshot or image representing your project. Recommended size: 800x600px.</div>
+                    </div>
+                    
+                    <!-- Options -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                {{ form.featured(class="form-check-input") }}
+                                <label class="form-check-label" for="featured">
+                                    Featured Project
+                                </label>
+                            </div>
+                            <div class="form-text">Featured projects will be highlighted on the homepage.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="order_index" class="form-label">Display Order</label>
+                            {{ form.order_index(class="form-control", placeholder="0") }}
+                            {% if form.order_index.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.order_index.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Lower numbers appear first. Leave empty for automatic ordering.</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Buttons -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin.projects') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                        <div>
+                            <button type="submit" name="action" value="save_and_continue" class="btn btn-outline-primary">
+                                <i class="fas fa-save"></i> Save & Continue Editing
+                            </button>
+                            <button type="submit" name="action" value="save" class="btn btn-primary">
+                                <i class="fas fa-check"></i> Save Project
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Preview Card -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Preview</h5>
+            </div>
+            <div class="card-body">
+                <div class="project-preview">
+                    <div class="preview-image mb-3">
+                        <img id="preview-img" src="{{ url_for('static', filename='img/project-placeholder.svg') }}" class="img-fluid rounded" alt="Project Preview">
+                    </div>
+                    <h6 id="preview-title">Project Title</h6>
+                    <p id="preview-description" class="text-muted small">Project description will appear here...</p>
+                    <div id="preview-technologies" class="mb-2">
+                        <span class="badge bg-secondary">Technology</span>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="#" class="btn btn-sm btn-outline-primary disabled">GitHub</a>
+                        <a href="#" class="btn btn-sm btn-outline-success disabled">Live Demo</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tips -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">Tips</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <i class="fas fa-lightbulb text-warning"></i>
+                        <strong>Title:</strong> Keep it concise and descriptive
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-lightbulb text-warning"></i>
+                        <strong>Description:</strong> Highlight key features and benefits
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-lightbulb text-warning"></i>
+                        <strong>Technologies:</strong> List main technologies used
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-lightbulb text-warning"></i>
+                        <strong>Image:</strong> Use high-quality screenshots
+                    </li>
+                    <li>
+                        <i class="fas fa-lightbulb text-warning"></i>
+                        <strong>URLs:</strong> Ensure links are working and accessible
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Real-time preview updates
+document.addEventListener('DOMContentLoaded', function() {
+    const titleInput = document.getElementById('title');
+    const descriptionInput = document.getElementById('description');
+    const technologiesInput = document.getElementById('technologies');
+    const imageInput = document.getElementById('image');
+    
+    const previewTitle = document.getElementById('preview-title');
+    const previewDescription = document.getElementById('preview-description');
+    const previewTechnologies = document.getElementById('preview-technologies');
+    const previewImg = document.getElementById('preview-img');
+    
+    // Update title preview
+    titleInput.addEventListener('input', function() {
+        previewTitle.textContent = this.value || 'Project Title';
+    });
+    
+    // Update description preview
+    descriptionInput.addEventListener('input', function() {
+        previewDescription.textContent = this.value || 'Project description will appear here...';
+    });
+    
+    // Update technologies preview
+    technologiesInput.addEventListener('input', function() {
+        const technologies = this.value.split(',').map(tech => tech.trim()).filter(tech => tech);
+        previewTechnologies.innerHTML = '';
+        
+        if (technologies.length > 0) {
+            technologies.forEach(tech => {
+                const badge = document.createElement('span');
+                badge.className = 'badge bg-secondary me-1 mb-1';
+                badge.textContent = tech;
+                previewTechnologies.appendChild(badge);
+            });
+        } else {
+            const badge = document.createElement('span');
+            badge.className = 'badge bg-secondary';
+            badge.textContent = 'Technology';
+            previewTechnologies.appendChild(badge);
+        }
+    });
+    
+    // Update image preview
+    imageInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+});
+</script>
+{% endblock %}
+
+{% block styles %}
+<style>
+.project-preview {
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+}
+
+.preview-image img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+}
+</style>
+{% endblock %}

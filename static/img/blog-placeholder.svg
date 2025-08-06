@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400">
+  <rect width="600" height="400" fill="#f9fafb"/>
+  <rect width="560" height="360" x="20" y="20" fill="white" stroke="#e5e7eb" stroke-width="2" rx="12"/>
+  <rect width="500" height="12" x="50" y="60" fill="#d1d5db" rx="6"/>
+  <rect width="400" height="8" x="50" y="90" fill="#e5e7eb" rx="4"/>
+  <rect width="450" height="8" x="50" y="110" fill="#e5e7eb" rx="4"/>
+  <rect width="350" height="8" x="50" y="130" fill="#e5e7eb" rx="4"/>
+  <rect width="200" height="120" x="50" y="160" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1" rx="8"/>
+  <circle cx="150" cy="200" r="20" fill="#d1d5db"/>
+  <rect width="150" height="6" x="280" y="170" fill="#e5e7eb" rx="3"/>
+  <rect width="120" height="6" x="280" y="190" fill="#e5e7eb" rx="3"/>
+  <rect width="180" height="6" x="280" y="210" fill="#e5e7eb" rx="3"/>
+  <rect width="140" height="6" x="280" y="230" fill="#e5e7eb" rx="3"/>
+  <rect width="160" height="6" x="280" y="250" fill="#e5e7eb" rx="3"/>
+  <text x="300" y="330" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="#6b7280">Blog Post Image</text>
+</svg>

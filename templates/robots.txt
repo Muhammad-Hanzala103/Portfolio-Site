@@ -1,0 +1,21 @@
+User-agent: *
+Allow: /
+
+# Disallow admin areas
+Disallow: /admin/
+Disallow: /api/
+
+# Disallow upload directories
+Disallow: /static/uploads/
+
+# Allow important pages
+Allow: /static/css/
+Allow: /static/js/
+Allow: /static/img/
+Allow: /static/files/
+
+# Sitemap location
+Sitemap: {{ url_for('main.sitemap', _external=True) }}
+
+# Crawl delay (optional)
+Crawl-delay: 1

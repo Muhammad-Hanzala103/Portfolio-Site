@@ -1,0 +1,163 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}{% if skill %}Edit Skill{% else %}Add Skill{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{% if skill %}Edit Skill{% else %}Add Skill{% endif %}</h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('admin.skills') }}">Skills</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{% if skill %}Edit{% else %}Add{% endif %} Skill</li>
+        </ol>
+    </nav>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<div class="card">
+    <div class="card-header">
+        <h6>{% if skill %}Edit Skill: {{ skill.name }}{% else %}Add New Skill{% endif %}</h6>
+    </div>
+    <div class="card-body">
+        <form method="POST" enctype="multipart/form-data">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Skill Name</label>
+                        <input type="text" class="form-control" id="name" name="name" value="{{ skill.name if skill else '' }}" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Category</label>
+                        <select class="form-select" id="category" name="category">
+                            <option value="" {% if not skill or not skill.category %}selected{% endif %}>No Category</option>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}" {% if skill and skill.category_id == category.id %}selected{% endif %}>
+                                    {{ category.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="proficiency" class="form-label">Proficiency (0-100%)</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="proficiency" name="proficiency" 
+                                   value="{{ skill.proficiency if skill else 75 }}" min="0" max="100" required>
+                            <span class="input-group-text">%</span>
+                        </div>
+                        <div class="form-text">Set your proficiency level for this skill</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="order" class="form-label">Display Order</label>
+                        <input type="number" class="form-control" id="order" name="order" 
+                               value="{{ skill.order if skill else 0 }}" min="0">
+                        <div class="form-text">Lower numbers appear first</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="icon" class="form-label">Icon (Font Awesome Class)</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-icons"></i></span>
+                    <input type="text" class="form-control" id="icon" name="icon" 
+                           value="{{ skill.icon if skill else '' }}" placeholder="fab fa-python">
+                </div>
+                <div class="form-text">
+                    Enter a Font Awesome icon class (e.g., fab fa-python, fas fa-code). 
+                    <a href="https://fontawesome.com/icons" target="_blank">Browse icons</a>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="description" class="form-label">Description (Optional)</label>
+                <textarea class="form-control" id="description" name="description" rows="3">{{ skill.description if skill else '' }}</textarea>
+                <div class="form-text">Brief description of your experience with this skill</div>
+            </div>
+
+            <div class="mb-3">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="is_featured" name="is_featured" 
+                           {% if skill and skill.is_featured %}checked{% endif %}>
+                    <label class="form-check-label" for="is_featured">Feature on Homepage</label>
+                </div>
+                <div class="form-text">Show this skill prominently on the homepage</div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('admin.skills') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Skills
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> {% if skill %}Update{% else %}Save{% endif %} Skill
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Icon Preview -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h6>Icon Preview</h6>
+    </div>
+    <div class="card-body text-center">
+        <div class="mb-3">
+            <i id="icon-preview" class="{{ skill.icon if skill else 'fas fa-code' }} fa-3x"></i>
+        </div>
+        <div id="icon-name">{{ skill.icon if skill else 'fas fa-code' }}</div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Icon preview functionality
+        const iconInput = document.getElementById('icon');
+        const iconPreview = document.getElementById('icon-preview');
+        const iconName = document.getElementById('icon-name');
+        
+        iconInput.addEventListener('input', function() {
+            // Remove all classes except fa-3x
+            iconPreview.className = 'fa-3x';
+            
+            // Add the new icon class
+            if (this.value) {
+                const iconClasses = this.value.trim().split(' ');
+                iconClasses.forEach(cls => {
+                    iconPreview.classList.add(cls);
+                });
+                iconName.textContent = this.value;
+            } else {
+                // Default icon if empty
+                iconPreview.classList.add('fas', 'fa-code');
+                iconName.textContent = 'fas fa-code';
+            }
+        });
+        
+        // Range slider for proficiency
+        const proficiencyInput = document.getElementById('proficiency');
+    });
+</script>
+{% endblock %}

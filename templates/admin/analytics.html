@@ -1,0 +1,366 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Analytics{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Analytics</h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Analytics</li>
+        </ol>
+    </nav>
+</div>
+
+<!-- Date Range Filter -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h6>Filter Data</h6>
+    </div>
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('admin.analytics') }}" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label for="start_date" class="form-label">Start Date</label>
+                <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date }}">
+            </div>
+            <div class="col-md-4">
+                <label for="end_date" class="form-label">End Date</label>
+                <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date }}">
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary w-100">Apply Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Overview Stats -->
+<div class="row">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card primary">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <div class="stat-card-title">Total Visits</div>
+                        <div class="stat-card-value">{{ total_visits }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-chart-line stat-card-icon"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card success">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <div class="stat-card-title">Unique Pages</div>
+                        <div class="stat-card-value">{{ unique_pages }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-file-alt stat-card-icon"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card info">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <div class="stat-card-title">Avg. Daily Visits</div>
+                        <div class="stat-card-value">{{ avg_daily_visits }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-calendar-day stat-card-icon"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card warning">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <div class="stat-card-title">Contact Rate</div>
+                        <div class="stat-card-value">{{ contact_rate }}%</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-envelope stat-card-icon"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Daily Visits Chart -->
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6>Daily Visits</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-container" style="position: relative; height:300px;">
+                    <canvas id="dailyVisitsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Page Visits Distribution -->
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6>Page Distribution</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-container" style="position: relative; height:300px;">
+                    <canvas id="pageDistributionChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Top Pages -->
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6>Top Pages</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Page</th>
+                                <th>Visits</th>
+                                <th>% of Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for page in top_pages %}
+                                <tr>
+                                    <td>{{ page.page }}</td>
+                                    <td>{{ page.count }}</td>
+                                    <td>{{ ((page.count / total_visits) * 100)|round(1) }}%</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Visit Trends -->
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6>Visit Trends</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-container" style="position: relative; height:300px;">
+                    <canvas id="visitTrendsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Analytics -->
+<div class="card">
+    <div class="card-header">
+        <h6>Detailed Page Analytics</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered datatable">
+                <thead>
+                    <tr>
+                        <th>Page</th>
+                        <th>Visits</th>
+                        <th>First Visit</th>
+                        <th>Last Visit</th>
+                        <th>Avg. Visits/Day</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for page in page_analytics %}
+                        <tr>
+                            <td>{{ page.page }}</td>
+                            <td>{{ page.count }}</td>
+                            <td>{{ page.first_visit.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ page.last_visit.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ page.avg_per_day|round(1) }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Daily Visits Chart
+    var dailyCtx = document.getElementById('dailyVisitsChart').getContext('2d');
+    var dailyVisitsChart = new Chart(dailyCtx, {
+        type: 'line',
+        data: {
+            labels: {{ visit_dates|tojson }},
+            datasets: [{
+                label: 'Daily Visits',
+                data: {{ daily_visits|tojson }},
+                backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                borderColor: 'rgba(78, 115, 223, 1)',
+                pointBackgroundColor: 'rgba(78, 115, 223, 1)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgba(78, 115, 223, 1)',
+                borderWidth: 2,
+                fill: true
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            layout: {
+                padding: {
+                    left: 10,
+                    right: 25,
+                    top: 25,
+                    bottom: 0
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false,
+                        drawBorder: false
+                    },
+                    ticks: {
+                        maxTicksLimit: 7
+                    }
+                },
+                y: {
+                    ticks: {
+                        maxTicksLimit: 5,
+                        padding: 10,
+                        beginAtZero: true
+                    },
+                    grid: {
+                        color: "rgba(0, 0, 0, 0.05)",
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+    
+    // Page Distribution Chart
+    var distributionCtx = document.getElementById('pageDistributionChart').getContext('2d');
+    var pageDistributionChart = new Chart(distributionCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ page_distribution.labels|tojson }},
+            datasets: [{
+                data: {{ page_distribution.data|tojson }},
+                backgroundColor: [
+                    '#4e73df',
+                    '#1cc88a',
+                    '#36b9cc',
+                    '#f6c23e',
+                    '#e74a3b',
+                    '#5a5c69',
+                    '#858796'
+                ],
+                hoverBackgroundColor: [
+                    '#2e59d9',
+                    '#17a673',
+                    '#2c9faf',
+                    '#dda20a',
+                    '#be2617',
+                    '#484a54',
+                    '#717384'
+                ],
+                hoverBorderColor: "rgba(234, 236, 244, 1)",
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: {
+                legend: {
+                    position: 'right',
+                }
+            }
+        }
+    });
+    
+    // Visit Trends Chart
+    var trendsCtx = document.getElementById('visitTrendsChart').getContext('2d');
+    var visitTrendsChart = new Chart(trendsCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ trends.labels|tojson }},
+            datasets: [{
+                label: 'Visits',
+                data: {{ trends.data|tojson }},
+                backgroundColor: 'rgba(78, 115, 223, 0.8)',
+                borderColor: 'rgba(78, 115, 223, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            layout: {
+                padding: {
+                    left: 10,
+                    right: 25,
+                    top: 25,
+                    bottom: 0
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false,
+                        drawBorder: false
+                    }
+                },
+                y: {
+                    ticks: {
+                        maxTicksLimit: 5,
+                        padding: 10,
+                        beginAtZero: true
+                    },
+                    grid: {
+                        color: "rgba(0, 0, 0, 0.05)",
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
