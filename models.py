@@ -1,6 +1,8 @@
 from datetime import datetime
+from flask import current_app
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
+from itsdangerous import URLSafeTimedSerializer as Serializer
 from slugify import slugify
 
 # Create db instance here to avoid circular imports
@@ -21,6 +23,19 @@ class User(db.Model, UserMixin):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
+    def get_reset_token(self):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        return s.dumps({'user_id': self.id})
+
+    @staticmethod
+    def verify_reset_token(token, expires_sec=1800):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        try:
+            user_id = s.loads(token, max_age=expires_sec)['user_id']
+        except:
+            return None
+        return User.query.get(user_id)
+
     def __repr__(self):
         return f'<User {self.username}>'
 
@@ -191,6 +206,19 @@ class Service(db.Model):
     def __repr__(self):
         return f'<Service {self.title}>'
 
+class FAQ(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    question = db.Column(db.String(255), nullable=False)
+    answer = db.Column(db.Text, nullable=False)
+    service_id = db.Column(db.Integer, db.ForeignKey('service.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    service = db.relationship('Service', backref=db.backref('faqs', lazy=True))
+
+    def __repr__(self):
+        return f'<FAQ {self.question}>'
+
 class BlogPost(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
@@ -251,6 +279,13 @@ class BlogComment(db.Model):
     
     def __repr__(self):
         return f'<BlogComment {self.author_name} on {self.post.title}>'
+
+class CommentSettings(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    enable_comments = db.Column(db.Boolean, default=True)
+    moderate_comments = db.Column(db.Boolean, default=True)
+    auto_close_after = db.Column(db.Integer, nullable=True)
+
 
 class SiteVisit(db.Model):
     id = db.Column(db.Integer, primary_key=True)

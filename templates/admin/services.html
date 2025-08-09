@@ -411,6 +411,14 @@ content %}
       <form action="{{ url_for('admin.add_faq') }}" method="POST">
         <div class="modal-body">
           <div class="mb-3">
+            <label for="service_id" class="form-label">Service</label>
+            <select class="form-select" id="service_id" name="service_id" required>
+              {% for service in services %}
+              <option value="{{ service.id }}">{{ service.title }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
             <label for="question" class="form-label">Question</label>
             <input
               type="text"
@@ -426,30 +434,12 @@ content %}
               class="form-control"
               id="answer"
               name="answer"
-              rows="4"
-              required
+              rows="3"
             ></textarea>
-          </div>
-          <div class="mb-3">
-            <label for="order" class="form-label">Display Order</label>
-            <input
-              type="number"
-              class="form-control"
-              id="order"
-              name="order"
-              value="0"
-              min="0"
-            />
           </div>
         </div>
         <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal"
-          >
-            Cancel
-          </button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           <button type="submit" class="btn btn-primary">Add FAQ</button>
         </div>
       </form>

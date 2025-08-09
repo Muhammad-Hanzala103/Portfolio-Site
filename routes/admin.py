@@ -44,6 +44,38 @@ def create_slug(title):
         slug = f"{slug}-{int(datetime.utcnow().timestamp())}"
     return slug
 
+@admin_bp.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    from models import User
+    from app import db
+    if request.method == 'POST':
+        email = request.form.get('email')
+        user = User.query.filter_by(email=email).first()
+        if user:
+            token = user.get_reset_token()
+            # In a real app, you would email this token to the user
+            flash(f'Password reset link: {url_for("admin.reset_password", token=token, _external=True)}', 'info')
+        else:
+            flash('Email address not found.', 'danger')
+        return redirect(url_for('admin.forgot_password'))
+    return render_template('admin/forgot_password.html')
+
+@admin_bp.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    from models import User
+    from app import db, bcrypt
+    user = User.verify_reset_token(token)
+    if user is None:
+        flash('That is an invalid or expired token', 'warning')
+        return redirect(url_for('admin.forgot_password'))
+    if request.method == 'POST':
+        password = request.form.get('password')
+        user.password = bcrypt.generate_password_hash(password).decode('utf-8')
+        db.session.commit()
+        flash('Your password has been updated! You are now able to log in', 'success')
+        return redirect(url_for('admin.admin_login'))
+    return render_template('admin/reset_password.html')
+
 # Admin login
 @admin_bp.route('/login', methods=['GET', 'POST'])
 def admin_login():
@@ -563,7 +595,32 @@ def delete_testimonial(testimonial_id):
 @login_required
 def services():
     services = Service.query.order_by(Service.order_index.asc(), Service.created_at.desc()).all()
-    return render_template('admin/services.html', services=services)
+    faqs = FAQ.query.all()
+    return render_template('admin/services.html', services=services, faqs=faqs)
+
+@admin_bp.route('/services/faq/add', methods=['POST'])
+@login_required
+def add_faq():
+    from app import db
+    from models import FAQ
+    if request.method == 'POST':
+        question = request.form.get('question')
+        answer = request.form.get('answer', '')  # Answer is optional
+        service_id = request.form.get('service_id')
+
+        if not question or not service_id:
+            flash('Question and service ID are required.', 'danger')
+            return redirect(url_for('admin.services'))
+
+        faq = FAQ(
+            question=question,
+            answer=answer,
+            service_id=service_id
+        )
+        db.session.add(faq)
+        db.session.commit()
+        flash('FAQ added successfully.', 'success')
+    return redirect(url_for('admin.services'))
 
 @admin_bp.route('/services/new', methods=['GET', 'POST'])
 @login_required
@@ -708,7 +765,8 @@ def new_blog_post():
         flash('Blog post created successfully!', 'success')
         return redirect(url_for('admin.blog_posts'))
     
-    return render_template('admin/blog/new.html')
+    form = BlogPostForm()
+    return render_template('admin/blog_post_form.html', form=form)
 
 @admin_bp.route('/blog/edit/<int:post_id>', methods=['GET', 'POST'])
 @login_required
@@ -761,7 +819,8 @@ def delete_blog_post(post_id):
 def messages():
     from app import db
     messages = Contact.query.order_by(Contact.created_at.desc()).all()
-    return render_template('admin/messages/index.html', messages=messages)
+    unread_count = Contact.query.filter_by(read=False).count()
+    return render_template('admin/messages/index.html', messages=messages, unread_count=unread_count)
 
 @admin_bp.route('/messages/<int:message_id>')
 @login_required
@@ -1172,7 +1231,8 @@ def delete_blog_tag(id):
 @admin_bp.route('/comments')
 @login_required
 def comments():
-    from models import BlogComment
+    from models import BlogComment, CommentSettings
+    from app import db
     
     # Get all comments with pagination
     page = request.args.get('page', 1, type=int)
@@ -1180,25 +1240,39 @@ def comments():
         page=page, per_page=20, error_out=False
     )
     
-    return render_template('admin/comments.html', comments=comments)
+    settings = CommentSettings.query.first()
+    if not settings:
+        settings = CommentSettings()
+        db.session.add(settings)
+        db.session.commit()
+    
+    return render_template('admin/comments.html', comments=comments, settings=settings)
 
-@admin_bp.route('/comments/approve/<int:comment_id>', methods=['POST'])
+@admin_bp.route('/comments/settings', methods=['POST'])
 @login_required
-def approve_comment(comment_id):
-    from models import BlogComment
+def update_comment_settings():
+    from models import CommentSettings
     from app import db
     
-    comment = BlogComment.query.get_or_404(comment_id)
-    comment.approved = True
+    settings = CommentSettings.query.first()
+    if not settings:
+        settings = CommentSettings()
+        db.session.add(settings)
+    
+    settings.enable_comments = 'enable_comments' in request.form
+    settings.moderate_comments = 'moderate_comments' in request.form
+    settings.auto_close_after = request.form.get('auto_close_after', type=int)
     
     try:
         db.session.commit()
-        flash('Comment approved successfully!', 'success')
+        flash('Comment settings updated successfully!', 'success')
     except Exception as e:
         db.session.rollback()
-        flash('Error approving comment.', 'danger')
+        flash('Error updating settings.', 'danger')
     
     return redirect(url_for('admin.comments'))
+
+
 
 @admin_bp.route('/comments/delete/<int:comment_id>', methods=['POST'])
 @login_required

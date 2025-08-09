@@ -80,7 +80,7 @@ class SecureModelView(ModelView):
 
 # Import models (after db initialization to avoid circular imports)
 from models import User
-from models import Contact, SiteVisit, Project, Skill, Gallery, Testimonial, Service, BlogPost, Contact, SiteVisit
+from models import Contact, SiteVisit, Project, Skill, Gallery, Testimonial, Service, BlogPost, FAQ
 
 # Add models to admin
 admin.add_view(SecureModelView(User, db.session))
@@ -91,6 +91,7 @@ admin.add_view(SecureModelView(Testimonial, db.session))
 admin.add_view(SecureModelView(Service, db.session))
 admin.add_view(SecureModelView(BlogPost, db.session))
 admin.add_view(SecureModelView(Contact, db.session))
+admin.add_view(SecureModelView(FAQ, db.session))
 
 # User loader for Flask-Login
 @login_manager.user_loader
@@ -165,7 +166,7 @@ if __name__ == '__main__':
         from models import User
         if User.query.count() == 0:
             hashed_password = bcrypt.generate_password_hash('hani@62922').decode('utf-8')
-            admin = User(username='Muhammad Hanzala', email='hani75384@gmail.com', password=hashed_password, is_admin=True)
+            admin = User(username='hani', email='hani75384@gmail.com', password=hashed_password, is_admin=True)
             db.session.add(admin)
             db.session.commit()
             print('Admin user created!')
