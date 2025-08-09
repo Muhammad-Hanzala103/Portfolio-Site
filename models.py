@@ -63,11 +63,17 @@ class GalleryCategory(db.Model):
 class BlogCategory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True, nullable=False)
+    slug = db.Column(db.String(50), unique=True, nullable=True)
     description = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationship
     blog_posts = db.relationship('BlogPost', backref='category_rel', lazy=True)
+    
+    def __init__(self, **kwargs):
+        super(BlogCategory, self).__init__(**kwargs)
+        if not self.slug and self.name:
+            self.slug = slugify(self.name)
     
     def __repr__(self):
         return f'<BlogCategory {self.name}>'

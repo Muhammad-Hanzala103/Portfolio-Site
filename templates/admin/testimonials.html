@@ -1,326 +1,481 @@
-{% extends 'admin/base.html' %}
-
-{% block title %}Testimonials{% endblock %}
-
-{% block content %}
+{% extends 'admin/base.html' %} {% block title %}Testimonials{% endblock %} {%
+block content %}
 <div class="page-header d-flex justify-content-between align-items-center">
-    <div>
-        <h1>Testimonials</h1>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Testimonials</li>
-            </ol>
-        </nav>
-    </div>
-    <a href="{{ url_for('admin.add_testimonial') }}" class="btn btn-primary">
-        <i class="fas fa-plus"></i> Add New Testimonial
-    </a>
+  <div>
+    <h1>Testimonials</h1>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          <a href="{{ url_for('admin.dashboard') }}">Dashboard</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">Testimonials</li>
+      </ol>
+    </nav>
+  </div>
+  <a href="{{ url_for('admin.new_testimonial') }}" class="btn btn-primary">
+    <i class="fas fa-plus"></i> Add New Testimonial
+  </a>
 </div>
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        {% endfor %}
-    {% endif %}
-{% endwith %}
+{% with messages = get_flashed_messages(with_categories=true) %} {% if messages
+%} {% for category, message in messages %}
+<div
+  class="alert alert-{{ category }} alert-dismissible fade show"
+  role="alert"
+>
+  {{ message }}
+  <button
+    type="button"
+    class="btn-close"
+    data-bs-dismiss="alert"
+    aria-label="Close"
+  ></button>
+</div>
+{% endfor %} {% endif %} {% endwith %}
 
 <div class="card">
-    <div class="card-header">
-        <h6>Manage Testimonials</h6>
+  <div class="card-header">
+    <h6>Manage Testimonials</h6>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-bordered datatable">
+        <thead>
+          <tr>
+            <th>Client</th>
+            <th>Image</th>
+            <th>Rating</th>
+            <th>Platform</th>
+            <th>Featured</th>
+            <th>Date</th>
+            <th width="150">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if testimonials %} {% for testimonial in testimonials %}
+          <tr>
+            <td>
+              <strong>{{ testimonial.client_name }}</strong><br />
+              <small class="text-muted">{{ testimonial.client_title }}</small>
+            </td>
+            <td>
+              {% if testimonial.client_image %}
+              <img
+                src="{{ url_for('static', filename='uploads/testimonials/' + testimonial.client_image) }}"
+                alt="{{ testimonial.client_name }}"
+                class="img-thumbnail"
+                style="max-height: 50px"
+              />
+              {% else %}
+              <span class="badge bg-secondary">No Image</span>
+              {% endif %}
+            </td>
+            <td>
+              {% for i in range(testimonial.rating) %}
+              <i class="fas fa-star text-warning"></i>
+              {% endfor %} {% for i in range(5 - testimonial.rating) %}
+              <i class="far fa-star text-muted"></i>
+              {% endfor %}
+            </td>
+            <td>
+              {% if testimonial.platform == 'fiverr' %}
+              <span class="badge bg-success">Fiverr</span>
+              {% elif testimonial.platform == 'upwork' %}
+              <span class="badge bg-primary">Upwork</span>
+              {% elif testimonial.platform == 'linkedin' %}
+              <span class="badge bg-info">LinkedIn</span>
+              {% else %}
+              <span class="badge bg-secondary"
+                >{{ testimonial.platform|capitalize }}</span
+              >
+              {% endif %}
+            </td>
+            <td>
+              {% if testimonial.is_featured %}
+              <span class="badge bg-success">Featured</span>
+              {% else %}
+              <span class="badge bg-secondary">No</span>
+              {% endif %}
+            </td>
+            <td>{{ testimonial.date.strftime('%Y-%m-%d') }}</td>
+            <td class="table-actions">
+              <a
+                href="{{ url_for('admin.edit_testimonial', testimonial_id=testimonial.id) }}"
+                class="btn btn-sm btn-info"
+              >
+                <i class="fas fa-edit"></i> Edit
+              </a>
+              <button
+                type="button"
+                class="btn btn-sm btn-danger"
+                data-bs-toggle="modal"
+                data-bs-target="#deleteModal{{ testimonial.id }}"
+              >
+                <i class="fas fa-trash"></i> Delete
+              </button>
+
+              <!-- Delete Modal -->
+              <div
+                class="modal fade"
+                id="deleteModal{{ testimonial.id }}"
+                tabindex="-1"
+                aria-labelledby="deleteModalLabel{{ testimonial.id }}"
+                aria-hidden="true"
+              >
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5
+                        class="modal-title"
+                        id="deleteModalLabel{{ testimonial.id }}"
+                      >
+                        Confirm Delete
+                      </h5>
+                      <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                      ></button>
+                    </div>
+                    <div class="modal-body">
+                      Are you sure you want to delete the testimonial from
+                      <strong>{{ testimonial.client_name }}</strong>? This
+                      action cannot be undone.
+                    </div>
+                    <div class="modal-footer">
+                      <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal"
+                      >
+                        Cancel
+                      </button>
+                      <form
+                        action="{{ url_for('admin.delete_testimonial', testimonial_id=testimonial.id) }}"
+                        method="POST"
+                        class="d-inline"
+                      >
+                        <button type="submit" class="btn btn-danger">
+                          Delete
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+          {% endfor %} {% else %}
+          <tr>
+            <td colspan="7" class="text-center">No testimonials found</td>
+          </tr>
+          {% endif %}
+        </tbody>
+      </table>
     </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-bordered datatable">
-                <thead>
-                    <tr>
-                        <th>Client</th>
-                        <th>Image</th>
-                        <th>Rating</th>
-                        <th>Platform</th>
-                        <th>Featured</th>
-                        <th>Date</th>
-                        <th width="150">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if testimonials %}
-                        {% for testimonial in testimonials %}
-                            <tr>
-                                <td>
-                                    <strong>{{ testimonial.client_name }}</strong><br>
-                                    <small class="text-muted">{{ testimonial.client_title }}</small>
-                                </td>
-                                <td>
-                                    {% if testimonial.client_image %}
-                                        <img src="{{ url_for('static', filename='uploads/testimonials/' + testimonial.client_image) }}" 
-                                             alt="{{ testimonial.client_name }}" class="img-thumbnail" style="max-height: 50px;">
-                                    {% else %}
-                                        <span class="badge bg-secondary">No Image</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% for i in range(testimonial.rating) %}
-                                        <i class="fas fa-star text-warning"></i>
-                                    {% endfor %}
-                                    {% for i in range(5 - testimonial.rating) %}
-                                        <i class="far fa-star text-muted"></i>
-                                    {% endfor %}
-                                </td>
-                                <td>
-                                    {% if testimonial.platform == 'fiverr' %}
-                                        <span class="badge bg-success">Fiverr</span>
-                                    {% elif testimonial.platform == 'upwork' %}
-                                        <span class="badge bg-primary">Upwork</span>
-                                    {% elif testimonial.platform == 'linkedin' %}
-                                        <span class="badge bg-info">LinkedIn</span>
-                                    {% else %}
-                                        <span class="badge bg-secondary">{{ testimonial.platform|capitalize }}</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if testimonial.is_featured %}
-                                        <span class="badge bg-success">Featured</span>
-                                    {% else %}
-                                        <span class="badge bg-secondary">No</span>
-                                    {% endif %}
-                                </td>
-                                <td>{{ testimonial.date.strftime('%Y-%m-%d') }}</td>
-                                <td class="table-actions">
-                                    <a href="{{ url_for('admin.edit_testimonial', testimonial_id=testimonial.id) }}" class="btn btn-sm btn-info">
-                                        <i class="fas fa-edit"></i> Edit
-                                    </a>
-                                    <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ testimonial.id }}">
-                                        <i class="fas fa-trash"></i> Delete
-                                    </button>
-                                    
-                                    <!-- Delete Modal -->
-                                    <div class="modal fade" id="deleteModal{{ testimonial.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ testimonial.id }}" aria-hidden="true">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title" id="deleteModalLabel{{ testimonial.id }}">Confirm Delete</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    Are you sure you want to delete the testimonial from <strong>{{ testimonial.client_name }}</strong>? This action cannot be undone.
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                    <form action="{{ url_for('admin.delete_testimonial', testimonial_id=testimonial.id) }}" method="POST" class="d-inline">
-                                                        <button type="submit" class="btn btn-danger">Delete</button>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr>
-                            <td colspan="7" class="text-center">No testimonials found</td>
-                        </tr>
-                    {% endif %}
-                </tbody>
-            </table>
-        </div>
-    </div>
+  </div>
 </div>
 
 <!-- Testimonial Statistics -->
 <div class="row mt-4">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h6>Testimonial Statistics</h6>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h6>Testimonial Statistics</h6>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="card bg-light mb-3">
+              <div class="card-body text-center">
+                <h3>{{ testimonials|length if testimonials else 0 }}</h3>
+                <p class="mb-0">Total Testimonials</p>
+              </div>
             </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="card bg-light mb-3">
-                            <div class="card-body text-center">
-                                <h3>{{ testimonials|length if testimonials else 0 }}</h3>
-                                <p class="mb-0">Total Testimonials</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card bg-light mb-3">
-                            <div class="card-body text-center">
-                                <h3>
-                                    {% if testimonials %}
-                                        {{ "%.1f"|format(testimonials|sum(attribute='rating') / testimonials|length) }}
-                                    {% else %}
-                                        0.0
-                                    {% endif %}
-                                </h3>
-                                <p class="mb-0">Average Rating</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <h6 class="mt-4">Platform Distribution</h6>
-                <div class="progress mb-3" style="height: 25px;">
-                    {% set fiverr_count = testimonials|selectattr('platform', 'equalto', 'fiverr')|list|length if testimonials else 0 %}
-                    {% set upwork_count = testimonials|selectattr('platform', 'equalto', 'upwork')|list|length if testimonials else 0 %}
-                    {% set linkedin_count = testimonials|selectattr('platform', 'equalto', 'linkedin')|list|length if testimonials else 0 %}
-                    {% set other_count = testimonials|length - fiverr_count - upwork_count - linkedin_count if testimonials else 0 %}
-                    
-                    {% set total = testimonials|length if testimonials and testimonials|length > 0 else 1 %}
-                    
-                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ (fiverr_count / total * 100)|round }}%" 
-                         aria-valuenow="{{ fiverr_count }}" aria-valuemin="0" aria-valuemax="{{ total }}">
-                        Fiverr ({{ fiverr_count }})
-                    </div>
-                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ (upwork_count / total * 100)|round }}%" 
-                         aria-valuenow="{{ upwork_count }}" aria-valuemin="0" aria-valuemax="{{ total }}">
-                        Upwork ({{ upwork_count }})
-                    </div>
-                    <div class="progress-bar bg-info" role="progressbar" style="width: {{ (linkedin_count / total * 100)|round }}%" 
-                         aria-valuenow="{{ linkedin_count }}" aria-valuemin="0" aria-valuemax="{{ total }}">
-                        LinkedIn ({{ linkedin_count }})
-                    </div>
-                    <div class="progress-bar bg-secondary" role="progressbar" style="width: {{ (other_count / total * 100)|round }}%" 
-                         aria-valuenow="{{ other_count }}" aria-valuemin="0" aria-valuemax="{{ total }}">
-                        Other ({{ other_count }})
-                    </div>
-                </div>
-                
-                <h6 class="mt-4">Rating Distribution</h6>
-                <div class="row">
-                    {% for i in range(5, 0, -1) %}
-                        {% set count = testimonials|selectattr('rating', 'equalto', i)|list|length if testimonials else 0 %}
-                        <div class="col-12 mb-2">
-                            <div class="d-flex align-items-center">
-                                <div style="width: 80px;">
-                                    {% for j in range(i) %}
-                                        <i class="fas fa-star text-warning"></i>
-                                    {% endfor %}
-                                    {% for j in range(5 - i) %}
-                                        <i class="far fa-star text-muted"></i>
-                                    {% endfor %}
-                                </div>
-                                <div class="progress flex-grow-1" style="height: 15px;">
-                                    <div class="progress-bar bg-warning" role="progressbar" 
-                                         style="width: {{ (count / total * 100)|round }}%" 
-                                         aria-valuenow="{{ count }}" aria-valuemin="0" aria-valuemax="{{ total }}"></div>
-                                </div>
-                                <div style="width: 40px; text-align: right;">
-                                    {{ count }}
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card bg-light mb-3">
+              <div class="card-body text-center">
+                <h3>
+                  {% if testimonials %} {{
+                  "%.1f"|format(testimonials|sum(attribute='rating') /
+                  testimonials|length) }} {% else %} 0.0 {% endif %}
+                </h3>
+                <p class="mb-0">Average Rating</p>
+              </div>
             </div>
+          </div>
         </div>
-    </div>
-    
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h6>Client Logos</h6>
-            </div>
-            <div class="card-body">
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle"></i> Client logos can be displayed on your homepage to showcase the companies or individuals you've worked with.
-                </div>
-                
-                <div class="d-flex justify-content-between mb-3">
-                    <h6>Manage Logos</h6>
-                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addLogoModal">
-                        <i class="fas fa-plus"></i> Add Logo
-                    </button>
-                </div>
-                
-                <div class="row">
-                    {% if client_logos %}
-                        {% for logo in client_logos %}
-                            <div class="col-md-4 col-6 mb-3 text-center">
-                                <div class="card">
-                                    <div class="card-body p-2">
-                                        <img src="{{ url_for('static', filename='uploads/logos/' + logo.image) }}" 
-                                             alt="{{ logo.name }}" class="img-fluid mb-2" style="max-height: 60px;">
-                                        <p class="mb-1 small">{{ logo.name }}</p>
-                                        <div class="btn-group btn-group-sm">
-                                            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteLogoModal{{ logo.id }}">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                        
-                                        <!-- Delete Logo Modal -->
-                                        <div class="modal fade" id="deleteLogoModal{{ logo.id }}" tabindex="-1" aria-hidden="true">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title">Confirm Delete</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        Are you sure you want to delete the logo for <strong>{{ logo.name }}</strong>?
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                        <form action="{{ url_for('admin.delete_client_logo', logo_id=logo.id) }}" method="POST">
-                                                            <button type="submit" class="btn btn-danger">Delete</button>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    {% else %}
-                        <div class="col-12">
-                            <div class="alert alert-light text-center">
-                                No client logos found. Add some logos to display on your homepage.
-                            </div>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
+
+        <h6 class="mt-4">Platform Distribution</h6>
+        <div class="progress mb-3" style="height: 25px">
+          {% set fiverr_count = testimonials|selectattr('platform', 'equalto',
+          'fiverr')|list|length if testimonials else 0 %} {% set upwork_count =
+          testimonials|selectattr('platform', 'equalto', 'upwork')|list|length
+          if testimonials else 0 %} {% set linkedin_count =
+          testimonials|selectattr('platform', 'equalto', 'linkedin')|list|length
+          if testimonials else 0 %} {% set other_count = testimonials|length -
+          fiverr_count - upwork_count - linkedin_count if testimonials else 0 %}
+          {% set total = testimonials|length if testimonials and
+          testimonials|length > 0 else 1 %}
+
+          <div
+            class="progress-bar bg-success"
+            role="progressbar"
+            style="width: {{ (fiverr_count / total * 100)|round }}%"
+            aria-valuenow="{{ fiverr_count }}"
+            aria-valuemin="0"
+            aria-valuemax="{{ total }}"
+          >
+            Fiverr ({{ fiverr_count }})
+          </div>
+          <div
+            class="progress-bar bg-primary"
+            role="progressbar"
+            style="width: {{ (upwork_count / total * 100)|round }}%"
+            aria-valuenow="{{ upwork_count }}"
+            aria-valuemin="0"
+            aria-valuemax="{{ total }}"
+          >
+            Upwork ({{ upwork_count }})
+          </div>
+          <div
+            class="progress-bar bg-info"
+            role="progressbar"
+            style="width: {{ (linkedin_count / total * 100)|round }}%"
+            aria-valuenow="{{ linkedin_count }}"
+            aria-valuemin="0"
+            aria-valuemax="{{ total }}"
+          >
+            LinkedIn ({{ linkedin_count }})
+          </div>
+          <div
+            class="progress-bar bg-secondary"
+            role="progressbar"
+            style="width: {{ (other_count / total * 100)|round }}%"
+            aria-valuenow="{{ other_count }}"
+            aria-valuemin="0"
+            aria-valuemax="{{ total }}"
+          >
+            Other ({{ other_count }})
+          </div>
         </div>
+
+        <h6 class="mt-4">Rating Distribution</h6>
+        <div class="row">
+          {% for i in range(5, 0, -1) %} {% set count =
+          testimonials|selectattr('rating', 'equalto', i)|list|length if
+          testimonials else 0 %}
+          <div class="col-12 mb-2">
+            <div class="d-flex align-items-center">
+              <div style="width: 80px">
+                {% for j in range(i) %}
+                <i class="fas fa-star text-warning"></i>
+                {% endfor %} {% for j in range(5 - i) %}
+                <i class="far fa-star text-muted"></i>
+                {% endfor %}
+              </div>
+              <div class="progress flex-grow-1" style="height: 15px">
+                <div
+                  class="progress-bar bg-warning"
+                  role="progressbar"
+                  style="width: {{ (count / total * 100)|round }}%"
+                  aria-valuenow="{{ count }}"
+                  aria-valuemin="0"
+                  aria-valuemax="{{ total }}"
+                ></div>
+              </div>
+              <div style="width: 40px; text-align: right">{{ count }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
     </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h6>Client Logos</h6>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle"></i> Client logos can be displayed on
+          your homepage to showcase the companies or individuals you've worked
+          with.
+        </div>
+
+        <div class="d-flex justify-content-between mb-3">
+          <h6>Manage Logos</h6>
+          <button
+            type="button"
+            class="btn btn-sm btn-primary"
+            data-bs-toggle="modal"
+            data-bs-target="#addLogoModal"
+          >
+            <i class="fas fa-plus"></i> Add Logo
+          </button>
+        </div>
+
+        <div class="row">
+          {% if client_logos %} {% for logo in client_logos %}
+          <div class="col-md-4 col-6 mb-3 text-center">
+            <div class="card">
+              <div class="card-body p-2">
+                <img
+                  src="{{ url_for('static', filename='uploads/logos/' + logo.image) }}"
+                  alt="{{ logo.name }}"
+                  class="img-fluid mb-2"
+                  style="max-height: 60px"
+                />
+                <p class="mb-1 small">{{ logo.name }}</p>
+                <div class="btn-group btn-group-sm">
+                  <button
+                    type="button"
+                    class="btn btn-outline-danger"
+                    data-bs-toggle="modal"
+                    data-bs-target="#deleteLogoModal{{ logo.id }}"
+                  >
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+
+                <!-- Delete Logo Modal -->
+                <div
+                  class="modal fade"
+                  id="deleteLogoModal{{ logo.id }}"
+                  tabindex="-1"
+                  aria-hidden="true"
+                >
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title">Confirm Delete</h5>
+                        <button
+                          type="button"
+                          class="btn-close"
+                          data-bs-dismiss="modal"
+                          aria-label="Close"
+                        ></button>
+                      </div>
+                      <div class="modal-body">
+                        Are you sure you want to delete the logo for
+                        <strong>{{ logo.name }}</strong>?
+                      </div>
+                      <div class="modal-footer">
+                        <button
+                          type="button"
+                          class="btn btn-secondary"
+                          data-bs-dismiss="modal"
+                        >
+                          Cancel
+                        </button>
+                        <form
+                          action="{{ url_for('admin.delete_client_logo', logo_id=logo.id) }}"
+                          method="POST"
+                        >
+                          <button type="submit" class="btn btn-danger">
+                            Delete
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %} {% else %}
+          <div class="col-12">
+            <div class="alert alert-light text-center">
+              No client logos found. Add some logos to display on your homepage.
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Add Logo Modal -->
-<div class="modal fade" id="addLogoModal" tabindex="-1" aria-labelledby="addLogoModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addLogoModalLabel">Add Client Logo</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<div
+  class="modal fade"
+  id="addLogoModal"
+  tabindex="-1"
+  aria-labelledby="addLogoModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addLogoModalLabel">Add Client Logo</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <form
+        action="{{ url_for('admin.add_client_logo') }}"
+        method="POST"
+        enctype="multipart/form-data"
+      >
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="logo_name" class="form-label"
+              >Client/Company Name</label
+            >
+            <input
+              type="text"
+              class="form-control"
+              id="logo_name"
+              name="name"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <label for="logo_image" class="form-label">Logo Image</label>
+            <input
+              type="file"
+              class="form-control"
+              id="logo_image"
+              name="image"
+              accept="image/*"
+              required
+            />
+            <div class="form-text">
+              Recommended format: PNG with transparent background
             </div>
-            <form action="{{ url_for('admin.add_client_logo') }}" method="POST" enctype="multipart/form-data">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="logo_name" class="form-label">Client/Company Name</label>
-                        <input type="text" class="form-control" id="logo_name" name="name" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="logo_image" class="form-label">Logo Image</label>
-                        <input type="file" class="form-control" id="logo_image" name="image" accept="image/*" required>
-                        <div class="form-text">Recommended format: PNG with transparent background</div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="logo_url" class="form-label">Website URL (Optional)</label>
-                        <input type="url" class="form-control" id="logo_url" name="url" placeholder="https://example.com">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Add Logo</button>
-                </div>
-            </form>
+          </div>
+          <div class="mb-3">
+            <label for="logo_url" class="form-label"
+              >Website URL (Optional)</label
+            >
+            <input
+              type="url"
+              class="form-control"
+              id="logo_url"
+              name="url"
+              placeholder="https://example.com"
+            />
+          </div>
         </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary">Add Logo</button>
+        </div>
+      </form>
     </div>
+  </div>
 </div>
 {% endblock %}

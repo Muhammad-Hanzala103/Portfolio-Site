@@ -78,12 +78,12 @@ class GalleryForm(FlaskForm):
     description = TextAreaField('Description', validators=[Optional()])
     image = FileField('Image', validators=[DataRequired(), FileAllowed(['jpg', 'png', 'jpeg'], 'Images only!')])
     category = SelectField('Category', choices=[
-        ('projects', 'Projects'),
-        ('personal', 'Personal'),
-        ('events', 'Events'),
-        ('certificates', 'Certificates'),
-        ('other', 'Other')
+        ('Project', 'Project'),
+        ('Personal', 'Personal'),
+        ('Certificate', 'Certificate'),
+        ('Other', 'Other')
     ], validators=[DataRequired()])
+    featured = BooleanField('Featured Image')
     order_index = IntegerField('Order Index', validators=[Optional(), NumberRange(min=0)])
 
 class ContactForm(FlaskForm):

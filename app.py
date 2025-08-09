@@ -52,7 +52,7 @@ ckeditor = CKEditor(app)
 cors = CORS(app)
 
 # Configure login
-login_manager.login_view = 'admin_login'
+login_manager.login_view = 'admin.admin_login'
 login_manager.login_message_category = 'info'
 
 # Import models will be done later to avoid circular imports

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_user, logout_user, login_required, current_user
-from models import User, Project, Skill, Gallery, Testimonial, Service, BlogPost, Contact, SiteVisit
+from models import db, User, Project, Skill, Gallery, Testimonial, Service, BlogPost, Contact, SiteVisit
 from forms import LoginForm, SkillForm, ServiceForm, TestimonialForm, BlogPostForm, GalleryForm, ContactForm, CommentForm, SettingsForm, ProjectForm
 from werkzeug.security import check_password_hash
 from werkzeug.utils import secure_filename
@@ -362,55 +362,71 @@ def gallery():
 @admin_bp.route('/gallery/new', methods=['GET', 'POST'])
 @login_required
 def new_gallery_item():
-    if request.method == 'POST':
-        title = request.form.get('title')
-        description = request.form.get('description')
-        category = request.form.get('category')
-        
+    from app import db
+    from models import GalleryCategory
+    form = GalleryForm()
+
+    if form.validate_on_submit():
         # Handle image upload
         image_path = None
-        if 'image' in request.files:
-            image_path = save_file(request.files['image'])
-        
+        if form.image.data:
+            image_path = save_file(form.image.data)
+
         if not image_path:
             flash('Please upload a valid image file', 'danger')
             return redirect(url_for('admin.new_gallery_item'))
-        
+
         # Create new gallery item
         new_item = Gallery(
-            title=title,
-            description=description,
-            category=category,
-            image=image_path
+            title=form.title.data,
+            description=form.description.data,
+            image=image_path,
+            featured=form.featured.data,
+            order_index=form.order_index.data or 0
         )
-        
+
+        # Map category string to GalleryCategory
+        category = GalleryCategory.query.filter_by(name=form.category.data).first()
+        if category:
+            new_item.category_id = category.id
+
         db.session.add(new_item)
         db.session.commit()
-        
+
         flash('Gallery item created successfully!', 'success')
         return redirect(url_for('admin.gallery'))
-    
-    return render_template('admin/gallery/new.html')
+
+    # Provide categories for the form selections
+    categories = GalleryCategory.query.all()
+    return render_template('admin/gallery/new.html', form=form, categories=categories)
 
 @admin_bp.route('/gallery/edit/<int:gallery_id>', methods=['GET', 'POST'])
 @login_required
 def edit_gallery_item(gallery_id):
+    from app import db
+    from models import GalleryCategory
     gallery_item = Gallery.query.get_or_404(gallery_id)
-    
+
     if request.method == 'POST':
         gallery_item.title = request.form.get('title')
         gallery_item.description = request.form.get('description')
-        gallery_item.category = request.form.get('category')
-        
+
+        # Update category by id if provided
+        category_id = request.form.get('category_id')
+        if category_id:
+            category = GalleryCategory.query.get(category_id)
+            gallery_item.category_id = category.id if category else None
+
         # Handle image upload if new image provided
         if 'image' in request.files and request.files['image'].filename:
             gallery_item.image = save_file(request.files['image'])
-        
+
         db.session.commit()
         flash('Gallery item updated successfully!', 'success')
         return redirect(url_for('admin.gallery'))
-    
-    return render_template('admin/gallery/edit.html', gallery_item=gallery_item)
+
+    categories = GalleryCategory.query.all()
+    return render_template('admin/gallery_form.html', item=gallery_item, categories=categories)
 
 @admin_bp.route('/gallery/delete/<int:gallery_id>', methods=['POST'])
 @login_required
@@ -436,63 +452,91 @@ def delete_gallery_item(gallery_id):
 @admin_bp.route('/testimonials')
 @login_required
 def testimonials():
-    testimonials = Testimonial.query.all()
-    return render_template('admin/testimonials/index.html', testimonials=testimonials)
+    testimonials = Testimonial.query.order_by(Testimonial.created_at.desc()).all()
+    return render_template('admin/testimonials.html', testimonials=testimonials)
 
 @admin_bp.route('/testimonials/new', methods=['GET', 'POST'])
 @login_required
 def new_testimonial():
+    from app import db
+    from datetime import datetime
     if request.method == 'POST':
         client_name = request.form.get('client_name')
-        client_position = request.form.get('client_position')
-        rating = request.form.get('rating')
+        client_title = request.form.get('client_title') or request.form.get('client_position')
+        rating = request.form.get('rating', type=int) or 5
         content = request.form.get('content')
-        featured = 'featured' in request.form
-        
+        platform = request.form.get('platform')
+        featured_flag = request.form.get('is_featured') in ['on', 'true', '1'] or ('featured' in request.form)
+        order_index = request.form.get('order', type=int) or 0
+        date_str = request.form.get('date')
+
         # Handle image upload
         client_image = None
         if 'client_image' in request.files and request.files['client_image'].filename:
             client_image = save_file(request.files['client_image'])
-        
+
         # Create new testimonial
-        new_testimonial = Testimonial(
+        new_item = Testimonial(
             client_name=client_name,
-            client_position=client_position,
+            client_position=client_title,
+            client_title=client_title,
+            testimonial_text=content,
+            platform=platform,
             rating=rating,
-            content=content,
-            featured=featured,
+            featured=featured_flag,
+            order_index=order_index,
             client_image=client_image
         )
-        
-        db.session.add(new_testimonial)
+
+        if date_str:
+            try:
+                new_item.created_at = datetime.strptime(date_str, '%Y-%m-%d')
+            except Exception:
+                pass
+
+        db.session.add(new_item)
         db.session.commit()
-        
+
         flash('Testimonial created successfully!', 'success')
         return redirect(url_for('admin.testimonials'))
-    
+
     return render_template('admin/testimonials/new.html')
 
 @admin_bp.route('/testimonials/edit/<int:testimonial_id>', methods=['GET', 'POST'])
 @login_required
 def edit_testimonial(testimonial_id):
+    from app import db
+    from datetime import datetime
     testimonial = Testimonial.query.get_or_404(testimonial_id)
-    
+
     if request.method == 'POST':
         testimonial.client_name = request.form.get('client_name')
-        testimonial.client_position = request.form.get('client_position')
-        testimonial.rating = request.form.get('rating')
-        testimonial.content = request.form.get('content')
-        testimonial.featured = 'featured' in request.form
-        
+        client_title = request.form.get('client_title') or request.form.get('client_position')
+        testimonial.client_position = client_title
+        testimonial.client_title = client_title
+        testimonial.rating = request.form.get('rating', type=int) or testimonial.rating
+        testimonial.testimonial_text = request.form.get('content')
+        testimonial.platform = request.form.get('platform')
+        testimonial.featured = request.form.get('is_featured') in ['on', 'true', '1'] or ('featured' in request.form)
+        testimonial.order_index = request.form.get('order', type=int) or testimonial.order_index
+
+        # Update created_at if date provided
+        date_str = request.form.get('date')
+        if date_str:
+            try:
+                testimonial.created_at = datetime.strptime(date_str, '%Y-%m-%d')
+            except Exception:
+                pass
+
         # Handle image upload if new image provided
         if 'client_image' in request.files and request.files['client_image'].filename:
             testimonial.client_image = save_file(request.files['client_image'])
-        
+
         db.session.commit()
         flash('Testimonial updated successfully!', 'success')
         return redirect(url_for('admin.testimonials'))
-    
-    return render_template('admin/testimonials/edit.html', testimonial=testimonial)
+
+    return render_template('admin/testimonial_form.html', testimonial=testimonial)
 
 @admin_bp.route('/testimonials/delete/<int:testimonial_id>', methods=['POST'])
 @login_required
@@ -518,50 +562,86 @@ def delete_testimonial(testimonial_id):
 @admin_bp.route('/services')
 @login_required
 def services():
-    services = Service.query.all()
-    return render_template('admin/services/index.html', services=services)
+    services = Service.query.order_by(Service.order_index.asc(), Service.created_at.desc()).all()
+    return render_template('admin/services.html', services=services)
 
 @admin_bp.route('/services/new', methods=['GET', 'POST'])
 @login_required
 def new_service():
+    from app import db
+    import json
     if request.method == 'POST':
         title = request.form.get('title')
+        short_description = request.form.get('short_description')
         description = request.form.get('description')
         icon = request.form.get('icon')
-        featured = 'featured' in request.form
-        
-        # Create new service
+        order_index = request.form.get('order', type=int) or 0
+        featured = request.form.get('is_featured') in ['on', 'true', '1']
+        price = request.form.get('price')
+
+        # Features arrays
+        feature_icons = request.form.getlist('feature_icons[]')
+        feature_descriptions = request.form.getlist('feature_descriptions[]')
+        features_list = []
+        for i in range(min(len(feature_icons), len(feature_descriptions))):
+            if feature_icons[i] or feature_descriptions[i]:
+                features_list.append({
+                    'icon': feature_icons[i],
+                    'description': feature_descriptions[i]
+                })
+
         new_service = Service(
             title=title,
+            short_description=short_description,
             description=description,
             icon=icon,
-            featured=featured
+            order_index=order_index,
+            featured=featured,
+            price=price,
+            features=json.dumps(features_list) if features_list else None
         )
-        
+
         db.session.add(new_service)
         db.session.commit()
-        
+
         flash('Service created successfully!', 'success')
         return redirect(url_for('admin.services'))
-    
-    return render_template('admin/services/new.html')
+
+    return render_template('admin/service_form.html')
 
 @admin_bp.route('/services/edit/<int:service_id>', methods=['GET', 'POST'])
 @login_required
 def edit_service(service_id):
+    from app import db
+    import json
     service = Service.query.get_or_404(service_id)
-    
+
     if request.method == 'POST':
         service.title = request.form.get('title')
+        service.short_description = request.form.get('short_description')
         service.description = request.form.get('description')
         service.icon = request.form.get('icon')
-        service.featured = 'featured' in request.form
-        
+        service.order_index = request.form.get('order', type=int) or 0
+        service.featured = request.form.get('is_featured') in ['on', 'true', '1']
+        service.price = request.form.get('price')
+
+        # Features arrays
+        feature_icons = request.form.getlist('feature_icons[]')
+        feature_descriptions = request.form.getlist('feature_descriptions[]')
+        features_list = []
+        for i in range(min(len(feature_icons), len(feature_descriptions))):
+            if feature_icons[i] or feature_descriptions[i]:
+                features_list.append({
+                    'icon': feature_icons[i],
+                    'description': feature_descriptions[i]
+                })
+        service.features = json.dumps(features_list) if features_list else None
+
         db.session.commit()
         flash('Service updated successfully!', 'success')
         return redirect(url_for('admin.services'))
-    
-    return render_template('admin/services/edit.html', service=service)
+
+    return render_template('admin/service_form.html', service=service)
 
 @admin_bp.route('/services/delete/<int:service_id>', methods=['POST'])
 @login_required
@@ -578,10 +658,22 @@ def delete_service(service_id):
 @admin_bp.route('/blog')
 @login_required
 def blog_posts():
-    blog_posts = BlogPost.query.all()
+    from models import BlogPost, BlogCategory, Tag, BlogComment
+    
+    blog_posts = BlogPost.query.order_by(BlogPost.created_at.desc()).all()
     published_count = BlogPost.query.filter_by(published=True).count()
     draft_count = BlogPost.query.filter_by(published=False).count()
-    return render_template('admin/blog_posts.html', blog_posts=blog_posts, published_count=published_count, draft_count=draft_count)
+    categories = BlogCategory.query.all()
+    tags = Tag.query.all()
+    comments = BlogComment.query.order_by(BlogComment.created_at.desc()).limit(5).all()
+    
+    return render_template('admin/blog_posts.html', 
+                         blog_posts=blog_posts, 
+                         published_count=published_count, 
+                         draft_count=draft_count,
+                         categories=categories,
+                         tags=tags,
+                         comments=comments)
 
 @admin_bp.route('/blog/new', methods=['GET', 'POST'])
 @login_required
@@ -700,6 +792,7 @@ def delete_message(message_id):
 @admin_bp.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
+    from app import bcrypt
     if request.method == 'POST':
         username = request.form.get('username')
         email = request.form.get('email')
@@ -928,3 +1021,199 @@ def delete_skill_category(category_id):
         flash('Error deleting category.', 'danger')
     
     return redirect(url_for('admin.skills'))
+
+# Blog Category Management
+@admin_bp.route('/blog/categories/add', methods=['POST'])
+@login_required
+def add_blog_category():
+    from models import BlogCategory
+    from app import db
+    
+    name = request.form.get('name')
+    slug = request.form.get('slug')
+    description = request.form.get('description')
+    
+    if not slug:
+        slug = name.lower().replace(' ', '-').replace('_', '-')
+        # Remove special characters
+        slug = re.sub(r'[^\w-]', '', slug)
+    
+    # Check if category already exists
+    existing = BlogCategory.query.filter_by(name=name).first()
+    if existing:
+        flash('Category with this name already exists.', 'danger')
+        return redirect(url_for('admin.blog_posts'))
+    
+    new_category = BlogCategory(
+        name=name,
+        slug=slug,
+        description=description
+    )
+    
+    try:
+        db.session.add(new_category)
+        db.session.commit()
+        flash('Category added successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Error adding category.', 'danger')
+    
+    return redirect(url_for('admin.blog_posts'))
+
+@admin_bp.route('/blog/categories/edit/<int:id>', methods=['POST'])
+@login_required
+def edit_blog_category(id):
+    from models import BlogCategory
+    from app import db
+    
+    category = BlogCategory.query.get_or_404(id)
+    name = request.form.get('name')
+    slug = request.form.get('slug')
+    description = request.form.get('description')
+    
+    if not slug:
+        slug = name.lower().replace(' ', '-').replace('_', '-')
+        # Remove special characters
+        slug = re.sub(r'[^\w-]', '', slug)
+    
+    # Check if name already exists (excluding current category)
+    existing = BlogCategory.query.filter_by(name=name).first()
+    if existing and existing.id != id:
+        flash('Category with this name already exists.', 'danger')
+        return redirect(url_for('admin.blog_posts'))
+    
+    category.name = name
+    category.slug = slug
+    category.description = description
+    
+    try:
+        db.session.commit()
+        flash('Category updated successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Error updating category.', 'danger')
+    
+    return redirect(url_for('admin.blog_posts'))
+
+@admin_bp.route('/blog/categories/delete/<int:id>', methods=['POST'])
+@login_required
+def delete_blog_category(id):
+    from models import BlogCategory, BlogPost
+    from app import db
+    
+    category = BlogCategory.query.get_or_404(id)
+    
+    # Check if category has posts
+    posts_in_category = BlogPost.query.filter_by(category_id=id).count()
+    if posts_in_category > 0:
+        flash(f'Cannot delete category. It has {posts_in_category} posts associated with it.', 'danger')
+        return redirect(url_for('admin.blog_posts'))
+    
+    try:
+        db.session.delete(category)
+        db.session.commit()
+        flash('Category deleted successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Error deleting category.', 'danger')
+    
+    return redirect(url_for('admin.blog_posts'))
+
+# Blog Tag Management
+@admin_bp.route('/blog/tags/add', methods=['POST'])
+@login_required
+def add_blog_tag():
+    from models import Tag
+    from app import db
+    
+    name = request.form.get('name')
+    
+    if not name:
+        flash('Tag name is required.', 'danger')
+        return redirect(url_for('admin.blog_posts'))
+    
+    # Check if tag already exists
+    existing = Tag.query.filter_by(name=name).first()
+    if existing:
+        flash('Tag with this name already exists.', 'danger')
+        return redirect(url_for('admin.blog_posts'))
+    
+    new_tag = Tag(name=name)
+    
+    try:
+        db.session.add(new_tag)
+        db.session.commit()
+        flash('Tag added successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Error adding tag.', 'danger')
+    
+    return redirect(url_for('admin.blog_posts'))
+
+@admin_bp.route('/blog/tags/delete/<int:id>', methods=['POST'])
+@login_required
+def delete_blog_tag(id):
+    from models import Tag
+    from app import db
+    
+    tag = Tag.query.get_or_404(id)
+    
+    try:
+        db.session.delete(tag)
+        db.session.commit()
+        flash('Tag deleted successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Error deleting tag.', 'danger')
+    
+    return redirect(url_for('admin.blog_posts'))
+
+# Comments Management
+@admin_bp.route('/comments')
+@login_required
+def comments():
+    from models import BlogComment
+    
+    # Get all comments with pagination
+    page = request.args.get('page', 1, type=int)
+    comments = BlogComment.query.order_by(BlogComment.created_at.desc()).paginate(
+        page=page, per_page=20, error_out=False
+    )
+    
+    return render_template('admin/comments.html', comments=comments)
+
+@admin_bp.route('/comments/approve/<int:comment_id>', methods=['POST'])
+@login_required
+def approve_comment(comment_id):
+    from models import BlogComment
+    from app import db
+    
+    comment = BlogComment.query.get_or_404(comment_id)
+    comment.approved = True
+    
+    try:
+        db.session.commit()
+        flash('Comment approved successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Error approving comment.', 'danger')
+    
+    return redirect(url_for('admin.comments'))
+
+@admin_bp.route('/comments/delete/<int:comment_id>', methods=['POST'])
+@login_required
+def delete_comment(comment_id):
+    from models import BlogComment
+    from app import db
+    
+    comment = BlogComment.query.get_or_404(comment_id)
+    
+    try:
+        db.session.delete(comment)
+        db.session.commit()
+        flash('Comment deleted successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Error deleting comment.', 'danger')
+    
+    return redirect(url_for('admin.comments'))
