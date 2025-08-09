@@ -315,25 +315,49 @@ def delete_skill(skill_id):
 @login_required
 def gallery():
     from flask import request
-    from app import db
     from models import GalleryCategory
+    
+    # Base query
     query = Gallery.query
-    category_id = request.args.get('category')
-    if category_id:
-        query = query.filter_by(category_id=category_id)
+
+    # Filters
+    category_name = request.args.get('category')
+    if category_name:
+        # Filter by category name via join
+        query = query.join(GalleryCategory).filter(GalleryCategory.name == category_name)
+
     search = request.args.get('search')
     if search:
-        query = query.filter(Gallery.title.ilike(f'%{search}%') | Gallery.description.ilike(f'%{search}%'))
-    gallery_items = query.order_by(Gallery.created_at.desc()).all()
-    categories = db.session.query(GalleryCategory).all()
-    
-    # Create gallery object with total and items for template
-    gallery_data = {
-        'total': len(gallery_items),
-        'items': gallery_items
-    }
-    
-    return render_template('admin/gallery/index.html', gallery=gallery_data, gallery_items=gallery_items, categories=categories)
+        like = f"%{search}%"
+        query = query.filter(
+            (Gallery.title.ilike(like)) | (Gallery.description.ilike(like))
+        )
+
+    # Sorting
+    sort = request.args.get('sort', 'newest')
+    if sort == 'oldest':
+        query = query.order_by(Gallery.created_at.asc())
+    elif sort == 'title':
+        query = query.order_by(Gallery.title.asc())
+    elif sort == 'category':
+        query = query.join(GalleryCategory).order_by(GalleryCategory.name.asc(), Gallery.created_at.desc())
+    else:
+        # newest
+        query = query.order_by(Gallery.created_at.desc())
+
+    # Pagination
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 12, type=int)
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+
+    # Categories for filter UI (if needed in template)
+    categories = GalleryCategory.query.all()
+
+    return render_template(
+        'admin/gallery/index.html',
+        gallery=pagination,
+        categories=categories
+    )
 
 @admin_bp.route('/gallery/new', methods=['GET', 'POST'])
 @login_required
