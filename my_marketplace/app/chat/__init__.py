@@ -2,7 +2,8 @@ from flask import Blueprint, jsonify, request
 from flask_login import current_user, login_required
 from flask_socketio import emit, join_room, leave_room
 
-from models import Message, Conversation, User, db
+from my_marketplace.models import Message, Conversation, User
+from ..database import db
 from ..utils.crypto import MessageCrypto
 from .. import socketio
 

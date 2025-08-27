@@ -1,7 +1,7 @@
 from flask import render_template, redirect, url_for, flash, request
 from flask_login import current_user, login_required
-from my_marketplace.app import db
-from models import Order, Dispute
+from my_marketplace.models import Order, Dispute
+from ..database import db
 from . import disputes_bp
 
 @disputes_bp.route('/orders/<int:order_id>/disputes/create', methods=['GET', 'POST'])

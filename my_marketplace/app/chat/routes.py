@@ -1,7 +1,8 @@
 from flask import render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
 from . import chat_bp
-from models import User, Conversation, Message, db
+from my_marketplace.models import User, Conversation, Message
+from ..database import db
 from ..utils.crypto import MessageCrypto
 
 

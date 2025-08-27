@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 from flask_login import login_required, current_user
-from models import db, Order, Review, User, Gig, Milestone
+from my_marketplace.models import Order, Review, User, Gig, Milestone
+from ..database import db
 from .. import csrf
 import json
 from datetime import datetime

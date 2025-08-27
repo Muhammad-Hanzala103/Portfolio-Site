@@ -23,7 +23,7 @@ requests
 Flask-Mail
 Flask-SocketIO
 simple-websocket
-stripe
+stripe==9.4.0
 aiortc
 aiohttp
 cryptography

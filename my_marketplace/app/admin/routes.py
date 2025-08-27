@@ -1,7 +1,26 @@
 from flask import render_template, request, flash, redirect, url_for
 from . import admin_bp
-from models import Dispute, Order
+from my_marketplace.models import User, Gig, Order, Dispute, FlaggedItem, Transaction, Event
+
+@admin_bp.route('/transactions')
+def transactions():
+    transactions = Transaction.query.all()
+    return render_template('transactions.html', transactions=transactions)
+
+@admin_bp.route('/analytics')
+def analytics():
+    events = Event.query.order_by(Event.timestamp.desc()).all()
+    return render_template('events.html', events=events)
+
+@admin_bp.route('/security')
+def security():
+    return render_template('security.html')
 from my_marketplace.app import db
+
+@admin_bp.route('/flagged-items')
+def flagged_items():
+    items = FlaggedItem.query.all()
+    return render_template('flagged_items.html', items=items)
 
 @admin_bp.route('/disputes', methods=['GET', 'POST'])
 def manage_disputes():

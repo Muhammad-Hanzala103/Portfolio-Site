@@ -2,7 +2,8 @@ import stripe
 from flask import request, jsonify, current_app, render_template
 from flask_login import login_required, current_user
 from . import payments_bp
-from models import db, Order, Payment, Gig, User
+from my_marketplace.models import Order, Payment, Gig, User
+from ..database import db
 from decimal import Decimal
 
 @payments_bp.route('/create-checkout-session', methods=['POST'])
@@ -98,7 +99,7 @@ def stripe_webhook():
                 payment = Payment(
                     user_id=order.buyer_id,
                     order_id=order.id,
-                    amount=order.amount,
+                    amount=order.total_price, # Corrected from order.amount
                     provider='stripe',
                     status='completed'
                 )
@@ -106,6 +107,11 @@ def stripe_webhook():
                 db.session.commit()
 
     return 'Success', 200
+
+
+@payments_bp.route('/checkout')
+def checkout():
+    return render_template('checkout.html')
 
 
 @payments_bp.route('/wallet')
@@ -182,12 +188,12 @@ def pay_order_with_wallet():
         return jsonify({'error': 'Order cannot be paid'}), 400
     
     # Check if user has sufficient balance
-    if current_user.wallet_balance < order.amount:
+    if current_user.wallet_balance < order.total_price:
         return jsonify({'error': 'Insufficient wallet balance'}), 400
     
     try:
         # Deduct amount from wallet
-        current_user.wallet_balance -= Decimal(str(order.amount))
+        current_user.wallet_balance -= order.total_price
         
         # Update order status
         order.status = 'active'
@@ -196,7 +202,7 @@ def pay_order_with_wallet():
         payment = Payment(
             user_id=current_user.id,
             order_id=order.id,
-            amount=order.amount,
+            amount=order.total_price,
             provider='wallet',
             status='completed'
         )

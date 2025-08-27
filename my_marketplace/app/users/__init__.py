@@ -3,7 +3,8 @@ from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 import os
 
-from models import db, User
+from my_marketplace.models import User
+from ..database import db
 from .. import csrf
 
 users_bp = Blueprint('users', __name__)

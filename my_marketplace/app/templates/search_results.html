@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Search Results for "{{ query }}"</h1>
+    <div class="row">
+        {% for gig in gigs %}
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">{{ gig.title }}</h5>
+                    <p class="card-text">{{ gig.description }}</p>
+                    <a href="{{ url_for('gigs.view_gig', gig_id=gig.id) }}" class="btn btn-primary">View Gig</a>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <p>No gigs found for "{{ query }}".</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

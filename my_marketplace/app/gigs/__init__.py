@@ -5,7 +5,8 @@ from werkzeug.utils import secure_filename
 import os
 import uuid
 
-from models import db, Job, Gig, User
+from my_marketplace.models import Job, Gig, User
+from ..database import db
 from .. import csrf
 
 
@@ -15,6 +16,12 @@ gigs_bp = Blueprint('gigs', __name__)
 @gigs_bp.get('/ping')
 def ping():
     return jsonify(msg='gigs ok')
+
+@gigs_bp.route('/gigs/search')
+def search():
+    query = request.args.get('query', '')
+    gigs = Gig.query.filter(Gig.title.ilike(f'%{query}%')).all()
+    return render_template('search_results.html', gigs=gigs, query=query)
 
 
 # Helper serializers

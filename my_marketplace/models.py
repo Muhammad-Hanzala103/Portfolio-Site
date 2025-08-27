@@ -4,18 +4,18 @@ from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from itsdangerous import URLSafeTimedSerializer as Serializer
 from sqlalchemy import Enum
+from werkzeug.security import generate_password_hash, check_password_hash
 
-# Create db instance here to avoid circular imports
-db = SQLAlchemy()
+from my_marketplace.app.database import db
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False)
-    phone = db.Column(db.String(50), nullable=False)
+    phone = db.Column(db.String(50), nullable=True)
     role = db.Column(Enum('buyer', 'seller', 'both', 'admin', name='user_roles'), nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
-    email_verified = db.Column(db.Boolean, default=False)
+    email_verified = db.Column(db.Boolean, default=False, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     is_suspended = db.Column(db.Boolean, default=False)
@@ -24,6 +24,12 @@ class User(db.Model, UserMixin):
     location = db.Column(db.String(255), nullable=True)
     languages = db.Column(db.String(255), nullable=True) # Storing as a comma-separated string
     wallet_balance = db.Column(db.Numeric(10, 2), default=0.00)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
     def get_reset_token(self):
         s = Serializer(current_app.config['SECRET_KEY'])
@@ -190,22 +196,33 @@ class Dispute(db.Model):
     def __repr__(self):
         return f'<Dispute {self.id}>'
 
-class Analytics(db.Model):
+class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     event_type = db.Column(db.String(255), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
-    meta = db.Column(db.Text, nullable=True) # Storing as a JSON string
+    session_id = db.Column(db.String(255), nullable=True)
+    meta = db.Column(db.JSON, nullable=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
-    user = db.relationship('User', backref='analytics_events')
+    user = db.relationship('User', backref='events')
 
     def __repr__(self):
-        return f'<Analytics {self.event_type}>'
+        return f'<Event {self.event_type}>'
 
 class SiteSetting(db.Model):
+    __tablename__ = 'site_setting'
+
     id = db.Column(db.Integer, primary_key=True)
-    key = db.Column(db.String(255), unique=True, nullable=False)
-    value = db.Column(db.Text, nullable=False)
+    site_name = db.Column(db.String(128), default='My Marketplace')
+    site_description = db.Column(db.String(256), default='A great place to buy and sell.')
+    contact_email = db.Column(db.String(128), default='')
+    contact_phone = db.Column(db.String(32), default='')
+    social_media_facebook = db.Column(db.String(256), default='')
+    social_media_twitter = db.Column(db.String(256), default='')
+    social_media_instagram = db.Column(db.String(256), default='')
+    social_media_linkedin = db.Column(db.String(256), default='')
+    google_analytics_id = db.Column(db.String(64), default='')
+    maintenance_mode = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
-        return f'<SiteSetting {self.key}>'
+        return f'<SiteSetting {self.site_name}>'

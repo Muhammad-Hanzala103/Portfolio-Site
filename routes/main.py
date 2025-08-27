@@ -8,8 +8,8 @@ main_bp = Blueprint('main', __name__)
 @main_bp.route('/')
 def index():
     # Import models and db at runtime to avoid circular imports
-    from models import Project, Skill, Testimonial, Service
-    from app import db
+    # from my_marketplace.models import Project, Skill, Testimonial, Service
+    from my_marketplace.app.database import db
     
     # Get featured projects for homepage
     featured_projects = Project.query.filter_by(featured=True).limit(3).all()
@@ -38,8 +38,8 @@ def index():
 @main_bp.route('/about')
 def about():
     # Import models at runtime to avoid circular imports
-    from models import Skill
-    from app import db
+    from my_marketplace.models import Skill
+    from my_marketplace.app.database import db
     
     # Get all skills for about page
     skills = Skill.query.all()
@@ -54,8 +54,8 @@ def about():
 @main_bp.route('/projects')
 def projects():
     # Import models at runtime to avoid circular imports
-    from models import Project
-    from app import db
+    from my_marketplace.models import Project
+    from my_marketplace.app.database import db
     
     # Get all projects
     projects = Project.query.order_by(Project.created_at.desc()).all()
@@ -64,8 +64,8 @@ def projects():
 @main_bp.route('/project/<int:project_id>')
 def project_detail(project_id):
     # Import models at runtime to avoid circular imports
-    from models import Project
-    from app import db
+    from my_marketplace.models import Project
+    from my_marketplace.app.database import db
     
     # Get specific project
     project = Project.query.get_or_404(project_id)
@@ -74,14 +74,14 @@ def project_detail(project_id):
 @main_bp.route('/gallery')
 def gallery():
     # Import models at runtime to avoid circular imports
-    from models import Gallery
-    from app import db
+    from my_marketplace.models import Gallery
+    from my_marketplace.app.database import db
     
     # Get all gallery items
     gallery_items = Gallery.query.order_by(Gallery.created_at.desc()).all()
     
     # Get unique categories for filtering
-    from models import GalleryCategory
+    from my_marketplace.models import GalleryCategory
     categories = db.session.query(GalleryCategory.name).join(Gallery, Gallery.category_id == GalleryCategory.id).distinct().all()
     categories = [category[0] for category in categories if category[0] is not None]
     
@@ -90,8 +90,8 @@ def gallery():
 @main_bp.route('/services')
 def services():
     # Import models at runtime to avoid circular imports
-    from models import Service
-    from app import db
+    from my_marketplace.models import Service
+    from my_marketplace.app.database import db
     
     # Get all services
     services = Service.query.all()
@@ -100,8 +100,8 @@ def services():
 @main_bp.route('/testimonials')
 def testimonials():
     # Import models at runtime to avoid circular imports
-    from models import Testimonial
-    from app import db
+    from my_marketplace.models import Testimonial
+    from my_marketplace.app.database import db
     
     # Get all testimonials
     testimonials = Testimonial.query.order_by(Testimonial.created_at.desc()).all()
@@ -110,8 +110,8 @@ def testimonials():
 @main_bp.route('/blog')
 def blog():
     # Import models at runtime to avoid circular imports
-    from models import BlogPost
-    from app import db
+    from my_marketplace.models import BlogPost
+    from my_marketplace.app.database import db
     
     # Get all published blog posts
     page = request.args.get('page', 1, type=int)
@@ -121,8 +121,8 @@ def blog():
 @main_bp.route('/blog/<string:slug>')
 def blog_post(slug):
     # Import models at runtime to avoid circular imports
-    from models import BlogPost
-    from app import db
+    from my_marketplace.models import BlogPost
+    from my_marketplace.app.database import db
     
     # Get specific blog post by slug
     post = BlogPost.query.filter_by(slug=slug, published=True).first_or_404()
@@ -132,8 +132,8 @@ def blog_post(slug):
 def contact():
     if request.method == 'POST':
         # Import models at runtime to avoid circular imports
-        from models import Contact
-        from app import db
+        from my_marketplace.models import Contact
+        from my_marketplace.app.database import db
         
         name = request.form.get('name')
         email = request.form.get('email')
@@ -163,7 +163,7 @@ def download_cv():
 @main_bp.route('/sitemap.xml')
 def sitemap():
     """Generate dynamic sitemap.xml for SEO"""
-    from models import Project, BlogPost
+    from my_marketplace.models import Project, BlogPost
     
     # Static pages
     pages = [

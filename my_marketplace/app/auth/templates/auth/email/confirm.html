@@ -1,0 +1,6 @@
+<p>Dear {{ user.name }},</p>
+<p>Welcome to My Marketplace! To confirm your account, please click the following link:</p>
+<p><a href="{{ url_for('auth.confirm_email', token=token, _external=True) }}">Confirm My Account</a></p>
+<p>If you did not create an account, please ignore this email.</p>
+<p>Sincerely,</p>
+<p>The My Marketplace Team</p>
