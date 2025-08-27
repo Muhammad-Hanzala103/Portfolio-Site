@@ -30,7 +30,7 @@ def create_checkout_session():
                         'product_data': {
                             'name': f'Payment for {gig.title}',
                         },
-                        'unit_amount': int(order.total_price * 100),  # Amount in cents
+                        'unit_amount': int(order.amount * 100),  # Amount in cents
                     },
                     'quantity': 1,
                 }
@@ -42,7 +42,7 @@ def create_checkout_session():
                 'order_id': order.id
             }
         )
-        return jsonify({'id': checkout_session.id})
+        return jsonify({'id': checkout_session.id, 'checkout_url': checkout_session.url})
     except Exception as e:
         return jsonify(error=str(e)), 403
 
@@ -99,7 +99,7 @@ def stripe_webhook():
                 payment = Payment(
                     user_id=order.buyer_id,
                     order_id=order.id,
-                    amount=order.total_price, # Corrected from order.amount
+                    amount=order.amount, # Corrected from order.amount
                     provider='stripe',
                     status='completed'
                 )
@@ -188,12 +188,12 @@ def pay_order_with_wallet():
         return jsonify({'error': 'Order cannot be paid'}), 400
     
     # Check if user has sufficient balance
-    if current_user.wallet_balance < order.total_price:
+    if current_user.wallet_balance < order.amount:
         return jsonify({'error': 'Insufficient wallet balance'}), 400
     
     try:
         # Deduct amount from wallet
-        current_user.wallet_balance -= order.total_price
+        current_user.wallet_balance -= order.amount
         
         # Update order status
         order.status = 'active'
@@ -202,7 +202,7 @@ def pay_order_with_wallet():
         payment = Payment(
             user_id=current_user.id,
             order_id=order.id,
-            amount=order.total_price,
+            amount=order.amount,
             provider='wallet',
             status='completed'
         )

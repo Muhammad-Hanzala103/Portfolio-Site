@@ -12,21 +12,24 @@ def index():
     from my_marketplace.app.database import db
     
     # Get featured projects for homepage
-    featured_projects = Project.query.filter_by(featured=True).limit(3).all()
+    # featured_projects = Project.query.filter_by(featured=True).limit(3).all()
+    featured_projects = []
     
     # Get skills grouped by category
-    skills = Skill.query.all()
+    # skills = Skill.query.all()
     skill_categories = {}
-    for skill in skills:
-        if skill.category not in skill_categories:
-            skill_categories[skill.category] = []
-        skill_categories[skill.category].append(skill)
+    # for skill in skills:
+    #     if skill.category not in skill_categories:
+    #         skill_categories[skill.category] = []
+    #     skill_categories[skill.category].append(skill)
     
     # Get featured testimonials
-    testimonials = Testimonial.query.filter_by(featured=True).limit(4).all()
+    # testimonials = Testimonial.query.filter_by(featured=True).limit(4).all()
+    testimonials = []
     
     # Get featured services
-    services = Service.query.filter_by(featured=True).limit(4).all()
+    # services = Service.query.filter_by(featured=True).limit(4).all()
+    services = []
 
     
     return render_template('index.html', 

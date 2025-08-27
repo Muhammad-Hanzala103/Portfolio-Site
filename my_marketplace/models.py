@@ -48,6 +48,10 @@ class User(db.Model, UserMixin):
         """Check if user has already reviewed a specific order"""
         return Review.query.filter_by(order_id=order_id, reviewer_id=self.id).first() is not None
 
+    @property
+    def is_admin(self):
+        return self.role == 'admin'
+
     def __repr__(self):
         return f'<User {self.name}>'
 

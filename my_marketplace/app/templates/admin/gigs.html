@@ -1,0 +1,61 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mt-4">Manage Gigs</h1>
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-table mr-1"></i>
+            All Gigs
+        </div>
+        <div class="card-body">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Seller</th>
+                            <th>Price (Basic)</th>
+                            <th>Status</th>
+                            <th>Created At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for gig in gigs %}
+                        <tr>
+                            <td>{{ gig.title }}</td>
+                            <td>{{ gig.seller.name }}</td>
+                            <td>${{ "%.2f"|format(gig.price_basic) }}</td>
+                            <td>
+                                {% if gig.is_published %}
+                                    <span class="badge badge-success">Published</span>
+                                {% else %}
+                                    <span class="badge badge-warning">Pending Approval</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ gig.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>
+                                {% if not gig.is_published %}
+                                <form action="{{ url_for('admin.approve_gig', gig_id=gig.id) }}" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                                </form>
+                                {% endif %}
+                                <a href="{{ url_for('gigs.gig_detail_page', slug=gig.slug) }}" class="btn btn-info btn-sm" target="_blank">View</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

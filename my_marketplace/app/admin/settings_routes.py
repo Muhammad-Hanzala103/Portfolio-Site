@@ -1,7 +1,7 @@
 from flask import render_template, flash, redirect, url_for
 from flask_login import login_required, current_user
 from my_marketplace.app.admin import admin_bp
-from models import SiteSetting
+from my_marketplace.models import SiteSetting
 from .forms import SettingsForm
 from my_marketplace.app.database import db
 

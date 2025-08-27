@@ -1,11 +1,11 @@
 from flask import render_template, request, flash, redirect, url_for
 from . import admin_bp
-from my_marketplace.models import User, Gig, Order, Dispute, FlaggedItem, Transaction, Event
+from my_marketplace.models import User, Gig, Order, Dispute, Event
 
-@admin_bp.route('/transactions')
-def transactions():
-    transactions = Transaction.query.all()
-    return render_template('transactions.html', transactions=transactions)
+# @admin_bp.route('/transactions')
+# def transactions():
+#     transactions = Transaction.query.all()
+#     return render_template('transactions.html', transactions=transactions)
 
 @admin_bp.route('/analytics')
 def analytics():
@@ -17,10 +17,10 @@ def security():
     return render_template('security.html')
 from my_marketplace.app import db
 
-@admin_bp.route('/flagged-items')
-def flagged_items():
-    items = FlaggedItem.query.all()
-    return render_template('flagged_items.html', items=items)
+# @admin_bp.route('/flagged-items')
+# def flagged_items():
+#     items = FlaggedItem.query.all()
+#     return render_template('flagged_items.html', items=items)
 
 @admin_bp.route('/disputes', methods=['GET', 'POST'])
 def manage_disputes():
@@ -54,3 +54,16 @@ def manage_disputes():
 
     disputes = Dispute.query.all()
     return render_template('disputes.html', disputes=disputes)
+
+@admin_bp.route('/gigs')
+def manage_gigs():
+    gigs = Gig.query.all()
+    return render_template('admin/gigs.html', gigs=gigs)
+
+@admin_bp.route('/gigs/<int:gig_id>/approve', methods=['POST'])
+def approve_gig(gig_id):
+    gig = Gig.query.get_or_404(gig_id)
+    gig.is_published = True
+    db.session.commit()
+    flash(f'Gig "{gig.title}" has been approved and published.', 'success')
+    return redirect(url_for('admin.manage_gigs'))

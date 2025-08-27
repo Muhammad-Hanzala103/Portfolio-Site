@@ -29,6 +29,9 @@ class TestingConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     WTF_CSRF_ENABLED = False
+    STRIPE_PUBLIC_KEY = 'test_public_key'
+    STRIPE_SECRET_KEY = 'test_secret_key'
+    STRIPE_WEBHOOK_SECRET = 'test_webhook_secret'
 
 class ProductionConfig(Config):
     """Production configuration."""

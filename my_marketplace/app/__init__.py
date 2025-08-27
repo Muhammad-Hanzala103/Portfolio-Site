@@ -1,5 +1,5 @@
 from flask import Flask
-from config import Config
+from config import config, Config
 from flask_wtf import CSRFProtect
 from flask_migrate import Migrate
 from flask_login import LoginManager
@@ -21,9 +21,12 @@ cors = CORS()
 bcrypt = Bcrypt()
 
 
-def create_app(config_class=Config):
+def create_app(config_name_or_class='default'):
     app = Flask(__name__, static_folder='static', static_url_path='/static')
-    app.config.from_object(config_class)
+    if isinstance(config_name_or_class, str):
+        app.config.from_object(config[config_name_or_class])
+    else:
+        app.config.from_object(config_name_or_class)
 
     # Initialize extensions
     db.init_app(app)
@@ -72,6 +75,9 @@ def create_app(config_class=Config):
 
     from my_marketplace.app.disputes import disputes_bp
     app.register_blueprint(disputes_bp)
+
+    from my_marketplace.app.admin import admin_bp
+    app.register_blueprint(admin_bp, url_prefix='/admin')
 
     from routes.main import main_bp
     app.register_blueprint(main_bp)

@@ -22,7 +22,7 @@ def on_join(data):
 def on_leave(data):
     room = data['room']
     leave_room(room)
-    emit('status', {'msg': f'user {request.sid} left room {room}'}, room=room)
+    emit('status', {'msg': f'user {request.sid} left room {room}'})
 
 @socketio.on('offer', namespace='/webrtc')
 def on_offer(data):
