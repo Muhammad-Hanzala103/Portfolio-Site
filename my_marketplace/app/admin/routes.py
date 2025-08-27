@@ -1,6 +1,7 @@
 from flask import render_template, request, flash, redirect, url_for
 from . import admin_bp
-from my_marketplace.models import User, Gig, Order, Dispute, Event
+from my_marketplace.models import User, Gig, Order, Dispute, Event, Withdrawal
+from my_marketplace.app import db
 
 # @admin_bp.route('/transactions')
 # def transactions():
@@ -15,7 +16,6 @@ def analytics():
 @admin_bp.route('/security')
 def security():
     return render_template('security.html')
-from my_marketplace.app import db
 
 # @admin_bp.route('/flagged-items')
 # def flagged_items():
@@ -65,5 +65,35 @@ def approve_gig(gig_id):
     gig = Gig.query.get_or_404(gig_id)
     gig.is_published = True
     db.session.commit()
-    flash(f'Gig "{gig.title}" has been approved and published.', 'success')
+    flash(f'Gig {gig.title} has been approved and is now live.', 'success')
     return redirect(url_for('admin.manage_gigs'))
+
+@admin_bp.route('/withdrawals')
+def manage_withdrawals():
+    withdrawals = Withdrawal.query.filter_by(status='pending').all()
+    return render_template('admin/withdrawals.html', withdrawals=withdrawals)
+
+@admin_bp.route('/withdrawals/<int:withdrawal_id>/approve', methods=['POST'])
+def approve_withdrawal(withdrawal_id):
+    withdrawal = Withdrawal.query.get_or_404(withdrawal_id)
+    user = User.query.get_or_404(withdrawal.user_id)
+
+    if user.wallet_balance < withdrawal.amount:
+        flash('User has insufficient balance for this withdrawal.', 'danger')
+        return redirect(url_for('admin.manage_withdrawals'))
+
+    user.wallet_balance -= withdrawal.amount
+    withdrawal.status = 'approved'
+    db.session.commit()
+
+    flash(f'Withdrawal of ${withdrawal.amount} for {user.name} has been approved.', 'success')
+    return redirect(url_for('admin.manage_withdrawals'))
+
+@admin_bp.route('/withdrawals/<int:withdrawal_id>/reject', methods=['POST'])
+def reject_withdrawal(withdrawal_id):
+    withdrawal = Withdrawal.query.get_or_404(withdrawal_id)
+    withdrawal.status = 'rejected'
+    db.session.commit()
+
+    flash(f'Withdrawal request has been rejected.', 'success')
+    return redirect(url_for('admin.manage_withdrawals'))

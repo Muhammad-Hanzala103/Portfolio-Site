@@ -1,0 +1,38 @@
+{% extends 'admin/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Manage Withdrawals</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for withdrawal in withdrawals %}
+            <tr>
+                <td>{{ withdrawal.user.username }}</td>
+                <td>${{ withdrawal.amount }}</td>
+                <td>{{ withdrawal.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>{{ withdrawal.status }}</td>
+                <td>
+                    {% if withdrawal.status == 'pending' %}
+                    <form action="{{ url_for('admin.approve_withdrawal', withdrawal_id=withdrawal.id) }}" method="POST" style="display: inline;">
+                        <button type="submit" class="btn btn-success">Approve</button>
+                    </form>
+                    <form action="{{ url_for('admin.reject_withdrawal', withdrawal_id=withdrawal.id) }}" method="POST" style="display: inline;">
+                        <button type="submit" class="btn btn-danger">Reject</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -2,7 +2,7 @@ import stripe
 from flask import request, jsonify, current_app, render_template
 from flask_login import login_required, current_user
 from . import payments_bp
-from my_marketplace.models import Order, Payment, Gig, User
+from my_marketplace.models import Order, Payment, Gig, User, Withdrawal
 from ..database import db
 from decimal import Decimal
 
@@ -229,3 +229,29 @@ def get_wallet_balance():
         'balance': float(current_user.wallet_balance),
         'formatted_balance': f'${current_user.wallet_balance:.2f}'
     })
+
+
+@payments_bp.route('/wallet/withdraw', methods=['GET', 'POST'])
+@login_required
+def request_withdrawal():
+    if request.method == 'POST':
+        data = request.get_json()
+        amount = data.get('amount')
+
+        if not amount or float(amount) <= 0:
+            return jsonify({'error': 'Invalid amount'}), 400
+
+        if current_user.wallet_balance < Decimal(amount):
+            return jsonify({'error': 'Insufficient balance'}), 400
+
+        withdrawal = Withdrawal(
+            user_id=current_user.id,
+            amount=Decimal(amount),
+            status='pending'
+        )
+        db.session.add(withdrawal)
+        db.session.commit()
+
+        return jsonify({'message': 'Withdrawal request submitted successfully.'})
+    
+    return render_template('payments/withdraw.html')

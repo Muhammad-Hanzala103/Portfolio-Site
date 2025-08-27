@@ -7,6 +7,7 @@
     <nav>
         <ul>
             <li><a href="{{ url_for('admin.manage_gigs') }}">Manage Gigs</a></li>
+            <li><a href="{{ url_for('admin.manage_withdrawals') }}">Manage Withdrawals</a></li>
         </ul>
     </nav>
     {% with messages = get_flashed_messages(with_categories=true) %}
