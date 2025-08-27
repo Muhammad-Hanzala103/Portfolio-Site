@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1 class="title">Dispute Management</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <table class="table is-striped is-fullwidth">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Order ID</th>
+                <th>Raised By</th>
+                <th>Reason</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for dispute in disputes %}
+            <tr>
+                <td>{{ dispute.id }}</td>
+                <td><a href="{{ url_for('orders.order_details', order_id=dispute.order_id) }}">{{ dispute.order_id }}</a></td>
+                <td>{{ dispute.raised_by.name }}</td>
+                <td>{{ dispute.reason }}</td>
+                <td><span class="badge bg-warning">{{ dispute.status }}</span></td>
+                <td>
+                    <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#resolveDisputeModal-{{ dispute.id }}">Resolve</button>
+                </td>
+            </tr>
+
+            <!-- Resolve Dispute Modal -->
+            <div class="modal fade" id="resolveDisputeModal-{{ dispute.id }}" tabindex="-1" aria-labelledby="resolveDisputeModalLabel-{{ dispute.id }}" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="resolveDisputeModalLabel-{{ dispute.id }}">Resolve Dispute #{{ dispute.id }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <form method="POST" action="{{ url_for('admin.manage_disputes') }}">
+                        <input type="hidden" name="dispute_id" value="{{ dispute.id }}">
+                        <div class="mb-3">
+                            <label for="resolution_notes" class="form-label">Resolution Notes</label>
+                            <textarea class="form-control" id="resolution_notes" name="resolution_notes" rows="3" required></textarea>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" name="action" value="resolve_in_favor_of_buyer" class="btn btn-success">Resolve in Favor of Buyer</button>
+                            <button type="submit" name="action" value="resolve_in_favor_of_seller" class="btn btn-primary">Resolve in Favor of Seller</button>
+                        </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

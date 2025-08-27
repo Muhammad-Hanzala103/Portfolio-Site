@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.name }} - Profile{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-4">
+            <!-- Profile Card -->
+            <div class="card">
+                <div class="card-body text-center">
+                    {% if user.avatar_url %}
+                        <img src="{{ user.avatar_url }}" alt="{{ user.name }}" class="rounded-circle mb-3" width="150" height="150" style="object-fit: cover;">
+                    {% else %}
+                        <div class="bg-secondary rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 150px; height: 150px;">
+                            <i class="fas fa-user fa-4x text-white"></i>
+                        </div>
+                    {% endif %}
+                    <h4 class="card-title">{{ user.name }}</h4>
+                    <p class="text-muted">{{ user.role.title() }}</p>
+                    {% if user.location %}
+                        <p class="text-muted"><i class="fas fa-map-marker-alt"></i> {{ user.location }}</p>
+                    {% endif %}
+                    
+                    <!-- Action Buttons -->
+                    {% if current_user.is_authenticated and current_user.id != user.id %}
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" onclick="startConversation({{ user.id }})">
+                            <i class="fas fa-comment"></i> Send Message
+                        </button>
+                        {% if user.role in ['seller', 'both'] %}
+                        <a href="#gigs" class="btn btn-outline-success">
+                            <i class="fas fa-briefcase"></i> View Services
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Languages -->
+            {% if user.languages %}
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h6 class="card-title"><i class="fas fa-language"></i> Languages</h6>
+                    <div>
+                        {% for lang in user.languages.split(',') %}
+                            <span class="badge bg-secondary me-1 mb-1">{{ lang.strip() }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Member Since -->
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h6 class="card-title"><i class="fas fa-calendar-alt"></i> Member Since</h6>
+                    <p class="text-muted mb-0">{{ user.created_at.strftime('%B %Y') }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <!-- Bio Section -->
+            {% if user.bio %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> About {{ user.name.split()[0] }}</h5>
+                </div>
+                <div class="card-body">
+                    <p>{{ user.bio }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Statistics -->
+            <div class="card {{ 'mt-3' if user.bio else '' }}">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        {% if user.role in ['seller', 'both'] %}
+                        <div class="col-md-3">
+                            <div class="border-end">
+                                <h4 class="text-primary">{{ user.gigs|length }}</h4>
+                                <small class="text-muted">Active Gigs</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="border-end">
+                                <h4 class="text-success">{{ user.sold_orders|length }}</h4>
+                                <small class="text-muted">Orders Completed</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="border-end">
+                                <h4 class="text-info">{{ user.received_reviews|length }}</h4>
+                                <small class="text-muted">Reviews</small>
+                                <a href="{{ url_for('users.user_reviews', user_id=user.id) }}" class="stretched-link"></a>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            {% set total_reviews = user.received_reviews|length %}
+                            {% if total_reviews > 0 %}
+                                {% set avg_rating = (user.received_reviews|map(attribute='rating')|sum / total_reviews)|round(1) %}
+                                <h4 class="text-warning">{{ avg_rating }}</h4>
+                                <small class="text-muted">Avg Rating</small>
+                            {% else %}
+                                <h4 class="text-muted">-</h4>
+                                <small class="text-muted">No Ratings</small>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        {% if user.role in ['buyer', 'both'] %}
+                        <div class="col-md-3">
+                            <div class="border-end">
+                                <h4 class="text-info">{{ user.bought_orders|length }}</h4>
+                                <small class="text-muted">Orders Placed</small>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div class="col-md-3">
+                            <h4 class="text-warning">{{ user.received_reviews|length }}</h4>
+                            <small class="text-muted">Reviews</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reviews Section -->
+            {% if user.received_reviews %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-star"></i> Recent Reviews</h5>
+                </div>
+                <div class="card-body">
+                    {% for review in user.received_reviews[:3] %}
+                    <div class="border-bottom pb-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="mb-1">
+                                    {% for i in range(5) %}
+                                        {% if i < review.rating %}
+                                            <i class="fas fa-star text-warning"></i>
+                                        {% else %}
+                                            <i class="far fa-star text-muted"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <p class="mb-1">{{ review.comment }}</p>
+                                <small class="text-muted">by {{ review.reviewer.name }}</small>
+                            </div>
+                            <small class="text-muted">{{ review.created_at.strftime('%b %d, %Y') }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    {% if user.received_reviews|length > 3 %}
+                    <div class="text-center">
+                        <button class="btn btn-outline-primary btn-sm" onclick="loadMoreReviews()">
+                            View All Reviews ({{ user.received_reviews|length }})
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Gigs Section -->
+            {% if user.role in ['seller', 'both'] and user.gigs %}
+            <div class="card mt-3" id="gigs">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-briefcase"></i> Services by {{ user.name.split()[0] }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for gig in user.gigs[:4] if gig.is_published %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                {% if gig.thumbnail_url %}
+                                <img src="{{ gig.thumbnail_url }}" class="card-img-top" alt="{{ gig.title }}" style="height: 150px; object-fit: cover;">
+                                {% endif %}
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ gig.title }}</h6>
+                                    <p class="card-text text-muted small">{{ gig.description[:100] }}{% if gig.description|length > 100 %}...{% endif %}</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-success fw-bold">${{ "%.2f"|format(gig.price_basic) }}</span>
+                                        <a href="{{ url_for('gigs.gig_detail', slug=gig.slug) }}" class="btn btn-sm btn-outline-primary">View Details</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    {% if user.gigs|selectattr('is_published')|list|length > 4 %}
+                    <div class="text-center">
+                        <a href="{{ url_for('gigs.user_gigs', user_id=user.id) }}" class="btn btn-outline-primary">
+                            View All Services
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.border-end {
+    border-right: 1px solid #dee2e6;
+}
+
+@media (max-width: 768px) {
+    .border-end {
+        border-right: none;
+        border-bottom: 1px solid #dee2e6;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+    }
+}
+
+.card-img-top {
+    transition: transform 0.2s;
+}
+
+.card:hover .card-img-top {
+    transform: scale(1.05);
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function startConversation(userId) {
+    // Redirect to chat with this user
+    window.location.href = `/chat?user=${userId}`;
+}
+
+function loadMoreReviews() {
+    // This would typically load more reviews via AJAX
+    alert('Load more reviews functionality would be implemented here');
+}
+</script>
+{% endblock %}

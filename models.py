@@ -3,26 +3,28 @@ from flask import current_app
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from itsdangerous import URLSafeTimedSerializer as Serializer
-from slugify import slugify
+from sqlalchemy import Enum
 
 # Create db instance here to avoid circular imports
 db = SQLAlchemy()
 
-# Association table for BlogPost tags (many-to-many)
-blog_post_tags = db.Table('blog_post_tags',
-    db.Column('blog_post_id', db.Integer, db.ForeignKey('blog_post.id'), primary_key=True),
-    db.Column('tag_id', db.Integer, db.ForeignKey('tag.id'), primary_key=True)
-)
-
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(255), nullable=False)
-    is_admin = db.Column(db.Boolean, default=False)
+    name = db.Column(db.String(255), nullable=False)
+    email = db.Column(db.String(255), unique=True, nullable=False)
+    phone = db.Column(db.String(50), nullable=False)
+    role = db.Column(Enum('buyer', 'seller', 'both', 'admin', name='user_roles'), nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
+    email_verified = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+    is_suspended = db.Column(db.Boolean, default=False)
+    bio = db.Column(db.Text, nullable=True)
+    avatar_url = db.Column(db.String(255), nullable=True)
+    location = db.Column(db.String(255), nullable=True)
+    languages = db.Column(db.String(255), nullable=True) # Storing as a comma-separated string
+    wallet_balance = db.Column(db.Numeric(10, 2), default=0.00)
+
     def get_reset_token(self):
         s = Serializer(current_app.config['SECRET_KEY'])
         return s.dumps({'user_id': self.id})
@@ -36,264 +38,174 @@ class User(db.Model, UserMixin):
             return None
         return User.query.get(user_id)
 
-    def __repr__(self):
-        return f'<User {self.username}>'
+    def has_reviewed_order(self, order_id):
+        """Check if user has already reviewed a specific order"""
+        return Review.query.filter_by(order_id=order_id, reviewer_id=self.id).first() is not None
 
-class ProjectCategory(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), unique=True, nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    # Relationship
-    projects = db.relationship('Project', backref='category_rel', lazy=True)
-    
     def __repr__(self):
-        return f'<ProjectCategory {self.name}>'
+        return f'<User {self.name}>'
 
-class SkillCategory(db.Model):
+class Gig(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), unique=True, nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    # Relationship
-    skills = db.relationship('Skill', backref='category_rel', lazy=True)
-    
-    def __repr__(self):
-        return f'<SkillCategory {self.name}>'
-
-class GalleryCategory(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), unique=True, nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    # Relationship
-    gallery_items = db.relationship('Gallery', backref='category_rel', lazy=True)
-    
-    def __repr__(self):
-        return f'<GalleryCategory {self.name}>'
-
-class BlogCategory(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), unique=True, nullable=False)
-    slug = db.Column(db.String(50), unique=True, nullable=True)
-    description = db.Column(db.Text, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    # Relationship
-    blog_posts = db.relationship('BlogPost', backref='category_rel', lazy=True)
-    
-    def __init__(self, **kwargs):
-        super(BlogCategory, self).__init__(**kwargs)
-        if not self.slug and self.name:
-            self.slug = slugify(self.name)
-    
-    def __repr__(self):
-        return f'<BlogCategory {self.name}>'
-
-class Tag(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), unique=True, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    def __repr__(self):
-        return f'<Tag {self.name}>'
-
-class Project(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
-    slug = db.Column(db.String(120), unique=True, nullable=False)
+    seller_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    title = db.Column(db.String(255), nullable=False)
+    slug = db.Column(db.String(255), unique=True, nullable=False)
     description = db.Column(db.Text, nullable=False)
-    short_description = db.Column(db.String(300), nullable=True)
-    image = db.Column(db.String(255), nullable=True)
-    technologies = db.Column(db.String(255), nullable=True)
-    github_link = db.Column(db.String(255), nullable=True)
-    live_link = db.Column(db.String(255), nullable=True)
-    featured = db.Column(db.Boolean, default=False)
-    order_index = db.Column(db.Integer, default=0)
-    category_id = db.Column(db.Integer, db.ForeignKey('project_category.id'), nullable=True)
+    category = db.Column(db.String(255), nullable=False)
+    tags = db.Column(db.Text, nullable=True) # Storing as a comma-separated string
+    price_basic = db.Column(db.Numeric(10, 2), nullable=False)
+    price_standard = db.Column(db.Numeric(10, 2), nullable=True)
+    price_premium = db.Column(db.Numeric(10, 2), nullable=True)
+    delivery_days_basic = db.Column(db.Integer, nullable=False)
+    delivery_days_standard = db.Column(db.Integer, nullable=True)
+    delivery_days_premium = db.Column(db.Integer, nullable=True)
+    revisions_allowed = db.Column(db.Integer, default=0)
+    thumbnail_url = db.Column(db.String(255), nullable=True)
+    attachments = db.Column(db.Text, nullable=True) # Storing as a comma-separated list of URLs
+    is_published = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # Relationship is defined in ProjectCategory model
-    
-    def __init__(self, **kwargs):
-        super(Project, self).__init__(**kwargs)
-        if not self.slug and self.title:
-            self.slug = slugify(self.title)
-    
-    @property
-    def category(self):
-        return self.category_rel.name if self.category_rel else 'Uncategorized'
-    
-    def __repr__(self):
-        return f'<Project {self.title}>'
 
-class Skill(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
-    proficiency = db.Column(db.Integer, nullable=False)  # 0-100 percentage
-    years_experience = db.Column(db.Integer, default=0)
-    description = db.Column(db.Text, nullable=True)
-    icon = db.Column(db.String(255), nullable=True)  # Font Awesome class or image path
-    order_index = db.Column(db.Integer, default=0)
-    category_id = db.Column(db.Integer, db.ForeignKey('skill_category.id'), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # Relationship is defined in SkillCategory model
-    
-    @property
-    def category(self):
-        return self.category_rel.name if self.category_rel else 'Other'
-    
-    def __repr__(self):
-        return f'<Skill {self.name}>'
+    seller = db.relationship('User', backref='gigs')
 
-class Gallery(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    image = db.Column(db.String(255), nullable=False)
-    featured = db.Column(db.Boolean, default=False)
-    order_index = db.Column(db.Integer, default=0)
-    category_id = db.Column(db.Integer, db.ForeignKey('gallery_category.id'), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # Relationship is defined in GalleryCategory model
-    
-    @property
-    def category(self):
-        return self.category_rel.name if self.category_rel else 'Other'
-    
     def __repr__(self):
-        return f'<Gallery {self.title}>'
+        return f'<Gig {self.title}>'
 
-class Testimonial(db.Model):
+class Job(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    client_name = db.Column(db.String(100), nullable=False)
-    client_position = db.Column(db.String(100), nullable=True)
-    client_title = db.Column(db.String(100), nullable=True)  # Alias for client_position
-    client_company = db.Column(db.String(100), nullable=True)
-    testimonial_text = db.Column(db.Text, nullable=False)
-    client_image = db.Column(db.String(255), nullable=True)
-    platform = db.Column(db.String(50), nullable=True)  # e.g., LinkedIn, Upwork, Fiverr
-    rating = db.Column(db.Integer, default=5)  # 1-5 stars
-    featured = db.Column(db.Boolean, default=False)
-    order_index = db.Column(db.Integer, default=0)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    def __repr__(self):
-        return f'<Testimonial {self.client_name}>'
-
-class Service(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
+    buyer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    title = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text, nullable=False)
-    short_description = db.Column(db.String(300), nullable=True)
-    icon = db.Column(db.String(255), nullable=True)  # Font Awesome class or image path
-    features = db.Column(db.Text, nullable=True)  # JSON string of features list
-    price = db.Column(db.String(50), nullable=True)  # e.g., "Starting at $500"
-    featured = db.Column(db.Boolean, default=False)
-    order_index = db.Column(db.Integer, default=0)
+    budget_min = db.Column(db.Numeric(10, 2), nullable=True)
+    budget_max = db.Column(db.Numeric(10, 2), nullable=True)
+    deadline = db.Column(db.DateTime, nullable=True)
+    status = db.Column(db.String(50), default='open') # open, in_progress, closed
+    
+    buyer = db.relationship('User', backref='jobs')
+
+    def __repr__(self):
+        return f'<Job {self.title}>'
+
+class Order(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    buyer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    seller_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    gig_id = db.Column(db.Integer, db.ForeignKey('gig.id'), nullable=True)
+    job_id = db.Column(db.Integer, db.ForeignKey('job.id'), nullable=True)
+    amount = db.Column(db.Numeric(10, 2), nullable=False)
+    commission = db.Column(db.Numeric(10, 2), nullable=False)
+    status = db.Column(Enum('pending', 'active', 'delivered', 'disputed', 'completed', 'cancelled', name='order_statuses'), nullable=False)
+    milestone_json = db.Column(db.Text, nullable=True) # Storing as a JSON string
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    def __repr__(self):
-        return f'<Service {self.title}>'
 
-class FAQ(db.Model):
+    buyer = db.relationship('User', foreign_keys=[buyer_id], backref='bought_orders')
+    seller = db.relationship('User', foreign_keys=[seller_id], backref='sold_orders')
+    gig = db.relationship('Gig', backref='orders')
+    job = db.relationship('Job', backref='orders')
+
+    def __repr__(self):
+        return f'<Order {self.id}>'
+
+class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    question = db.Column(db.String(255), nullable=False)
-    answer = db.Column(db.Text, nullable=False)
-    service_id = db.Column(db.Integer, db.ForeignKey('service.id'), nullable=False)
+    conversation_id = db.Column(db.Integer, db.ForeignKey('conversation.id'), nullable=False)
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    ciphertext = db.Column(db.Text, nullable=False)
+    attachment_url = db.Column(db.String(255), nullable=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    read_at = db.Column(db.DateTime, nullable=True)
+
+    sender = db.relationship('User', backref='sent_messages')
+    conversation = db.relationship('Conversation', backref='messages')
+
+    def __repr__(self):
+        return f'<Message {self.id}>'
+
+class Conversation(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    participants = db.Column(db.Text, nullable=False) # Storing as a comma-separated list of user IDs
+    last_message_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<Conversation {self.id}>'
+
+class Milestone(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
+    title = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    amount = db.Column(db.Numeric(10, 2), nullable=False)
+    status = db.Column(Enum('pending', 'completed', name='milestone_statuses'), default='pending')
+    due_date = db.Column(db.Date, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    completed_at = db.Column(db.DateTime, nullable=True)
 
-    service = db.relationship('Service', backref=db.backref('faqs', lazy=True))
+    order = db.relationship('Order', backref='milestones')
 
     def __repr__(self):
-        return f'<FAQ {self.question}>'
+        return f'<Milestone {self.title}>'
 
-class BlogPost(db.Model):
+class Review(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200), nullable=False)
-    slug = db.Column(db.String(220), unique=True, nullable=False)
-    content = db.Column(db.Text, nullable=False)
-    excerpt = db.Column(db.String(300), nullable=True)
-    featured_image = db.Column(db.String(255), nullable=True)
-    published = db.Column(db.Boolean, default=False)
-    featured = db.Column(db.Boolean, default=False)
-    views = db.Column(db.Integer, default=0)
-    reading_time = db.Column(db.Integer, default=0)  # in minutes
-    category_id = db.Column(db.Integer, db.ForeignKey('blog_category.id'), nullable=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
+    reviewer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    seller_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    rating = db.Column(db.Integer, nullable=False)
+    comment = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # Relationships are defined in respective category models
-    tags = db.relationship('Tag', secondary=blog_post_tags, backref=db.backref('blog_posts', lazy='dynamic'))
-    
-    def __init__(self, **kwargs):
-        super(BlogPost, self).__init__(**kwargs)
-        if not self.slug and self.title:
-            self.slug = slugify(self.title)
-    
-    @property
-    def category(self):
-        return self.category_rel.name if self.category_rel else 'Uncategorized'
-    
-    @property
-    def comments(self):
-        return BlogComment.query.filter_by(post_id=self.id, approved=True).all()
-    
-    def __repr__(self):
-        return f'<BlogPost {self.title}>'
 
-class Contact(db.Model):
+    order = db.relationship('Order', backref='reviews')
+    reviewer = db.relationship('User', foreign_keys=[reviewer_id], backref='given_reviews')
+    seller = db.relationship('User', foreign_keys=[seller_id], backref='received_reviews')
+
+    def __repr__(self):
+        return f'<Review {self.id}>'
+
+class Payment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(120), nullable=False)
-    subject = db.Column(db.String(200), nullable=True)
-    message = db.Column(db.Text, nullable=False)
-    read = db.Column(db.Boolean, default=False)
-    replied = db.Column(db.Boolean, default=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=True)
+    amount = db.Column(db.Numeric(10, 2), nullable=False)
+    provider = db.Column(db.String(50), nullable=False) # stripe, paypal, test
+    status = db.Column(db.String(50), nullable=False) # pending, completed, failed
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
+
+    user = db.relationship('User', backref='payments')
+    order = db.relationship('Order', backref='payments')
+
     def __repr__(self):
-        return f'<Contact {self.name} - {self.email}>'
+        return f'<Payment {self.id}>'
 
-class BlogComment(db.Model):
+class Dispute(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    post_id = db.Column(db.Integer, db.ForeignKey('blog_post.id'), nullable=False)
-    author_name = db.Column(db.String(100), nullable=False)
-    author_email = db.Column(db.String(120), nullable=False)
-    content = db.Column(db.Text, nullable=False)
-    approved = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    post = db.relationship('BlogPost', backref=db.backref('all_comments', lazy=True))
-    
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
+    raised_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    reason = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(50), default='open') # open, under_review, resolved
+    resolution_notes = db.Column(db.Text, nullable=True)
+
+    order = db.relationship('Order', backref='disputes')
+    raised_by = db.relationship('User', backref='disputes')
+
     def __repr__(self):
-        return f'<BlogComment {self.author_name} on {self.post.title}>'
+        return f'<Dispute {self.id}>'
 
-class CommentSettings(db.Model):
+class Analytics(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    enable_comments = db.Column(db.Boolean, default=True)
-    moderate_comments = db.Column(db.Boolean, default=True)
-    auto_close_after = db.Column(db.Integer, nullable=True)
+    event_type = db.Column(db.String(255), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    meta = db.Column(db.Text, nullable=True) # Storing as a JSON string
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
+    user = db.relationship('User', backref='analytics_events')
 
-class SiteVisit(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    ip_address = db.Column(db.String(45), nullable=False)
-    user_agent = db.Column(db.String(500), nullable=True)
-    page_visited = db.Column(db.String(255), nullable=False)
-    referrer = db.Column(db.String(255), nullable=True)
-    visit_date = db.Column(db.DateTime, default=datetime.utcnow)
-    
     def __repr__(self):
-        return f'<SiteVisit {self.ip_address} - {self.page_visited}>'
+        return f'<Analytics {self.event_type}>'
+
+class SiteSetting(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(255), unique=True, nullable=False)
+    value = db.Column(db.Text, nullable=False)
+
+    def __repr__(self):
+        return f'<SiteSetting {self.key}>'

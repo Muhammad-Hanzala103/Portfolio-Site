@@ -1,0 +1,95 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1 class="title">Site Settings</h1>
+    <form method="POST" action="{{ url_for('admin.manage_settings') }}">
+        {{ form.hidden_tag() }}
+        <div class="field">
+            {{ form.site_name.label(class="label") }}
+            <div class="control">
+                {{ form.site_name(class="input") }}
+            </div>
+        </div>
+        <div class="field">
+            {{ form.site_description.label(class="label") }}
+            <div class="control">
+                {{ form.site_description(class="textarea") }}
+            </div>
+        </div>
+        <div class="field">
+            {{ form.site_keywords.label(class="label") }}
+            <div class="control">
+                {{ form.site_keywords(class="input") }}
+            </div>
+        </div>
+        <div class="field">
+            {{ form.contact_email.label(class="label") }}
+            <div class="control">
+                {{ form.contact_email(class="input") }}
+            </div>
+        </div>
+        <div class="field">
+            {{ form.phone_number.label(class="label") }}
+            <div class="control">
+                {{ form.phone_number(class="input") }}
+            </div>
+        </div>
+        <div class="field">
+            {{ form.address.label(class="label") }}
+            <div class="control">
+                {{ form.address(class="textarea") }}
+            </div>
+        </div>
+        <div class="field">
+            {{ form.social_facebook.label(class="label") }}
+            <div class="control">
+                {{ form.social_facebook(class="input") }}
+            </div>
+        </div>
+        <div class="field">
+            {{ form.social_twitter.label(class="label") }}
+            <div class="control">
+                {{ form.social_twitter(class="input") }}
+            </div>
+        </div>
+        <div class="field">
+            {{ form.social_linkedin.label(class="label") }}
+            <div class="control">
+                {{ form.social_linkedin(class="input") }}
+            </div>
+        </div>
+        <div class="field">
+            {{ form.social_github.label(class="label") }}
+            <div class="control">
+                {{ form.social_github(class="input") }}
+            </div>
+        </div>
+        <div class="field">
+            {{ form.social_instagram.label(class="label") }}
+            <div class="control">
+                {{ form.social_instagram(class="input") }}
+            </div>
+        </div>
+        <div class="field">
+            {{ form.google_analytics_id.label(class="label") }}
+            <div class="control">
+                {{ form.google_analytics_id(class="input") }}
+            </div>
+        </div>
+        <div class="field">
+            <div class="control">
+                <label class="checkbox">
+                    {{ form.maintenance_mode() }}
+                    Maintenance Mode
+                </label>
+            </div>
+        </div>
+        <div class="field">
+            <div class="control">
+                <button type="submit" class="button is-primary">Save Settings</button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

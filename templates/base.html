@@ -363,11 +363,24 @@
                         <li class="nav-item">
                             <a class="nav-link {% if request.path == url_for('main.contact') %}active{% endif %}" href="{{ url_for('main.contact') }}">Contact</a>
                         </li>
+                        {% if current_user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user"></i>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item" href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('orders.my_contracts') }}">My Contracts</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>
+                            </ul>
+                        </li>
+                        {% else %}
                         <li class="nav-item">
                             <a class="nav-link {% if request.path.startswith('/admin') %}active{% endif %}" href="{{ url_for('admin.admin_login') }}" title="Admin Panel">
                                 <i class="fas fa-user-shield"></i>
                             </a>
                         </li>
+                        {% endif %}
                         <li class="nav-item">
                             <button class="btn btn-sm" id="darkModeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">
                                 <i class="fas fa-moon"></i>

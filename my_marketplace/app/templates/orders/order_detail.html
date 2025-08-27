@@ -1,0 +1,411 @@
+{% extends "base.html" %}
+
+{% block title %}Order #{{ order.id }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4>Order #{{ order.id }}</h4>
+                    <span class="badge bg-{% if order.status == 'completed' %}success{% elif order.status == 'active' %}primary{% elif order.status == 'delivered' %}info{% elif order.status == 'disputed' %}warning{% elif order.status == 'cancelled' %}danger{% else %}secondary{% endif %} fs-6">
+                        {{ order.status.title() }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-sm-3"><strong>Buyer:</strong></div>
+                        <div class="col-sm-9">{{ order.buyer.name }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-3"><strong>Seller:</strong></div>
+                        <div class="col-sm-9">{{ order.seller.name }}</div>
+                    </div>
+                    {% if order.gig %}
+                    <div class="row mb-3">
+                        <div class="col-sm-3"><strong>Gig:</strong></div>
+                        <div class="col-sm-9">{{ order.gig.title }}</div>
+                    </div>
+                    {% endif %}
+                    {% if order.job %}
+                    <div class="row mb-3">
+                        <div class="col-sm-3"><strong>Job:</strong></div>
+                        <div class="col-sm-9">{{ order.job.title }}</div>
+                    </div>
+                    {% endif %}
+                    <div class="row mb-3">
+                        <div class="col-sm-3"><strong>Amount:</strong></div>
+                        <div class="col-sm-9">${{ "%.2f"|format(order.amount) }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-3"><strong>Commission:</strong></div>
+                        <div class="col-sm-9">${{ "%.2f"|format(order.commission) }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-3"><strong>Created:</strong></div>
+                        <div class="col-sm-9">{{ order.created_at.strftime('%B %d, %Y at %I:%M %p') }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-3"><strong>Last Updated:</strong></div>
+                        <div class="col-sm-9">{{ order.updated_at.strftime('%B %d, %Y at %I:%M %p') }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Payment Section -->
+            {% if current_user.id == order.buyer_id and order.status == 'pending' %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5>Payment Options</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card border-primary">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">Pay with Wallet</h6>
+                                    <p class="card-text">Current Balance: <span id="walletBalance">${{ "%.2f"|format(current_user.wallet_balance) }}</span></p>
+                                    {% if current_user.wallet_balance >= order.amount %}
+                                        <button class="btn btn-primary" onclick="payWithWallet()">Pay ${{ "%.2f"|format(order.amount) }}</button>
+                                    {% else %}
+                                        <button class="btn btn-outline-secondary" disabled>Insufficient Balance</button>
+                                        <br><small class="text-muted mt-1">Need ${{ "%.2f"|format(order.amount - current_user.wallet_balance) }} more</small>
+                                        <br><a href="{{ url_for('payments.wallet') }}" class="btn btn-sm btn-outline-primary mt-2">Top Up Wallet</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-success">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">Pay with Card</h6>
+                                    <p class="card-text">Secure payment via Stripe</p>
+                                    <button class="btn btn-success" onclick="payWithStripe()">Pay ${{ "%.2f"|format(order.amount) }}</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Order Actions -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5>Order Actions</h5>
+                </div>
+                <div class="card-body">
+                    {% if current_user.id == order.buyer_id %}
+                        {% if order.status == 'delivered' %}
+                            <button class="btn btn-success me-2" onclick="updateOrderStatus('completed')">Accept Delivery</button>
+                            <a href="{{ url_for('disputes.create_dispute', order_id=order.id) }}" class="btn btn-warning">Raise Dispute</a>
+                        {% endif %}
+                    {% elif current_user.id == order.seller_id %}
+                        {% if order.status == 'pending' %}
+                            <button class="btn btn-success me-2" onclick="updateOrderStatus('active')">Accept Order</button>
+                            <button class="btn btn-danger" onclick="updateOrderStatus('cancelled')">Decline Order</button>
+                        {% elif order.status == 'active' %}
+                            <button class="btn btn-info" onclick="updateOrderStatus('delivered')">Mark as Delivered</button>
+                        {% endif %}
+                    {% endif %}
+                    
+                    {% if order.status == 'completed' and not current_user.has_reviewed_order(order.id) %}
+                        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#reviewModal">Leave Review</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- Milestones -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>Milestones</h5>
+                    {% if current_user.id == order.seller_id and order.status in ['active', 'pending'] %}
+                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#milestoneModal">Add Milestone</button>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if milestones %}
+                        {% for milestone in milestones %}
+                        <div class="milestone-item mb-3 p-3 border rounded">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="mb-0">{{ milestone.title }}</h6>
+                                <span class="badge bg-{% if milestone.status == 'completed' %}success{% else %}secondary{% endif %}">
+                                    {{ milestone.status.title() }}
+                                </span>
+                            </div>
+                            {% if milestone.description %}
+                                <p class="text-muted small mb-2">{{ milestone.description }}</p>
+                            {% endif %}
+                            <div class="small">
+                                <strong>Amount:</strong> ${{ "%.2f"|format(milestone.amount) }}<br>
+                                {% if milestone.due_date %}
+                                    <strong>Due:</strong> {{ milestone.due_date }}<br>
+                                {% endif %}
+                                <strong>Created:</strong> {{ milestone.created_at[:10] }}
+                                {% if milestone.completed_at %}
+                                    <br><strong>Completed:</strong> {{ milestone.completed_at[:10] }}
+                                {% endif %}
+                            </div>
+                            {% if current_user.id == order.seller_id and milestone.status == 'pending' %}
+                                <button class="btn btn-sm btn-success mt-2" onclick="completeMilestone({{ milestone.id }})">Mark Complete</button>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No milestones created yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Milestone Modal -->
+<div class="modal fade" id="milestoneModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Milestone</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="milestoneForm">
+                    <div class="mb-3">
+                        <label for="milestoneTitle" class="form-label">Title *</label>
+                        <input type="text" class="form-control" id="milestoneTitle" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="milestoneDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="milestoneDescription" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="milestoneAmount" class="form-label">Amount *</label>
+                        <input type="number" class="form-control" id="milestoneAmount" step="0.01" min="0.01" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="milestoneDueDate" class="form-label">Due Date</label>
+                        <input type="date" class="form-control" id="milestoneDueDate">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="createMilestone()">Create Milestone</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Review Modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Leave a Review</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="reviewForm">
+                    <div class="mb-3">
+                        <label for="rating" class="form-label">Rating *</label>
+                        <select class="form-select" id="rating" required>
+                            <option value="">Select a rating</option>
+                            <option value="5">5 - Excellent</option>
+                            <option value="4">4 - Very Good</option>
+                            <option value="3">3 - Good</option>
+                            <option value="2">2 - Fair</option>
+                            <option value="1">1 - Poor</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">Comment</label>
+                        <textarea class="form-control" id="comment" rows="4" placeholder="Share your experience..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitReview()">Submit Review</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+const stripe = Stripe('{{ config.STRIPE_PUBLISHABLE_KEY }}');
+
+function payWithWallet() {
+    if (confirm('Pay ${{ "%.2f"|format(order.amount) }} from your wallet?')) {
+        fetch('/payments/wallet/pay-order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ order_id: {{ order.id }} })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Payment successful!');
+                location.reload();
+            } else {
+                alert('Error: ' + (data.error || 'Payment failed'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while processing payment.');
+        });
+    }
+}
+
+function payWithStripe() {
+    fetch('/payments/create-checkout-session', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ order_id: {{ order.id }} })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('Error: ' + data.error);
+        } else {
+            return stripe.redirectToCheckout({ sessionId: data.id });
+        }
+    })
+    .then(result => {
+        if (result && result.error) {
+            alert(result.error.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while processing payment.');
+    });
+}
+
+function updateOrderStatus(status) {
+    if (confirm(`Are you sure you want to mark this order as ${status}?`)) {
+        fetch(`/orders/{{ order.id }}/status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ status: status })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + (data.error || 'Failed to update order status'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while updating the order status.');
+        });
+    }
+}
+
+function createMilestone() {
+    const title = document.getElementById('milestoneTitle').value;
+    const description = document.getElementById('milestoneDescription').value;
+    const amount = document.getElementById('milestoneAmount').value;
+    const dueDate = document.getElementById('milestoneDueDate').value;
+    
+    if (!title || !amount) {
+        alert('Title and amount are required.');
+        return;
+    }
+    
+    fetch(`/orders/{{ order.id }}/milestones`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            title: title,
+            description: description,
+            amount: parseFloat(amount),
+            due_date: dueDate
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success || data.title) {
+            location.reload();
+        } else {
+            alert('Error: ' + (data.error || 'Failed to create milestone'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while creating the milestone.');
+    });
+}
+
+function completeMilestone(milestoneId) {
+    if (confirm('Mark this milestone as completed?')) {
+        fetch(`/orders/{{ order.id }}/milestones/${milestoneId}/complete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + (data.error || 'Failed to complete milestone'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while completing the milestone.');
+        });
+    }
+}
+
+function submitReview() {
+    const rating = document.getElementById('rating').value;
+    const comment = document.getElementById('comment').value;
+    
+    if (!rating) {
+        alert('Please select a rating.');
+        return;
+    }
+    
+    fetch(`/orders/{{ order.id }}/reviews`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            rating: parseInt(rating),
+            comment: comment
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.id || data.rating) {
+            alert('Review submitted successfully!');
+            location.reload();
+        } else {
+            alert('Error: ' + (data.error || 'Failed to submit review'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while submitting the review.');
+    });
+}
+</script>
+{% endblock %}

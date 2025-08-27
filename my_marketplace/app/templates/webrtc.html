@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebRTC Call</title>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+        video {
+            width: 45%;
+            border: 1px solid black;
+        }
+        .container {
+            display: flex;
+            justify-content: space-around;
+        }
+    </style>
+</head>
+<body>
+    <h1>WebRTC Call</h1>
+    <div class="container">
+        <div>
+            <h2>Local Video</h2>
+            <video id="localVideo" autoplay muted></video>
+        </div>
+        <div>
+            <h2>Remote Video</h2>
+            <video id="remoteVideo" autoplay></video>
+        </div>
+    </div>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script>
+        const socket = io();
+        const localVideo = document.getElementById('localVideo');
+        const remoteVideo = document.getElementById('remoteVideo');
+        let pc;
+
+        const room = prompt("Enter room name:");
+
+        socket.on('connect', () => {
+            socket.emit('join', room);
+        });
+
+        async function start() {
+            pc = new RTCPeerConnection();
+
+            pc.onicecandidate = event => {
+                if (event.candidate) {
+                    socket.emit('candidate', candidate, room);
+                }
+            };
+
+            pc.ontrack = event => {
+                remoteVideo.srcObject = event.streams[0];
+            };
+
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            localVideo.srcObject = stream;
+            stream.getTracks().forEach(track => pc.addTrack(track, stream));
+
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            socket.emit('offer', offer, room);
+        }
+
+        socket.on('offer', async (offer) => {
+            if (!pc) {
+                await start();
+            }
+            await pc.setRemoteDescription(new RTCSessionDescription(offer));
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            socket.emit('answer', answer, room);
+        });
+
+        socket.on('answer', async (answer) => {
+            await pc.setRemoteDescription(new RTCSessionDescription(answer));
+        });
+
+        socket.on('candidate', async (candidate) => {
+            await pc.addIceCandidate(candidate);
+        });
+
+        start();
+    </script>
+</body>
+</html>

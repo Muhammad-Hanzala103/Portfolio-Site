@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">Raise a Dispute for Order #{{ order.id }}</h3>
+                </div>
+                <div class="card-body">
+                    <p><strong>Gig:</strong> {{ order.gig.title }}</p>
+                    <p><strong>Seller:</strong> {{ order.seller.name }}</p>
+                    <p><strong>Total:</strong> ${{ "%.2f".format(order.amount) }}</p>
+                    <hr>
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="reason" class="form-label">Reason for Dispute</label>
+                            <textarea class="form-control" id="reason" name="reason" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-danger">Submit Dispute</button>
+                        <a href="{{ url_for('orders.order_details', order_id=order.id) }}" class="btn btn-secondary">Cancel</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

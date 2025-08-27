@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Profile{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-user-edit"></i> Edit Profile</h4>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" enctype="multipart/form-data">
+                        {{ csrf_token() }}
+                        
+                        <!-- Avatar Section -->
+                        <div class="row mb-4">
+                            <div class="col-md-12 text-center">
+                                <div class="mb-3">
+                                    {% if user.avatar_url %}
+                                        <img id="avatar-preview" src="{{ user.avatar_url }}" alt="Avatar" class="rounded-circle" width="120" height="120" style="object-fit: cover;">
+                                    {% else %}
+                                        <div id="avatar-preview" class="bg-secondary rounded-circle mx-auto d-flex align-items-center justify-content-center" style="width: 120px; height: 120px;">
+                                            <i class="fas fa-user fa-3x text-white"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="mb-3">
+                                    <label for="avatar" class="form-label">Profile Picture</label>
+                                    <input type="file" class="form-control" id="avatar" name="avatar" accept="image/*" onchange="previewAvatar(this)">
+                                    <div class="form-text">Upload a profile picture (JPG, PNG, GIF - Max 5MB)</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Basic Information -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Full Name *</label>
+                                    <input type="text" class="form-control" id="name" name="name" value="{{ user.name }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">Phone Number *</label>
+                                    <input type="tel" class="form-control" id="phone" name="phone" value="{{ user.phone }}" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email Address</label>
+                                    <input type="email" class="form-control" id="email" value="{{ user.email }}" disabled>
+                                    <div class="form-text">Email cannot be changed. Contact support if needed.</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="location" class="form-label">Location</label>
+                                    <input type="text" class="form-control" id="location" name="location" value="{{ user.location or '' }}" placeholder="e.g., New York, USA">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Languages -->
+                        <div class="mb-3">
+                            <label for="languages" class="form-label">Languages</label>
+                            <input type="text" class="form-control" id="languages" name="languages" value="{{ user.languages or '' }}" placeholder="e.g., English, Spanish, French">
+                            <div class="form-text">Separate multiple languages with commas</div>
+                        </div>
+
+                        <!-- Bio -->
+                        <div class="mb-3">
+                            <label for="bio" class="form-label">Bio</label>
+                            <textarea class="form-control" id="bio" name="bio" rows="4" placeholder="Tell others about yourself, your skills, and experience...">{{ user.bio or '' }}</textarea>
+                            <div class="form-text">Maximum 500 characters</div>
+                        </div>
+
+                        <!-- Role Information (Read-only) -->
+                        <div class="mb-3">
+                            <label class="form-label">Account Type</label>
+                            <div>
+                                <span class="badge bg-primary fs-6">{{ user.role.title() }}</span>
+                            </div>
+                            <div class="form-text">Contact support to change your account type</div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('users.profile') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Account Settings -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-cog"></i> Account Settings</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Security</h6>
+                            <p class="text-muted">Manage your password and security settings</p>
+                            <button class="btn btn-outline-warning btn-sm" onclick="alert('Password change feature coming soon!')">
+                                <i class="fas fa-key"></i> Change Password
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Email Verification</h6>
+                            <p class="text-muted">
+                                Status: 
+                                {% if user.email_verified %}
+                                    <span class="badge bg-success">Verified</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Not Verified</span>
+                                {% endif %}
+                            </p>
+                            {% if not user.email_verified %}
+                            <button class="btn btn-outline-info btn-sm" onclick="alert('Email verification feature coming soon!')">
+                                <i class="fas fa-envelope"></i> Verify Email
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function previewAvatar(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            const preview = document.getElementById('avatar-preview');
+            if (preview.tagName === 'IMG') {
+                preview.src = e.target.result;
+            } else {
+                // Replace div with img
+                const img = document.createElement('img');
+                img.id = 'avatar-preview';
+                img.src = e.target.result;
+                img.alt = 'Avatar';
+                img.className = 'rounded-circle';
+                img.style.width = '120px';
+                img.style.height = '120px';
+                img.style.objectFit = 'cover';
+                preview.parentNode.replaceChild(img, preview);
+            }
+        }
+        
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+// Character counter for bio
+document.getElementById('bio').addEventListener('input', function() {
+    const maxLength = 500;
+    const currentLength = this.value.length;
+    const remaining = maxLength - currentLength;
+    
+    let helpText = this.nextElementSibling;
+    if (remaining < 0) {
+        helpText.textContent = `Exceeded by ${Math.abs(remaining)} characters`;
+        helpText.className = 'form-text text-danger';
+        this.classList.add('is-invalid');
+    } else {
+        helpText.textContent = `${remaining} characters remaining`;
+        helpText.className = 'form-text text-muted';
+        this.classList.remove('is-invalid');
+    }
+});
+</script>
+{% endblock %}

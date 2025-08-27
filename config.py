@@ -23,6 +23,7 @@ class Config:
     
     # Security
     WTF_CSRF_ENABLED = True
+    RECAPTCHA_ENABLED = False
     
     # Site configuration
     SITE_NAME = os.environ.get('SITE_NAME') or 'Muhammad Hanzala Portfolio'
@@ -33,6 +34,11 @@ class Config:
     POSTS_PER_PAGE = 6
     PROJECTS_PER_PAGE = 9
     GALLERY_PER_PAGE = 12
+
+    # Stripe
+    STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY')
+    STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY')
+    STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET')
 
 class DevelopmentConfig(Config):
     """Development configuration."""
