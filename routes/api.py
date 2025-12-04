@@ -32,6 +32,9 @@ def get_projects():
 # API route to get a specific project
 @api_bp.route('/projects/<int:project_id>', methods=['GET'])
 def get_project(project_id):
+    from models import Project
+    from app import db
+    
     project = Project.query.get_or_404(project_id)
     
     result = {
@@ -50,6 +53,9 @@ def get_project(project_id):
 # API route to get all skills
 @api_bp.route('/skills', methods=['GET'])
 def get_skills():
+    from models import Skill
+    from app import db
+    
     skills = Skill.query.all()
     result = []
     
@@ -67,6 +73,9 @@ def get_skills():
 # API route to get skills by category
 @api_bp.route('/skills/<string:category>', methods=['GET'])
 def get_skills_by_category(category):
+    from models import Skill
+    from app import db
+    
     skills = Skill.query.filter_by(category=category).all()
     result = []
     
@@ -84,6 +93,9 @@ def get_skills_by_category(category):
 # API route to get all gallery items
 @api_bp.route('/gallery', methods=['GET'])
 def get_gallery():
+    from models import Gallery
+    from app import db
+    
     gallery_items = Gallery.query.all()
     result = []
     
@@ -101,6 +113,9 @@ def get_gallery():
 # API route to get gallery items by category
 @api_bp.route('/gallery/<string:category>', methods=['GET'])
 def get_gallery_by_category(category):
+    from models import Gallery
+    from app import db
+    
     gallery_items = Gallery.query.filter_by(category=category).all()
     result = []
     
@@ -118,6 +133,9 @@ def get_gallery_by_category(category):
 # API route to get all testimonials
 @api_bp.route('/testimonials', methods=['GET'])
 def get_testimonials():
+    from models import Testimonial
+    from app import db
+    
     testimonials = Testimonial.query.all()
     result = []
     
@@ -137,6 +155,9 @@ def get_testimonials():
 # API route to get all services
 @api_bp.route('/services', methods=['GET'])
 def get_services():
+    from models import Service
+    from app import db
+    
     services = Service.query.all()
     result = []
     
@@ -154,6 +175,9 @@ def get_services():
 # API route to get all blog posts
 @api_bp.route('/blog', methods=['GET'])
 def get_blog_posts():
+    from models import BlogPost
+    from app import db
+    
     posts = BlogPost.query.filter_by(published=True).all()
     result = []
     
@@ -172,6 +196,9 @@ def get_blog_posts():
 # API route to get a specific blog post
 @api_bp.route('/blog/<string:slug>', methods=['GET'])
 def get_blog_post(slug):
+    from models import BlogPost
+    from app import db
+    
     post = BlogPost.query.filter_by(slug=slug, published=True).first_or_404()
     
     result = {
@@ -189,6 +216,9 @@ def get_blog_post(slug):
 # API route to submit contact form
 @api_bp.route('/contact', methods=['POST'])
 def submit_contact():
+    from models import Contact
+    from app import db
+    
     data = request.get_json()
     
     if not data or not data.get('name') or not data.get('email') or not data.get('message'):
@@ -208,6 +238,9 @@ def submit_contact():
 # API route to get site analytics
 @api_bp.route('/analytics', methods=['GET'])
 def get_analytics():
+    from models import SiteVisit
+    from app import db
+    
     # Get visit data for the last 30 days
     thirty_days_ago = datetime.utcnow() - timedelta(days=30)
     visits = SiteVisit.query.filter(SiteVisit.timestamp >= thirty_days_ago).all()

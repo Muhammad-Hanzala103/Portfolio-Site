@@ -14,6 +14,12 @@ blog_post_tags = db.Table('blog_post_tags',
     db.Column('tag_id', db.Integer, db.ForeignKey('tag.id'), primary_key=True)
 )
 
+# Association table for Project technologies (many-to-many)
+project_technologies = db.Table('project_technologies',
+    db.Column('project_id', db.Integer, db.ForeignKey('project.id'), primary_key=True),
+    db.Column('technology_id', db.Integer, db.ForeignKey('technology.id'), primary_key=True)
+)
+
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
@@ -107,8 +113,13 @@ class Project(db.Model):
     slug = db.Column(db.String(120), unique=True, nullable=False)
     description = db.Column(db.Text, nullable=False)
     short_description = db.Column(db.String(300), nullable=True)
-    image = db.Column(db.String(255), nullable=True)
-    technologies = db.Column(db.String(255), nullable=True)
+    long_description = db.Column(db.Text, nullable=True)  # Rich text content
+    challenge = db.Column(db.Text, nullable=True)  # Case study: The Challenge
+    solution = db.Column(db.Text, nullable=True)  # Case study: The Solution
+    client = db.Column(db.String(100), nullable=True)
+    role = db.Column(db.String(100), nullable=True)
+    image = db.Column(db.String(255), nullable=True)  # Main featured image
+    technologies = db.Column(db.String(255), nullable=True)  # Legacy string field, keep for backup
     github_link = db.Column(db.String(255), nullable=True)
     live_link = db.Column(db.String(255), nullable=True)
     featured = db.Column(db.Boolean, default=False)
@@ -117,7 +128,9 @@ class Project(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    # Relationship is defined in ProjectCategory model
+    # Relationships
+    images = db.relationship('ProjectImage', backref='project', lazy=True, cascade="all, delete-orphan")
+    tech_stack = db.relationship('Technology', secondary=project_technologies, backref=db.backref('projects', lazy='dynamic'))
     
     def __init__(self, **kwargs):
         super(Project, self).__init__(**kwargs)
@@ -130,6 +143,26 @@ class Project(db.Model):
     
     def __repr__(self):
         return f'<Project {self.title}>'
+
+class ProjectImage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
+    image = db.Column(db.String(255), nullable=False)
+    caption = db.Column(db.String(200), nullable=True)
+    order_index = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<ProjectImage {self.id} for Project {self.project_id}>'
+
+class Technology(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
+    icon = db.Column(db.String(50), nullable=True)  # FontAwesome class
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<Technology {self.name}>'
 
 class Skill(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -297,3 +330,31 @@ class SiteVisit(db.Model):
     
     def __repr__(self):
         return f'<SiteVisit {self.ip_address} - {self.page_visited}>'
+
+class Order(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    stripe_session_id = db.Column(db.String(255), unique=True, nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    currency = db.Column(db.String(10), default='usd')
+    status = db.Column(db.String(20), default='pending')  # pending, paid, failed
+    customer_email = db.Column(db.String(120), nullable=True)
+    project_details = db.Column(db.Text, nullable=True)
+    deadline = db.Column(db.String(50), nullable=True)
+    service_id = db.Column(db.Integer, db.ForeignKey('service.id'), nullable=True)
+    tier_name = db.Column(db.String(50), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class ServiceTier(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    service_id = db.Column(db.Integer, db.ForeignKey('service.id'), nullable=False)
+    name = db.Column(db.String(50), nullable=False)  # Basic, Standard, Premium
+    price = db.Column(db.Float, nullable=False)
+    description = db.Column(db.String(200), nullable=True)
+    features = db.Column(db.Text, nullable=True)  # Comma separated
+
+    service = db.relationship('Service', backref=db.backref('tiers', lazy=True))
+    
+    service = db.relationship('Service', backref=db.backref('orders', lazy=True))
+
+    def __repr__(self):
+        return f'<Order {self.id} - {self.status}>'

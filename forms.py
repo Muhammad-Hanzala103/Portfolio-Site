@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, TextAreaField, SelectField, BooleanField, PasswordField, IntegerField, DateField
+from wtforms import StringField, TextAreaField, SelectField, BooleanField, PasswordField, IntegerField, DateField, SelectMultipleField, FieldList, FormField
+from wtforms.widgets import ListWidget, CheckboxInput
 from wtforms.validators import DataRequired, Email, Length, Optional, NumberRange, URL
 from flask_ckeditor import CKEditorField
 
@@ -11,12 +12,16 @@ class LoginForm(FlaskForm):
 
 class ProjectForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired(), Length(max=200)])
-    description = TextAreaField('Description', validators=[DataRequired()])
-    long_description = CKEditorField('Long Description')
-    technologies = StringField('Technologies (comma separated)', validators=[DataRequired()])
+    short_description = TextAreaField('Short Description', validators=[DataRequired(), Length(max=300)])
+    long_description = CKEditorField('Long Description (Rich Text)')
+    challenge = TextAreaField('The Challenge', validators=[Optional()])
+    solution = TextAreaField('The Solution', validators=[Optional()])
+    client = StringField('Client', validators=[Optional(), Length(max=100)])
+    role = StringField('My Role', validators=[Optional(), Length(max=100)])
+    technologies = StringField('Technologies (comma separated)', validators=[Optional()])
     github_url = StringField('GitHub URL', validators=[Optional(), URL()])
     live_url = StringField('Live URL', validators=[Optional(), URL()])
-    image = FileField('Project Image', validators=[FileAllowed(['jpg', 'png', 'jpeg', 'gif'], 'Images only!')])
+    image = FileField('Main Project Image', validators=[FileAllowed(['jpg', 'png', 'jpeg', 'gif'], 'Images only!')])
     category = SelectField('Category', choices=[
         ('web', 'Web Development'),
         ('mobile', 'Mobile Development'),
@@ -25,6 +30,11 @@ class ProjectForm(FlaskForm):
         ('other', 'Other')
     ], validators=[DataRequired()])
     featured = BooleanField('Featured Project')
+    order_index = IntegerField('Order Index', validators=[Optional(), NumberRange(min=0)])
+
+class ProjectImageForm(FlaskForm):
+    image = FileField('Image', validators=[DataRequired(), FileAllowed(['jpg', 'png', 'jpeg', 'gif'], 'Images only!')])
+    caption = StringField('Caption', validators=[Optional(), Length(max=200)])
     order_index = IntegerField('Order Index', validators=[Optional(), NumberRange(min=0)])
 
 class SkillForm(FlaskForm):
@@ -76,7 +86,7 @@ class BlogPostForm(FlaskForm):
 class GalleryForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired(), Length(max=200)])
     description = TextAreaField('Description', validators=[Optional()])
-    image = FileField('Image', validators=[DataRequired(), FileAllowed(['jpg', 'png', 'jpeg'], 'Images only!')])
+    image = FileField('Image', validators=[FileAllowed(['jpg', 'png', 'jpeg'], 'Images only!')])
     category = SelectField('Category', choices=[
         ('Project', 'Project'),
         ('Personal', 'Personal'),

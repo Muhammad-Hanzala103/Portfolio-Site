@@ -61,14 +61,21 @@ login_manager.login_message_category = 'info'
 from routes.main import main_bp
 from routes.admin import admin_bp
 from routes.api import api_bp
+from routes.payment import payment_bp
 
 # Register blueprints
 app.register_blueprint(main_bp)
 app.register_blueprint(admin_bp, url_prefix='/admin')
 app.register_blueprint(api_bp, url_prefix='/api')
+app.register_blueprint(payment_bp, url_prefix='/payment')
+
+# Stripe Configuration
+app.config['STRIPE_PUBLIC_KEY'] = os.environ.get('STRIPE_PUBLIC_KEY', 'pk_test_your_public_key')
+app.config['STRIPE_SECRET_KEY'] = os.environ.get('STRIPE_SECRET_KEY', 'sk_test_your_secret_key')
+app.config['STRIPE_WEBHOOK_SECRET'] = os.environ.get('STRIPE_WEBHOOK_SECRET', 'whsec_your_webhook_secret')
 
 # Admin panel setup
-admin = Admin(app, name='Portfolio Admin', template_mode='bootstrap4', url='/admin_panel', endpoint='admin_panel')
+admin = Admin(app, name='Portfolio Admin', url='/admin_panel', endpoint='admin_panel')
 
 # Secure ModelView that requires authentication
 class SecureModelView(ModelView):

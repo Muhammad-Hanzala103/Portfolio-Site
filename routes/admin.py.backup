@@ -178,100 +178,6 @@ def dashboard():
                           recent_messages=recent_messages)
 
 # Projects CRUD
-@admin_bp.route('/projects')
-@login_required
-def projects():
-    projects = Project.query.order_by(Project.order_index.asc(), Project.created_at.desc()).all()
-    return render_template('admin/projects/index.html', projects=projects)
-
-@admin_bp.route('/projects/new', methods=['GET', 'POST'])
-@login_required
-def new_project():
-    from forms import ProjectForm
-    from models import ProjectCategory
-    
-    form = ProjectForm()
-    # Load categories dynamically
-    categories = ProjectCategory.query.all()
-    form.category.choices = [(str(cat.id), cat.name) for cat in categories]
-    form.category.choices.insert(0, ('', 'Select Category'))
-    
-    if form.validate_on_submit():
-        # Handle image upload
-        image_path = None
-        if form.image.data:
-            image_path = save_file(form.image.data)
-            
-        new_project = Project(
-            title=form.title.data,
-            description=form.description.data,
-            short_description=form.short_description.data,
-            client=form.client.data,
-            role=form.role.data,
-            image=image_path,
-            github_link=form.github_link.data,
-            live_link=form.live_link.data,
-            featured=form.featured.data,
-            order_index=form.order_index.data or 0,
-            category_id=int(form.category.data) if form.category.data else None
-        )
-        
-        db.session.add(new_project)
-        db.session.commit()
-        
-        flash('Project created successfully!', 'success')
-        return redirect(url_for('admin.projects'))
-        
-    return render_template('admin/projects/new.html', form=form)
-
-@admin_bp.route('/projects/edit/<int:project_id>', methods=['GET', 'POST'])
-@login_required
-def edit_project(project_id):
-    from forms import ProjectForm
-    from models import ProjectCategory
-    
-    project = Project.query.get_or_404(project_id)
-    form = ProjectForm(obj=project)
-    
-    # Load categories dynamically
-    categories = ProjectCategory.query.all()
-    form.category.choices = [(str(cat.id), cat.name) for cat in categories]
-    form.category.choices.insert(0, ('', 'Select Category'))
-    
-    if form.validate_on_submit():
-        project.title = form.title.data
-        project.description = form.description.data
-        project.short_description = form.short_description.data
-        project.client = form.client.data
-        project.role = form.role.data
-        project.github_link = form.github_link.data
-        project.live_link = form.live_link.data
-        project.featured = form.featured.data
-        project.order_index = form.order_index.data or 0
-        project.category_id = int(form.category.data) if form.category.data else None
-        
-        if form.image.data:
-            project.image = save_file(form.image.data)
-            
-        db.session.commit()
-        flash('Project updated successfully!', 'success')
-        return redirect(url_for('admin.projects'))
-        
-    return render_template('admin/projects/edit.html', form=form, project=project)
-
-@admin_bp.route('/projects/delete/<int:project_id>', methods=['POST'])
-@login_required
-def delete_project(project_id):
-    project = Project.query.get_or_404(project_id)
-    db.session.delete(project)
-    db.session.commit()
-    flash('Project deleted successfully!', 'success')
-    return redirect(url_for('admin.projects'))
-
-# Skills CRUD
-@admin_bp.route('/skills')
-@login_required
-def skills():
     skills = Skill.query.all()
     return render_template('admin/skills/index.html', skills=skills)
 
@@ -659,20 +565,6 @@ def edit_blog_post(post_id):
             post.image = save_file(request.files['image'])
         
         db.session.commit()
-        flash('Blog post updated successfully!', 'success')
-        return redirect(url_for('admin.blog_posts'))
-    
-    return render_template('admin/blog/edit.html', post=post)
-
-@admin_bp.route('/blog/delete/<int:post_id>', methods=['POST'])
-@login_required
-def delete_blog_post(post_id):
-    post = BlogPost.query.get_or_404(post_id)
-    
-    # Delete post image if it exists
-    if post.image:
-        try:
-            image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], post.image.split('/')[-1])
             if os.path.exists(image_path):
                 os.remove(image_path)
         except Exception as e:

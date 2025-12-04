@@ -1,0 +1,12 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
+  "python.linting.enabled": true,
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.python"
+  },
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/.venv/Lib/site-packages"
+  ],
+  "python.analysis.typeshedPaths": [],
+  "python.analysis.diagnosticMode": "workspace"
+}

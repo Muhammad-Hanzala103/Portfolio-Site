@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Booking Details - {{ service.title }}{% endblock %}
+
+{% block content %}
+<section class="section-padding">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow-sm">
+                    <div class="card-body p-5">
+                        <h2 class="text-center mb-4">Project Details</h2>
+                        <p class="text-center text-muted mb-5">Please provide some details about your project so we can get started right away.</p>
+                        
+                        <div class="service-summary mb-4 p-3 bg-light rounded">
+                            <div class="d-flex align-items-center">
+                                <div class="service-icon me-3 text-primary">
+                                    <i class="{{ service.icon }} fa-2x"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-1">{{ service.title }}</h5>
+                                    <p class="mb-0 text-muted">{{ service.short_description }}</p>
+                                </div>
+                                <div class="ms-auto">
+                                    <span class="badge bg-primary rounded-pill fs-6">{{ service.price }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <form action="{{ url_for('payment.process_booking', service_id=service.id) }}" method="POST">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="email" name="email" required placeholder="name@example.com">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="deadline" class="form-label">Preferred Deadline</label>
+                                <input type="date" class="form-control" id="deadline" name="deadline">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="project_details" class="form-label">Project Requirements</label>
+                                <textarea class="form-control" id="project_details" name="project_details" rows="6" required placeholder="Describe your project, goals, and any specific requirements..."></textarea>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    Proceed to Payment <i class="fas fa-arrow-right ms-2"></i>
+                                </button>
+                                <a href="{{ url_for('main.services') }}" class="btn btn-outline-secondary">Cancel</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
