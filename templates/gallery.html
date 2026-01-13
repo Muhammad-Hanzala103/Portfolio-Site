@@ -7,7 +7,7 @@
     .gallery-filter {
         margin-bottom: 30px;
     }
-    
+
     .gallery-filter .filter-item {
         display: inline-block;
         margin: 0 5px;
@@ -19,63 +19,63 @@
         cursor: pointer;
         transition: all 0.3s ease;
     }
-    
+
     .gallery-filter .filter-item:hover,
     .gallery-filter .filter-item.active {
         background: var(--primary-color);
         color: #fff;
         border-color: var(--primary-color);
     }
-    
+
     .gallery-item {
         margin-bottom: 30px;
         position: relative;
         overflow: hidden;
         border-radius: 10px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         transition: all 0.3s ease;
     }
-    
+
     .gallery-item:hover {
         transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
     }
-    
+
     .gallery-item img {
         width: 100%;
         height: 250px;
         object-fit: cover;
         transition: all 0.5s ease;
     }
-    
+
     .gallery-item:hover img {
         transform: scale(1.05);
     }
-    
+
     .gallery-overlay {
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0,0,0,0.7);
+        background: rgba(0, 0, 0, 0.7);
         display: flex;
         align-items: center;
         justify-content: center;
         opacity: 0;
         transition: all 0.3s ease;
     }
-    
+
     .gallery-item:hover .gallery-overlay {
         opacity: 1;
     }
-    
+
     .gallery-info {
         text-align: center;
         color: #fff;
         padding: 10px 15px 15px 15px;
     }
-    
+
     .gallery-info h4 {
         margin-bottom: 10px;
         font-size: 18px;
@@ -83,7 +83,7 @@
         opacity: 0;
         transition: all 0.3s ease 0.1s;
     }
-    
+
     .gallery-info p {
         font-size: 14px;
         margin-bottom: 0;
@@ -91,13 +91,13 @@
         opacity: 0;
         transition: all 0.3s ease 0.2s;
     }
-    
+
     .gallery-item:hover .gallery-info h4,
     .gallery-item:hover .gallery-info p {
         transform: translateY(0);
         opacity: 1;
     }
-    
+
     .gallery-icon {
         position: absolute;
         bottom: 15px;
@@ -115,7 +115,7 @@
         opacity: 0;
         transition: all 0.3s ease 0.3s;
     }
-    
+
     .gallery-item:hover .gallery-icon {
         transform: translateY(0);
         opacity: 1;
@@ -125,16 +125,19 @@
 
 {% block content %}
 <!-- Page Header -->
-<section class="page-header">
+<!-- Page Header -->
+<section class="page-header"
+    style="background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1432821596592-e2c18b78144f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') no-repeat center center/cover;">
     <div class="container">
         <div class="row">
             <div class="col-lg-12">
-                <div class="page-header-content">
+                <div class="page-header-content text-white">
                     <h1>Gallery</h1>
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Gallery</li>
+                            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}"
+                                    class="text-white">Home</a></li>
+                            <li class="breadcrumb-item active text-white" aria-current="page">Gallery</li>
                         </ol>
                     </nav>
                 </div>
@@ -155,59 +158,69 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Gallery Filter -->
         <div class="row">
             <div class="col-lg-12">
                 <div class="gallery-filter text-center" data-aos="fade-up">
                     <button class="filter-item active" data-filter="*">All</button>
                     {% for category in categories %}
-                        <button class="filter-item" data-filter=".{{ category|lower|replace(' ', '-') }}">{{ category }}</button>
+                    <button class="filter-item" data-filter=".{{ category|lower|replace(' ', '-') }}">{{ category
+                        }}</button>
                     {% endfor %}
                 </div>
             </div>
         </div>
-        
+
         <!-- Gallery Items -->
         <div class="row gallery-container">
             {% if gallery_items %}
-                {% for item in gallery_items %}
-                    <div class="col-lg-4 col-md-6 gallery-grid-item {{ item.category|lower|replace(' ', '-') }}" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
-                        <div class="gallery-item">
-                            <img src="{{ url_for('static', filename='uploads/' + item.image) if item.image else url_for('static', filename='img/default-gallery.jpg') }}" alt="{{ item.title }}">
-                            <div class="gallery-overlay">
-                                <div class="gallery-info">
-                                    <h4>{{ item.title }}</h4>
-                                    <p>{{ item.description }}</p>
-                                </div>
-                                <a href="{{ url_for('static', filename=item.image) }}" class="gallery-icon" data-lightbox="gallery" data-title="{{ item.title }} - {{ item.description }}">
-                                    <i class="fas fa-search-plus"></i>
-                                </a>
-                            </div>
+            {% for item in gallery_items %}
+            <div class="col-lg-4 col-md-6 gallery-grid-item {{ item.category|lower|replace(' ', '-') }}"
+                data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+                <div class="gallery-item">
+                    <img src="{{ url_for('static', filename='uploads/' + item.image) if item.image else url_for('static', filename='img/default-gallery.jpg') }}"
+                        alt="{{ item.title }}">
+                    <div class="gallery-overlay">
+                        <div class="gallery-info">
+                            <h4>{{ item.title }}</h4>
+                            <p>{{ item.description }}</p>
                         </div>
+                        <a href="{{ url_for('static', filename=item.image) }}" class="gallery-icon"
+                            data-lightbox="gallery" data-title="{{ item.title }} - {{ item.description }}">
+                            <i class="fas fa-search-plus"></i>
+                        </a>
                     </div>
-                {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
             {% else %}
-                <!-- Placeholder Gallery Items -->
-                {% set categories = ['3D Renders', 'Web Design', 'UI/UX', 'Video Editing'] %}
-                {% for i in range(9) %}
-                    {% set category = categories[i % 4] %}
-                    <div class="col-lg-4 col-md-6 gallery-grid-item {{ category|lower|replace(' ', '-') }}" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
-                        <div class="gallery-item">
-                            <div class="image-container">
-                                <img class="lazy" src="{{ url_for('static', filename='img/gallery-' ~ loop.index ~ '.jpg') }}" alt="{{ category }} portfolio showcase - Professional {{ category|lower }} design by Muhammad Hanzala" loading="lazy">                            </div>
-                            <div class="gallery-overlay">
-                                <div class="gallery-info">
-                                    <h4>{{ category }} Project {{ loop.index }}</h4>
-                                    <p>Professional {{ category|lower }} design showcasing creative excellence</p>
-                                </div>
-                                <a href="{{ url_for('static', filename='img/gallery-' ~ loop.index ~ '.jpg') }}" class="gallery-icon" data-lightbox="gallery" data-title="{{ category }} Project {{ loop.index }} - Professional {{ category|lower }} design showcasing creative excellence">
-                                    <i class="fas fa-search-plus"></i>
-                                </a>
-                            </div>
-                        </div>
+            <!-- Placeholder Gallery Items -->
+            {% set categories = ['3D Renders', 'Web Design', 'UI/UX', 'Video Editing'] %}
+            {% for i in range(9) %}
+            {% set category = categories[i % 4] %}
+            <div class="col-lg-4 col-md-6 gallery-grid-item {{ category|lower|replace(' ', '-') }}" data-aos="fade-up"
+                data-aos-delay="{{ loop.index * 100 }}">
+                <div class="gallery-item">
+                    <div class="image-container">
+                        <img class="lazy" src="{{ url_for('static', filename='img/gallery-' ~ loop.index ~ '.jpg') }}"
+                            alt="{{ category }} portfolio showcase - Professional {{ category|lower }} design by Muhammad Hanzala"
+                            loading="lazy">
                     </div>
-                {% endfor %}
+                    <div class="gallery-overlay">
+                        <div class="gallery-info">
+                            <h4>{{ category }} Project {{ loop.index }}</h4>
+                            <p>Professional {{ category|lower }} design showcasing creative excellence</p>
+                        </div>
+                        <a href="{{ url_for('static', filename='img/gallery-' ~ loop.index ~ '.jpg') }}"
+                            class="gallery-icon" data-lightbox="gallery"
+                            data-title="{{ category }} Project {{ loop.index }} - Professional {{ category|lower }} design showcasing creative excellence">
+                            <i class="fas fa-search-plus"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
             {% endif %}
         </div>
     </div>
@@ -235,21 +248,21 @@
 
 {% block extra_js %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         // Initialize Isotope for filtering
         var $grid = $('.gallery-container').isotope({
             itemSelector: '.gallery-grid-item',
             layoutMode: 'fitRows'
         });
-        
+
         // Filter items on button click
-        $('.gallery-filter').on('click', '.filter-item', function() {
+        $('.gallery-filter').on('click', '.filter-item', function () {
             var filterValue = $(this).attr('data-filter');
             $grid.isotope({ filter: filterValue });
             $('.filter-item').removeClass('active');
             $(this).addClass('active');
         });
-        
+
         // Initialize lightbox
         lightbox.option({
             'resizeDuration': 200,

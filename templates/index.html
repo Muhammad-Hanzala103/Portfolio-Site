@@ -1,326 +1,160 @@
 {% extends 'base.html' %}
 
-{% block title %}Muhammad Hanzala - Freelance Developer & Digital Artist{% endblock %}
+{% block title %}Muhammad Hanzala - Full Stack Developer & Digital Creator{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<section class="hero" id="hero">
+<!-- Hero Section with Profile Photo -->
+<section class="hero-section">
     <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-6 order-lg-1 order-2">
-                <div class="hero-content" data-aos="fade-right">
-                    <h1>Hi, I'm <span class="highlight">Muhammad Hanzala</span></h1>
-                    <div class="typed-text-container">
-                        <span>I </span><span id="typed"></span>
-                    </div>
-                    <p class="lead">A Computer Science student and freelance developer specializing in creating beautiful digital experiences.</p>
-                    <div class="hero-btns">
-                        <a href="{{ url_for('main.contact') }}" class="btn btn-primary">Get In Touch</a>
-                        <a href="{{ url_for('main.download_cv') }}" class="btn btn-outline-primary">Download CV</a>
-                    </div>
-                    <div class="freelance-platforms mt-4">
-                        <a href="https://www.fiverr.com/mr0_0hani" target="_blank" class="btn btn-sm btn-success me-2">
-                            <i class="fas fa-external-link-alt"></i> Hire me on Fiverr
-                        </a>
-                        <a href="https://www.upwork.com/freelancers/~01dcd0859017452a7e?mp_source=share" target="_blank" class="btn btn-sm btn-success">
-                            <i class="fas fa-external-link-alt"></i> Hire me on Upwork
-                        </a>
-                    </div>
-                </div>
+        <div class="hero-content">
+            <div class="hero-image reveal-text">
+                <img src="{{ url_for('static', filename='img/profile.jpg') }}" alt="Muhammad Hanzala">
             </div>
-            <div class="col-lg-6 order-lg-2 order-1">
-                <div class="hero-image" data-aos="fade-left">
-                    <img src="{{ url_for('static', filename='img/about.jpg') }}" alt="Muhammad Hanzala" class="img-fluid rounded-circle">
-                    <div class="shape-1"></div>
-                    <div class="shape-2"></div>
+            <div class="hero-text reveal-text">
+                <p class="section-label">Welcome to my Portfolio</p>
+                <h1>Hi, I'm <span class="gradient-text">Muhammad Hanzala</span></h1>
+                <p class="tagline">Full Stack Developer & Digital Creator</p>
+                <p class="lead">I craft high-performance web applications, stunning 3D visuals, and engaging digital
+                    experiences. Some people call me Hani.</p>
+
+                <div class="hero-cta">
+                    <a href="{{ url_for('main.projects') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-briefcase"></i> View My Work
+                    </a>
+                    <a href="{{ url_for('main.contact') }}" class="btn btn-secondary btn-lg">
+                        <i class="fas fa-envelope"></i> Get In Touch
+                    </a>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="scroll-down">
-        <a href="#about"><i class="fas fa-chevron-down"></i></a>
     </div>
 </section>
 
-<!-- Demo Videos Section -->
-<section class="demo-videos section-padding bg-light" id="demo-videos">
+<!-- Stats Section -->
+<section class="section">
     <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="section-title text-center" data-aos="fade-up">
-                    <h2>Demo Videos & Tutorials</h2>
-                    <div class="divider"></div>
-                    <p>Watch some of my tutorials and demos</p>
-                </div>
+        <div class="d-flex flex-wrap gap-4 justify-content-center">
+            <div class="glass-panel stat-card tilt-card" style="flex: 1; min-width: 250px; max-width: 300px;">
+                <i class="fas fa-code"></i>
+                <h3>2+</h3>
+                <p>Years Experience</p>
+            </div>
+            <div class="glass-panel stat-card tilt-card" style="flex: 1; min-width: 250px; max-width: 300px;">
+                <i class="fas fa-project-diagram"></i>
+                <h3>20+</h3>
+                <p>Projects Completed</p>
+            </div>
+            <div class="glass-panel stat-card tilt-card" style="flex: 1; min-width: 250px; max-width: 300px;">
+                <i class="fas fa-smile"></i>
+                <h3>100%</h3>
+                <p>Client Satisfaction</p>
             </div>
         </div>
-        <div class="row">
-            {% for video in demo_videos %}
-            <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
-                <div class="video-card">
-                    <iframe width="100%" height="215" src="{{ video.url }}" frameborder="0" allowfullscreen></iframe>
-                    <h5 class="mt-2">{{ video.title }}</h5>
-                    <p>{{ video.description }}</p>
-                </div>
+    </div>
+</section>
+
+<!-- Featured Projects -->
+<section class="section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-label">Portfolio</span>
+            <h2>Featured Works</h2>
+        </div>
+
+        <div class="d-flex flex-wrap gap-4">
+            {% for project in featured_projects %}
+            <div style="flex: 1; min-width: 300px; max-width: 400px;">
+                <a href="{{ url_for('main.project_detail', project_id=project.id) }}" style="text-decoration: none;">
+                    <div class="glass-panel project-card">
+                        <div class="project-img-wrapper">
+                            {% if project.image %}
+                            <img src="{{ url_for('static', filename=project.image) }}" alt="{{ project.title }}">
+                            {% else %}
+                            <div
+                                style="width: 100%; height: 100%; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-image" style="font-size: 3rem; color: var(--text-muted);"></i>
+                            </div>
+                            {% endif %}
+                            <div class="overlay">
+                                <span class="btn btn-primary rounded-circle" style="width: 48px; height: 48px;">
+                                    <i class="fas fa-eye"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="p-3">
+                            <span class="section-label" style="font-size: 0.7rem; padding: 4px 12px;">
+                                {{ project.category.name if project.category else 'Project' }}
+                            </span>
+                            <h4 class="mt-2" style="color: var(--text-primary);">{{ project.title }}</h4>
+                            <p class="text-muted" style="font-size: 0.9rem; margin: 0;">
+                                {{ project.short_description|truncate(80) if project.short_description else '' }}
+                            </p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% else %}
+            <div class="text-center w-100">
+                <p class="text-muted">No projects yet. Add some from the admin panel!</p>
             </div>
             {% endfor %}
         </div>
-    </div>
-</section>
 
-<!-- About Section -->
-<section class="about section-padding" id="about">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="section-title text-center" data-aos="fade-up">
-                    <h2>About Me</h2>
-                    <div class="divider"></div>
-                    <p>Get to know me better</p>
-                </div>
-            </div>
-        </div>
-        <div class="row align-items-center">
-            <div class="col-lg-5" data-aos="fade-right">
-                <div class="about-img">
-                    <img src="{{ url_for('static', filename='img/about.jpg') }}" alt="About Muhammad Hanzala" class="img-fluid">
-                </div>
-            </div>
-            <div class="col-lg-7" data-aos="fade-left">
-                <div class="about-content">
-                    <h3>Muhammad Hanzala</h3>
-                    <h4>Computer Science Student & Freelance Developer</h4>
-                    <p>I am a passionate Computer Science student at KICSIT with a strong interest in web development, 3D design, and video editing. My journey in the digital world has equipped me with a diverse skill set that allows me to create engaging and functional digital experiences.</p>
-                    <p>I specialize in Python development with Flask, front-end technologies like HTML5, CSS3, and JavaScript, as well as 3D modeling with Blender and video editing with DaVinci Resolve.</p>
-                    <div class="row about-info">
-                        <div class="col-md-6">
-                            <ul>
-                                <li><strong>Name:</strong> Muhammad Hanzala</li>
-                                <li><strong>Email:</strong> hani75384@gmail.com</li>
-                                <li><strong>Phone:</strong> +92 301 5855940</li>
-                                <li><strong>Location:</strong> Jhelum, Pakistan</li>
-                            </ul>
-                        </div>
-                        <div class="col-md-6">
-                            <ul>
-                                <li><strong>Degree:</strong> BSCS (In Progress)</li>
-                                <li><strong>Experience:</strong> 2+ Years</li>
-                                <li><strong>Freelance:</strong> Available</li>
-                                <li><strong>Languages:</strong> English, Urdu</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="about-btns">
-                        <a href="{{ url_for('main.about') }}" class="btn btn-primary">Learn More</a>
-                        <a href="{{ url_for('main.contact') }}" class="btn btn-outline-primary">Hire Me</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Skills Section -->
-<section class="skills section-padding bg-light" id="skills">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="section-title text-center" data-aos="fade-up">
-                    <h2>My Skills</h2>
-                    <div class="divider"></div>
-                    <p>What I'm good at</p>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            {% for category, skills in skill_categories.items() %}
-                {% if category %}
-                    <div class="col-lg-12 mb-4" data-aos="fade-up">
-                        <h3 class="skill-category">{{ category }}</h3>
-                    </div>
-                {% endif %}
-                {% for skill in skills %}
-                    <div class="col-md-6" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
-                        <div class="skill-item">
-                            <div class="skill-info">
-                                <h4>{{ skill.name }}</h4>
-                                <span>{{ skill.proficiency }}%</span>
-                            </div>
-                            <div class="progress">
-                                <div class="progress-bar" role="progressbar" style="width: {{ skill.proficiency }}%" aria-valuenow="{{ skill.proficiency }}" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            {% endfor %}
-        </div>
-        <div class="row mt-5">
-            <div class="col-lg-12 text-center" data-aos="fade-up">
-                <a href="{{ url_for('main.about') }}#skills" class="btn btn-primary">View All Skills</a>
-            </div>
+        <div class="text-center mt-5">
+            <a href="{{ url_for('main.projects') }}" class="btn btn-secondary">
+                View All Projects <i class="fas fa-arrow-right"></i>
+            </a>
         </div>
     </div>
 </section>
 
 <!-- Services Section -->
-<section class="services section-padding" id="services">
+<section class="section" style="background: var(--bg-secondary);">
     <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="section-title text-center" data-aos="fade-up">
-                    <h2>My Services</h2>
-                    <div class="divider"></div>
-                    <p>What I offer</p>
-                </div>
-            </div>
+        <div class="section-header">
+            <span class="section-label">Services</span>
+            <h2>What I Offer</h2>
         </div>
-        <div class="row">
+
+        <div class="d-flex flex-wrap gap-4 justify-content-center">
             {% for service in services %}
-                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
-                    <div class="service-box">
-                        <div class="service-icon">
-                            <i class="{{ service.icon }}"></i>
-                        </div>
-                        <h3>{{ service.title }}</h3>
-                        <p>{{ service.description|truncate(100) }}</p>
-                        <a href="{{ url_for('main.services') }}#service-{{ service.id }}" class="service-link">Learn More <i class="fas fa-arrow-right"></i></a>
+            <div style="flex: 1; min-width: 280px; max-width: 350px;">
+                <div class="glass-panel service-card hover-glow-violet">
+                    <div class="icon-wrapper">
+                        <i class="{{ service.icon if service.icon else 'fas fa-cog' }}"></i>
                     </div>
+                    <h4>{{ service.title }}</h4>
+                    <p class="text-muted">{{ service.short_description }}</p>
+                    <a href="{{ url_for('main.services') }}" class="btn btn-secondary btn-sm w-100">
+                        View Details
+                    </a>
                 </div>
+            </div>
+            {% else %}
+            <div class="text-center w-100">
+                <p class="text-muted">Services coming soon!</p>
+            </div>
             {% endfor %}
         </div>
-        <div class="row mt-5">
-            <div class="col-lg-12 text-center" data-aos="fade-up">
-                <a href="{{ url_for('main.services') }}" class="btn btn-primary">View All Services</a>
-            </div>
-        </div>
     </div>
 </section>
 
-<!-- Projects Section -->
-<section class="projects section-padding bg-light" id="projects">
+<!-- CTA Section -->
+<section class="section">
     <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="section-title text-center" data-aos="fade-up">
-                    <h2>Featured Projects</h2>
-                    <div class="divider"></div>
-                    <p>Some of my recent work</p>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            {% for project in featured_projects %}
-                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
-                    <div class="project-box">
-                        <div class="project-img">
-                            {% if project.image %}
-                                <img src="{{ url_for('static', filename=project.image) }}" alt="{{ project.title }}" class="img-fluid">
-                            {% else %}
-                                <img src="{{ url_for('static', filename='img/project-placeholder.jpg') }}" alt="{{ project.title }}" class="img-fluid">
-                            {% endif %}
-                            <div class="project-overlay">
-                                <div class="project-links">
-                                    {% if project.github_link %}
-                                        <a href="{{ project.github_link }}" target="_blank"><i class="fab fa-github"></i></a>
-                                    {% endif %}
-                                    {% if project.live_link %}
-                                        <a href="{{ project.live_link }}" target="_blank"><i class="fas fa-external-link-alt"></i></a>
-                                    {% endif %}
-                                    <a href="{{ url_for('main.project_detail', project_id=project.id) }}"><i class="fas fa-info-circle"></i></a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="project-info">
-                            <h3>{{ project.title }}</h3>
-                            <p>{{ project.description|truncate(100) }}</p>
-                            <div class="project-tech">
-                                {% if project.technologies %}
-                                    {% for tech in project.technologies.split(',') %}
-                                        <span class="badge bg-primary">{{ tech.strip() }}</span>
-                                    {% endfor %}
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-        <div class="row mt-5">
-            <div class="col-lg-12 text-center" data-aos="fade-up">
-                <a href="{{ url_for('main.projects') }}" class="btn btn-primary">View All Projects</a>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Testimonials Section -->
-<section class="testimonials section-padding" id="testimonials">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="section-title text-center" data-aos="fade-up">
-                    <h2>Client Testimonials</h2>
-                    <div class="divider"></div>
-                    <p>What my clients say</p>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-lg-12" data-aos="fade-up">
-                <div class="testimonial-slider">
-                    {% for testimonial in testimonials %}
-                        <div class="testimonial-item">
-                            <div class="testimonial-content">
-                                <div class="testimonial-rating">
-                                    {% for i in range(testimonial.rating) %}
-                                        <i class="fas fa-star"></i>
-                                    {% endfor %}
-                                    {% for i in range(5 - testimonial.rating) %}
-                                        <i class="far fa-star"></i>
-                                    {% endfor %}
-                                </div>
-                                <p>{{ testimonial.content }}</p>
-                                <div class="testimonial-client">
-                                    {% if testimonial.client_image %}
-                                        <img src="{{ url_for('static', filename=testimonial.client_image) }}" alt="{{ testimonial.client_name }}" class="img-fluid rounded-circle">
-                                    {% else %}
-                                        <div class="client-avatar">{{ testimonial.client_name[0] }}</div>
-                                    {% endif %}
-                                    <div class="client-info">
-                                        <h4>{{ testimonial.client_name }}</h4>
-                                        {% if testimonial.client_position %}
-                                            <p>{{ testimonial.client_position }}</p>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-        <div class="row mt-5">
-            <div class="col-lg-12 text-center" data-aos="fade-up">
-                <a href="{{ url_for('main.testimonials') }}" class="btn btn-primary">View All Testimonials</a>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Contact CTA Section -->
-<section class="contact-cta section-padding bg-primary text-white">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-8 col-md-7">
-                <div class="cta-content" data-aos="fade-right">
-                    <h2>Ready to start your project?</h2>
-                    <p>Let's work together to bring your ideas to life. Contact me today!</p>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-5">
-                <div class="cta-btn text-md-end" data-aos="fade-left">
-                    <a href="{{ url_for('main.contact') }}" class="btn btn-light">Get In Touch</a>
-                </div>
+        <div class="glass-panel text-center p-5">
+            <h2>Ready to Start a Project?</h2>
+            <p class="lead mb-4">Let's create something amazing together. I'm available for freelance projects.</p>
+            <div class="d-flex gap-3 justify-content-center flex-wrap">
+                <a href="{{ url_for('main.contact') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-rocket"></i> Start a Project
+                </a>
+                <a href="https://www.fiverr.com/mr0_0hani" target="_blank" class="btn btn-secondary">
+                    <i class="fab fa-square"></i> Hire on Fiverr
+                </a>
+                <a href="https://www.upwork.com/" target="_blank" class="btn btn-secondary">
+                    <i class="fab fa-square"></i> Hire on Upwork
+                </a>
             </div>
         </div>
     </div>
@@ -329,34 +163,14 @@
 
 {% block extra_js %}
 <script>
-    // Initialize Typed.js
-    document.addEventListener('DOMContentLoaded', function() {
-        var typed = new Typed('#typed', {
-            strings: ['design digital experiences.', 'build web applications.', 'create 3D models.', 'edit videos.', 'develop WordPress sites.'],
+    // Typed.js for tagline
+    if (typeof Typed !== 'undefined' && document.getElementById('typed-tagline')) {
+        new Typed('#typed-tagline', {
+            strings: ['Web Applications', '3D Experiences', 'Digital Magic', 'Scalable Apps'],
             typeSpeed: 50,
             backSpeed: 30,
-            backDelay: 2000,
             loop: true
         });
-        
-        // Initialize testimonial slider
-        $('.testimonial-slider').slick({
-            dots: true,
-            infinite: true,
-            speed: 500,
-            slidesToShow: 2,
-            slidesToScroll: 1,
-            autoplay: true,
-            autoplaySpeed: 5000,
-            responsive: [
-                {
-                    breakpoint: 992,
-                    settings: {
-                        slidesToShow: 1
-                    }
-                }
-            ]
-        });
-    });
+    }
 </script>
 {% endblock %}

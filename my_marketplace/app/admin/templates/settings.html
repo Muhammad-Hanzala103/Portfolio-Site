@@ -1,0 +1,43 @@
+{% extends "admin/layout.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>Site Settings</h2>
+    <form method="POST" action="{{ url_for('admin.manage_settings') }}">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.site_name.label }} {{ form.site_name(class_="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.site_description.label }} {{ form.site_description(class_="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.contact_email.label }} {{ form.contact_email(class_="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.contact_phone.label }} {{ form.contact_phone(class_="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.social_media_facebook.label }} {{ form.social_media_facebook(class_="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.social_media_twitter.label }} {{ form.social_media_twitter(class_="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.social_media_instagram.label }} {{ form.social_media_instagram(class_="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.social_media_linkedin.label }} {{ form.social_media_linkedin(class_="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.google_analytics_id.label }} {{ form.google_analytics_id(class_="form-control") }}
+        </div>
+        <div class="form-check">
+            {{ form.maintenance_mode(class_="form-check-input") }} {{ form.maintenance_mode.label(class_="form-check-label") }}
+        </div>
+        <div class="form-group">
+            {{ form.submit(class_="btn btn-primary") }}
+        </div>
+    </form>
+</div>
+{% endblock %}

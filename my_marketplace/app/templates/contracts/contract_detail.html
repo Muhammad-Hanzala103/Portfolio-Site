@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>Contract Details</h1>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">{{ contract.gig.title }}</h5>
+            <p class="card-text"><strong>Client:</strong> {{ contract.client.username }}</p>
+            <p class="card-text"><strong>Freelancer:</strong> {{ contract.freelancer.username }}</p>
+            <p class="card-text"><strong>Price:</strong> ${{ contract.agreed_price }}</p>
+            <p class="card-text"><strong>Status:</strong> {{ contract.status }}</p>
+
+            {% if contract.status == 'pending_payment' and current_user.id == contract.client_id %}
+                <button id="checkout-button" class="btn btn-primary">Pay with Stripe</button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const checkoutButton = document.getElementById('checkout-button');
+        if (checkoutButton) {
+            checkoutButton.addEventListener('click', function () {
+                fetch('{{ url_for("payments.create_checkout_session") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ contract_id: {{ contract.id }} })
+                })
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (session) {
+                    const stripe = Stripe('{{ config.STRIPE_PUBLISHABLE_KEY }}');
+                    return stripe.redirectToCheckout({ sessionId: session.id });
+                })
+                .then(function (result) {
+                    if (result.error) {
+                        alert(result.error.message);
+                    }
+                })
+                .catch(function (error) {
+                    console.error('Error:', error);
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

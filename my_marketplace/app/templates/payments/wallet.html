@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+
+{% block title %}My Wallet{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Wallet Balance</h5>
+                    <span class="badge bg-primary fs-6">${{ "%.2f"|format(current_user.wallet_balance) }}</span>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Use your wallet to pay for orders instantly without entering payment details each time.</p>
+                    
+                    {% if request.args.get('success') %}
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>Wallet top-up successful!
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endif %}
+                    
+                    {% if request.args.get('cancelled') %}
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Wallet top-up was cancelled.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Quick Top-up</h6>
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-outline-primary" onclick="topupWallet(25)">$25</button>
+                                <button class="btn btn-outline-primary" onclick="topupWallet(50)">$50</button>
+                                <button class="btn btn-outline-primary" onclick="topupWallet(100)">$100</button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Custom Amount</h6>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="customAmount" placeholder="Enter amount" min="5" max="10000" step="0.01">
+                                <button class="btn btn-primary" onclick="topupCustomAmount()">Top Up</button>
+                            </div>
+                            <small class="text-muted">Minimum: $5.00, Maximum: $10,000.00</small>
+                        </div>
+                    </div>
+                    <hr>
+                    <a href="{{ url_for('payments.request_withdrawal') }}" class="btn btn-secondary">Request Withdrawal</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Wallet Features</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-bolt text-warning me-2"></i>Instant payments</li>
+                        <li class="mb-2"><i class="fas fa-shield-alt text-success me-2"></i>Secure transactions</li>
+                        <li class="mb-2"><i class="fas fa-history text-info me-2"></i>Transaction history</li>
+                        <li class="mb-2"><i class="fas fa-mobile-alt text-primary me-2"></i>Mobile friendly</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Recent Transactions</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_payments %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Provider</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in recent_payments %}
+                                <tr>
+                                    <td>{{ payment.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>
+                                        {% if payment.order_id %}
+                                            <span class="badge bg-danger">Order Payment</span>
+                                        {% else %}
+                                            <span class="badge bg-success">Wallet Top-up</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if payment.order_id %}
+                                            -${{ "%.2f"|format(payment.amount) }}
+                                        {% else %}
+                                            +${{ "%.2f"|format(payment.amount) }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if payment.status == 'completed' %}
+                                            <span class="badge bg-success">Completed</span>
+                                        {% elif payment.status == 'pending' %}
+                                            <span class="badge bg-warning">Pending</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Failed</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ payment.provider.title() }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-receipt fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No transactions yet. Start by topping up your wallet!</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+const stripe = Stripe('{{ config.STRIPE_PUBLISHABLE_KEY }}');
+
+function topupWallet(amount) {
+    createCheckoutSession(amount);
+}
+
+function topupCustomAmount() {
+    const amount = document.getElementById('customAmount').value;
+    if (!amount || parseFloat(amount) < 5 || parseFloat(amount) > 10000) {
+        alert('Please enter a valid amount between $5.00 and $10,000.00');
+        return;
+    }
+    createCheckoutSession(parseFloat(amount));
+}
+
+function createCheckoutSession(amount) {
+    fetch('{{ url_for("payments.create_wallet_topup_session") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ amount: amount })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('Error: ' + data.error);
+        } else {
+            return stripe.redirectToCheckout({ sessionId: data.id });
+        }
+    })
+    .then(result => {
+        if (result && result.error) {
+            alert(result.error.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while processing your request.');
+    });
+}
+</script>
+{% endblock %}

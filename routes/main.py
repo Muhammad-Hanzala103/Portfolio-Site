@@ -1,5 +1,8 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, Response
+from flask import Blueprint, render_template, request, redirect, url_for, flash, Response, copy_current_request_context
 from datetime import datetime
+import threading
+from flask_mail import Message
+from utils import generate_sitemap
 
 # Create blueprint first, import models later to avoid circular imports
 
@@ -11,6 +14,7 @@ def index():
     from models import Project, Skill, Testimonial, Service
     from app import db
     
+    # Get featured projects for homepage
     # Get featured projects for homepage
     featured_projects = Project.query.filter_by(featured=True).limit(3).all()
     
@@ -133,7 +137,14 @@ def contact():
     if request.method == 'POST':
         # Import models at runtime to avoid circular imports
         from models import Contact
-        from app import db
+        from app import db, mail, app # Import mail and app
+        
+        # Honeypot spam protection - if this hidden field is filled, it's a bot
+        honeypot = request.form.get('website', '')  # Hidden field named 'website'
+        if honeypot:
+            # Silently reject spam bots
+            flash('Your message has been sent!', 'success')  # Fake success
+            return redirect(url_for('main.contact'))
         
         name = request.form.get('name')
         email = request.form.get('email')
@@ -149,6 +160,32 @@ def contact():
         new_message = Contact(name=name, email=email, subject=subject, message=message)
         db.session.add(new_message)
         db.session.commit()
+
+        # Send Email Asynchronously
+        msg = Message(subject=f"New Portfolio Contact: {subject}",
+                      sender=app.config['MAIL_USERNAME'],
+                      recipients=[app.config['MAIL_USERNAME']])
+        msg.body = f"""
+        New message from your portfolio:
+        
+        Name: {name}
+        Email: {email}
+        Subject: {subject}
+        
+        Message:
+        {message}
+        """
+        
+        @copy_current_request_context
+        def send_async_email(msg):
+            try:
+                mail.send(msg)
+                print("Email sent successfully!")
+            except Exception as e:
+                print(f"Failed to send email: {e}")
+
+        email_thread = threading.Thread(target=send_async_email, args=[msg])
+        email_thread.start()
         
         flash('Your message has been sent! I will get back to you soon.', 'success')
         return redirect(url_for('main.contact'))
@@ -163,40 +200,9 @@ def download_cv():
 @main_bp.route('/sitemap.xml')
 def sitemap():
     """Generate dynamic sitemap.xml for SEO"""
-    from models import Project, BlogPost
-    
-    # Static pages
-    pages = [
-        {'url': url_for('main.index', _external=True), 'lastmod': datetime.now().strftime('%Y-%m-%d'), 'priority': '1.0'},
-        {'url': url_for('main.about', _external=True), 'lastmod': datetime.now().strftime('%Y-%m-%d'), 'priority': '0.9'},
-        {'url': url_for('main.projects', _external=True), 'lastmod': datetime.now().strftime('%Y-%m-%d'), 'priority': '0.8'},
-        {'url': url_for('main.gallery', _external=True), 'lastmod': datetime.now().strftime('%Y-%m-%d'), 'priority': '0.7'},
-        {'url': url_for('main.services', _external=True), 'lastmod': datetime.now().strftime('%Y-%m-%d'), 'priority': '0.8'},
-        {'url': url_for('main.blog', _external=True), 'lastmod': datetime.now().strftime('%Y-%m-%d'), 'priority': '0.8'},
-        {'url': url_for('main.contact', _external=True), 'lastmod': datetime.now().strftime('%Y-%m-%d'), 'priority': '0.7'},
-        {'url': url_for('main.testimonials', _external=True), 'lastmod': datetime.now().strftime('%Y-%m-%d'), 'priority': '0.6'},
-    ]
-    
-    # Dynamic project pages
-    projects = Project.query.all()
-    for project in projects:
-        pages.append({
-            'url': url_for('main.project_detail', project_id=project.id, _external=True),
-            'lastmod': project.updated_at.strftime('%Y-%m-%d') if project.updated_at else datetime.now().strftime('%Y-%m-%d'),
-            'priority': '0.6'
-        })
-    
-    # Dynamic blog posts
-    blog_posts = BlogPost.query.filter_by(published=True).all()
-    for post in blog_posts:
-        pages.append({
-            'url': url_for('main.blog_post', slug=post.slug, _external=True),
-            'lastmod': post.updated_at.strftime('%Y-%m-%d') if post.updated_at else datetime.now().strftime('%Y-%m-%d'),
-            'priority': '0.7'
-        })
-    
-    sitemap_xml = render_template('sitemap.xml', pages=pages)
-    response = Response(sitemap_xml, mimetype='application/xml')
+    from app import app
+    xml_content = generate_sitemap(app)
+    response = Response(xml_content, mimetype='application/xml')
     return response
 
 @main_bp.route('/robots.txt')

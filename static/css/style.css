@@ -30,7 +30,7 @@
 }
 
 body {
-    padding-top: 75px;
+    padding-top: 80px;
     font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.7;
     color: var(--text-color);
@@ -113,13 +113,14 @@ p {
 }
 
 .nav-link {
-    font-weight: 700;
-    color: #000000 !important;
+    font-weight: 600;
+    color: #2c3e50 !important;
+    /* Darker text for better contrast */
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
-    padding: 0.75rem 1rem !important;
-    border-radius: 8px;
-    margin: 0 0.25rem;
+    padding: 0.5rem 1rem !important;
+    border-radius: 6px;
+    margin: 0 0.2rem;
     text-shadow: none;
 }
 
@@ -127,12 +128,11 @@ p {
     color: var(--primary-color) !important;
     background-color: rgba(52, 152, 219, 0.1);
     transform: translateY(-1px);
-    font-weight: 700;
 }
 
 .nav-link.active {
     color: var(--primary-color) !important;
-    background-color: rgba(52, 152, 219, 0.15);
+    background-color: rgba(52, 152, 219, 0.1);
     font-weight: 700;
 }
 
@@ -206,6 +206,38 @@ p {
     max-width: 600px;
     margin-left: auto;
     margin-right: auto;
+}
+
+/* Hero Image Frame */
+.hero-image {
+    position: relative;
+    display: inline-block;
+    padding: 20px;
+    z-index: 1;
+}
+
+.hero-image::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px;
+    height: 500px;
+    background: #ffffff;
+    border-radius: 50%;
+    z-index: -1;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+.hero-image img {
+    position: relative;
+    z-index: 1;
+    border-radius: 50%;
+    width: 400px;
+    height: 400px;
+    object-fit: cover;
+    border: 5px solid #fff;
 }
 
 /* Enhanced Buttons */
@@ -734,4 +766,36 @@ p {
         transform: rotate(360deg);
     }
 }
+
+/* Page Header Styles */
+.page-header {
+    padding: 50px 0;
+    /* Balanced padding */
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    margin-bottom: 30px;
+}
+
+.page-header-content h1 {
+    font-size: 2.5rem;
+    /* Balanced title size */
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.page-header .breadcrumb {
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    font-size: 1rem;
+}
+
+.page-header .breadcrumb-item+.breadcrumb-item::before {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.page-header .breadcrumb-item.active {
+    color: rgba(255, 255, 255, 0.9);
 }

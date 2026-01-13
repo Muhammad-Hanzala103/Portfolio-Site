@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: my-marketplace
+    env: python
+    buildCommand: "./render-build.sh"
+    startCommand: "gunicorn run_marketplace:app"
+    envVars:
+      - key: FLASK_APP
+        value: run_marketplace.py
+      - key: FLASK_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: my-marketplace-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_PUBLIC_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+
+databases:
+  - name: my-marketplace-db
+    databaseName: my_marketplace
+    user: my_marketplace

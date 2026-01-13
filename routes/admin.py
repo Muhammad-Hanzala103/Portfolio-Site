@@ -13,6 +13,73 @@ import re
 
 admin_bp = Blueprint('admin', __name__)
 
+@admin_bp.route('/api/visits/daily')
+@login_required
+def api_visits_daily():
+    from models import SiteVisit
+    from sqlalchemy import func
+    
+    days = request.args.get('days', 30, type=int)
+    since = datetime.utcnow() - timedelta(days=days)
+    
+    # SQLite compatible date grouping
+    results = db.session.query(
+        func.date(SiteVisit.visit_date).label('date'),
+        func.count(SiteVisit.id)
+    ).filter(SiteVisit.visit_date >= since)\
+     .group_by(func.date(SiteVisit.visit_date))\
+     .order_by('date').all()
+     
+    data = {
+        'labels': [r[0] for r in results],
+        'values': [r[1] for r in results]
+    }
+    return jsonify(data)
+
+@admin_bp.route('/api/revenue')
+@login_required
+def api_revenue():
+    from models import Payment
+    from sqlalchemy import func
+    
+    days = request.args.get('days', 30, type=int)
+    since = datetime.utcnow() - timedelta(days=days)
+    
+    results = db.session.query(
+        func.date(Payment.created_at).label('date'),
+        func.sum(Payment.amount_cents)
+    ).filter(Payment.created_at >= since, Payment.status == 'paid')\
+     .group_by(func.date(Payment.created_at))\
+     .order_by('date').all()
+     
+    data = {
+        'labels': [r[0] for r in results],
+        'values': [r[1]/100 for r in results] # Convert cents to dollars
+    }
+    return jsonify(data)
+
+@admin_bp.route('/api/top-pages')
+@login_required
+def api_top_pages():
+    from models import SiteVisit
+    from sqlalchemy import func
+    
+    limit = request.args.get('limit', 10, type=int)
+    
+    results = db.session.query(
+        SiteVisit.page_visited,
+        func.count(SiteVisit.id).label('count')
+    ).group_by(SiteVisit.page_visited)\
+     .order_by(func.count(SiteVisit.id).desc())\
+     .limit(limit).all()
+     
+    data = {
+        'labels': [r[0] for r in results],
+        'values': [r[1] for r in results]
+    }
+    return jsonify(data)
+
+
 # Helper function for file uploads
 def allowed_file(filename):
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'svg', 'pdf'}
@@ -44,6 +111,92 @@ def create_slug(title):
         slug = f"{slug}-{int(datetime.utcnow().timestamp())}"
     return slug
 
+# Password validation helper
+def validate_password(password):
+    """
+    Validate password strength:
+    - Minimum 10 characters
+    - At least one uppercase letter
+    - At least one lowercase letter
+    - At least one number or special character
+    Returns: (bool, str) - (is_valid, error_message)
+    """
+    if len(password) < 10:
+        return False, "Password must be at least 10 characters long."
+    if not re.search(r'[A-Z]', password):
+        return False, "Password must contain at least one uppercase letter."
+    if not re.search(r'[a-z]', password):
+        return False, "Password must contain at least one lowercase letter."
+    if not re.search(r'[\d!@#$%^&*(),.?":{}|<>]', password):
+        return False, "Password must contain at least one number or special character."
+    return True, ""
+
+# Admin registration (disabled by default - enable via config)
+@admin_bp.route('/register', methods=['GET', 'POST'])
+def admin_register():
+    from models import User
+    from app import db, bcrypt
+    
+    # Check if registration is enabled (default: disabled for security)
+    if not current_app.config.get('ALLOW_REGISTRATION', False):
+        flash('Registration is currently disabled.', 'warning')
+        return redirect(url_for('admin.admin_login'))
+    
+    if current_user.is_authenticated:
+        return redirect(url_for('admin.dashboard'))
+    
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        email = request.form.get('email', '').strip().lower()
+        password = request.form.get('password', '')
+        confirm_password = request.form.get('confirm_password', '')
+        
+        # Validation
+        errors = []
+        
+        if not username or len(username) < 3:
+            errors.append("Username must be at least 3 characters.")
+        
+        if not email or '@' not in email:
+            errors.append("Please enter a valid email address.")
+        
+        if password != confirm_password:
+            errors.append("Passwords do not match.")
+        
+        # Password strength check
+        is_valid, password_error = validate_password(password)
+        if not is_valid:
+            errors.append(password_error)
+        
+        # Check uniqueness
+        if User.query.filter_by(username=username).first():
+            errors.append("Username already exists.")
+        
+        if User.query.filter_by(email=email).first():
+            errors.append("Email already registered.")
+        
+        if errors:
+            for error in errors:
+                flash(error, 'danger')
+            return render_template('admin/register.html')
+        
+        # Create user
+        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+        new_user = User(
+            username=username,
+            email=email,
+            password=hashed_password,
+            is_admin=False  # New registrations are not admins by default
+        )
+        
+        db.session.add(new_user)
+        db.session.commit()
+        
+        flash('Registration successful! Please login.', 'success')
+        return redirect(url_for('admin.admin_login'))
+    
+    return render_template('admin/register.html')
+
 @admin_bp.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
     from models import User
@@ -70,6 +223,13 @@ def reset_password(token):
         return redirect(url_for('admin.forgot_password'))
     if request.method == 'POST':
         password = request.form.get('password')
+        
+        # Validate password strength
+        is_valid, password_error = validate_password(password)
+        if not is_valid:
+            flash(password_error, 'danger')
+            return render_template('admin/reset_password.html')
+        
         user.password = bcrypt.generate_password_hash(password).decode('utf-8')
         db.session.commit()
         flash('Your password has been updated! You are now able to log in', 'success')
@@ -460,6 +620,177 @@ def delete_testimonial(testimonial_id):
     
     flash('Testimonial deleted successfully!', 'success')
     return redirect(url_for('admin.testimonials'))
+
+# Gallery CRUD
+@admin_bp.route('/gallery')
+@login_required
+def gallery():
+    from models import Gallery
+    gallery_items = Gallery.query.order_by(Gallery.created_at.desc()).all()
+    return render_template('admin/gallery.html', gallery_items=gallery_items)
+
+@admin_bp.route('/gallery/new', methods=['GET', 'POST'])
+@login_required
+def new_gallery_item():
+    from forms import GalleryForm
+    from models import Gallery, GalleryCategory
+    from app import db
+    
+    form = GalleryForm()
+    # Load categories dynamically
+    categories = GalleryCategory.query.all()
+    if categories:
+        form.category.choices = [(str(cat.id), cat.name) for cat in categories]
+    else:
+        form.category.choices = [('', 'No Categories Found')]
+
+    if form.validate_on_submit():
+        if not categories:
+            flash('Please create a gallery category first.', 'warning')
+            return render_template('admin/gallery_form.html', form=form)
+
+        image_path = None
+        if form.image.data:
+            image_path = save_file(form.image.data)
+        
+        # If image is required but not provided (should be handled by form validator if new)
+        if not image_path:
+             flash('Image is required for new items.', 'danger')
+             return render_template('admin/gallery_form.html', form=form)
+
+        new_item = Gallery(
+            title=form.title.data,
+            description=form.description.data,
+            image=image_path,
+            featured=form.featured.data,
+            order_index=form.order_index.data or 0,
+            category_id=int(form.category.data)
+        )
+        
+        db.session.add(new_item)
+        db.session.commit()
+        
+        flash('Gallery item created successfully!', 'success')
+        return redirect(url_for('admin.gallery'))
+        
+    return render_template('admin/gallery_form.html', form=form)
+
+@admin_bp.route('/gallery/edit/<int:item_id>', methods=['GET', 'POST'])
+@login_required
+def edit_gallery_item(item_id):
+    from forms import GalleryForm
+    from models import Gallery, GalleryCategory
+    from app import db
+    
+    item = Gallery.query.get_or_404(item_id)
+    form = GalleryForm(obj=item)
+    
+    # Load categories dynamically
+    categories = GalleryCategory.query.all()
+    if categories:
+        form.category.choices = [(str(cat.id), cat.name) for cat in categories]
+    else:
+        form.category.choices = [('', 'No Categories Found')]
+    
+    if request.method == 'GET':
+        form.category.data = str(item.category_id) if item.category_id else None
+
+    if form.validate_on_submit():
+        item.title = form.title.data
+        item.description = form.description.data
+        item.featured = form.featured.data
+        item.order_index = form.order_index.data or 0
+        if form.category.data:
+             item.category_id = int(form.category.data)
+        
+        if form.image.data:
+            item.image = save_file(form.image.data)
+            
+        db.session.commit()
+        flash('Gallery item updated successfully!', 'success')
+        return redirect(url_for('admin.gallery'))
+        
+    return render_template('admin/gallery_form.html', form=form, item=item)
+
+@admin_bp.route('/gallery/category/add', methods=['POST'])
+@login_required
+def add_gallery_category():
+    from models import GalleryCategory
+    from app import db
+    
+    if request.method == 'POST':
+        name = request.form.get('name')
+        if name:
+            category = GalleryCategory(name=name)
+            db.session.add(category)
+            db.session.commit()
+            flash('Gallery category added successfully!', 'success')
+        else:
+            flash('Category name is required.', 'danger')
+            
+    return redirect(url_for('admin.gallery'))
+
+@admin_bp.route('/gallery/category/edit/<int:category_id>', methods=['POST'])
+@login_required
+def edit_gallery_category(category_id):
+    from models import GalleryCategory
+    from app import db
+    
+    category = GalleryCategory.query.get_or_404(category_id)
+    name = request.form.get('name')
+    
+    if name:
+        category.name = name
+        db.session.commit()
+        flash('Gallery category updated successfully!', 'success')
+    else:
+        flash('Category name is required.', 'danger')
+        
+    return redirect(url_for('admin.gallery'))
+
+@admin_bp.route('/gallery/category/delete/<int:category_id>', methods=['POST'])
+@login_required
+def delete_gallery_category(category_id):
+    from models import GalleryCategory
+    from app import db
+    
+    category = GalleryCategory.query.get_or_404(category_id)
+    
+    # Check if category has items
+    if category.gallery_items:
+        # Reset items to no category
+        for item in category.gallery_items:
+            item.category_id = None
+            
+    db.session.delete(category)
+    db.session.commit()
+    flash('Gallery category deleted successfully!', 'success')
+    return redirect(url_for('admin.gallery'))
+
+
+
+@admin_bp.route('/gallery/delete/<int:item_id>', methods=['POST'])
+@login_required
+def delete_gallery_item(item_id):
+    from models import Gallery
+    from app import db
+    
+    item = Gallery.query.get_or_404(item_id)
+    
+    # Delete image file
+    if item.image:
+        try:
+            image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], item.image.split('/')[-1])
+            if os.path.exists(image_path):
+                os.remove(image_path)
+        except Exception as e:
+            print(f"Error deleting image: {e}")
+            
+    db.session.delete(item)
+    db.session.commit()
+    
+    flash('Gallery item deleted successfully!', 'success')
+    return redirect(url_for('admin.gallery'))
 
 # Services CRUD
 @admin_bp.route('/services')

@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}My Orders{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>My Orders</h1>
+    
+    <!-- Navigation tabs -->
+    <ul class="nav nav-tabs" id="orderTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="bought-tab" data-bs-toggle="tab" data-bs-target="#bought" type="button" role="tab">
+                Orders I Bought ({{ bought_orders|length }})
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="sold-tab" data-bs-toggle="tab" data-bs-target="#sold" type="button" role="tab">
+                Orders I'm Selling ({{ sold_orders|length }})
+            </button>
+        </li>
+    </ul>
+    
+    <div class="tab-content" id="orderTabsContent">
+        <!-- Bought Orders Tab -->
+        <div class="tab-pane fade show active" id="bought" role="tabpanel">
+            <div class="mt-3">
+                {% if bought_orders %}
+                    {% for order in bought_orders %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h5 class="card-title">
+                                        {% if order.gig %}
+                                            {{ order.gig.title }}
+                                        {% elif order.job %}
+                                            {{ order.job.title }}
+                                        {% else %}
+                                            Order #{{ order.id }}
+                                        {% endif %}
+                                    </h5>
+                                    <p class="card-text">
+                                        <small class="text-muted">Order #{{ order.id }} • Created {{ order.created_at.strftime('%B %d, %Y') }}</small>
+                                    </p>
+                                    <p class="card-text">
+                                        <strong>Seller:</strong> {{ order.seller.name }}<br>
+                                        <strong>Amount:</strong> ${{ "%.2f"|format(order.amount) }}
+                                    </p>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <span class="badge bg-{% if order.status == 'completed' %}success{% elif order.status == 'active' %}primary{% elif order.status == 'delivered' %}info{% elif order.status == 'disputed' %}warning{% elif order.status == 'cancelled' %}danger{% else %}secondary{% endif %} mb-2">
+                                        {{ order.status.title() }}
+                                    </span><br>
+                                    <a href="{{ url_for('orders.order_details', order_id=order.id) }}" class="btn btn-outline-primary btn-sm">View Details</a>
+                                    {% if order.status == 'delivered' %}
+                                        <button class="btn btn-success btn-sm ms-1" onclick="updateOrderStatus({{ order.id }}, 'completed')">Accept</button>
+                                        <button class="btn btn-warning btn-sm ms-1" onclick="updateOrderStatus({{ order.id }}, 'disputed')">Dispute</button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center mt-5">
+                        <p class="text-muted">You haven't bought any orders yet.</p>
+                        <a href="{{ url_for('main.index') }}" class="btn btn-primary">Browse Gigs</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Sold Orders Tab -->
+        <div class="tab-pane fade" id="sold" role="tabpanel">
+            <div class="mt-3">
+                {% if sold_orders %}
+                    {% for order in sold_orders %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h5 class="card-title">
+                                        {% if order.gig %}
+                                            {{ order.gig.title }}
+                                        {% elif order.job %}
+                                            {{ order.job.title }}
+                                        {% else %}
+                                            Order #{{ order.id }}
+                                        {% endif %}
+                                    </h5>
+                                    <p class="card-text">
+                                        <small class="text-muted">Order #{{ order.id }} • Created {{ order.created_at.strftime('%B %d, %Y') }}</small>
+                                    </p>
+                                    <p class="card-text">
+                                        <strong>Buyer:</strong> {{ order.buyer.name }}<br>
+                                        <strong>Amount:</strong> ${{ "%.2f"|format(order.amount) }}
+                                    </p>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <span class="badge bg-{% if order.status == 'completed' %}success{% elif order.status == 'active' %}primary{% elif order.status == 'delivered' %}info{% elif order.status == 'disputed' %}warning{% elif order.status == 'cancelled' %}danger{% else %}secondary{% endif %} mb-2">
+                                        {{ order.status.title() }}
+                                    </span><br>
+                                    <a href="{{ url_for('orders.order_details', order_id=order.id) }}" class="btn btn-outline-primary btn-sm">View Details</a>
+                                    {% if order.status == 'pending' %}
+                                        <button class="btn btn-success btn-sm ms-1" onclick="updateOrderStatus({{ order.id }}, 'active')">Accept</button>
+                                        <button class="btn btn-danger btn-sm ms-1" onclick="updateOrderStatus({{ order.id }}, 'cancelled')">Decline</button>
+                                    {% elif order.status == 'active' %}
+                                        <button class="btn btn-info btn-sm ms-1" onclick="updateOrderStatus({{ order.id }}, 'delivered')">Mark as Delivered</button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center mt-5">
+                        <p class="text-muted">You haven't sold any orders yet.</p>
+                        <a href="{{ url_for('gigs.create_gig') if url_for('gigs.create_gig') else '#' }}" class="btn btn-primary">Create a Gig</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateOrderStatus(orderId, status) {
+    if (confirm(`Are you sure you want to mark this order as ${status}?`)) {
+        fetch(`/orders/${orderId}/status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ status: status })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + (data.error || 'Failed to update order status'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while updating the order status.');
+        });
+    }
+}
+</script>
+{% endblock %}

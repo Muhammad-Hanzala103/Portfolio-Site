@@ -1,0 +1,10 @@
+Hello {{ user.name }},
+
+Welcome to My Marketplace! Please confirm your email address by clicking the link below:
+
+{{ confirm_url }}
+
+If you did not sign up for an account, please disregard this email.
+
+Thanks,
+The My Marketplace Team

@@ -4,13 +4,13 @@
 function toggleTheme() {
     const currentTheme = document.documentElement.getAttribute('data-theme');
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    
+
     // Add transition class for smooth theme switching
     document.body.classList.add('theme-transitioning');
-    
+
     document.documentElement.setAttribute('data-theme', newTheme);
     localStorage.setItem('theme', newTheme);
-    
+
     // Update toggle button icon with animation
     const toggleBtn = document.querySelector('#darkModeToggle');
     if (toggleBtn) {
@@ -23,33 +23,33 @@ function toggleTheme() {
                 icon.style.transform = 'rotate(0deg)';
             }, 150);
         }
-        
+
         // Update button attributes for accessibility
-        toggleBtn.setAttribute('aria-label', 
+        toggleBtn.setAttribute('aria-label',
             newTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
         );
-        toggleBtn.setAttribute('title', 
+        toggleBtn.setAttribute('title',
             newTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
         );
     }
-    
+
     // Remove transition class after animation
     setTimeout(() => {
         document.body.classList.remove('theme-transitioning');
     }, 300);
-    
+
     // Trigger custom event for theme change
-    window.dispatchEvent(new CustomEvent('themeChanged', { 
-        detail: { theme: newTheme } 
+    window.dispatchEvent(new CustomEvent('themeChanged', {
+        detail: { theme: newTheme }
     }));
 }
 
 // Enhanced theme initialization
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Load saved theme or default to light
     const savedTheme = localStorage.getItem('theme') || 'light';
     document.documentElement.setAttribute('data-theme', savedTheme);
-    
+
     // Initialize toggle button with enhanced functionality
     const toggleBtn = document.querySelector('#darkModeToggle');
     if (toggleBtn) {
@@ -59,27 +59,27 @@ document.addEventListener('DOMContentLoaded', function() {
             // Add smooth transition for icon changes
             icon.style.transition = 'transform 0.3s ease, color 0.3s ease';
         }
-        
+
         // Set initial accessibility attributes
-        toggleBtn.setAttribute('aria-label', 
+        toggleBtn.setAttribute('aria-label',
             savedTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
         );
-        toggleBtn.setAttribute('title', 
+        toggleBtn.setAttribute('title',
             savedTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
         );
         toggleBtn.setAttribute('role', 'button');
         toggleBtn.setAttribute('tabindex', '0');
-        
+
         // Add click and keyboard event listeners
         toggleBtn.addEventListener('click', toggleTheme);
-        toggleBtn.addEventListener('keydown', function(e) {
+        toggleBtn.addEventListener('keydown', function (e) {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 toggleTheme();
             }
         });
     }
-    
+
     // Add theme transition styles
     const themeStyles = document.createElement('style');
     themeStyles.textContent = `
@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     `;
     document.head.appendChild(themeStyles);
-    
+
     // Smooth scrolling for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
@@ -105,9 +105,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-    
+
     // Navbar scroll effect
-    window.addEventListener('scroll', function() {
+    window.addEventListener('scroll', function () {
         const navbar = document.querySelector('.navbar');
         if (navbar) {
             if (window.scrollY > 50) {
@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
-    
+
     // Initialize AOS if available
     if (typeof AOS !== 'undefined') {
         AOS.init({
@@ -128,19 +128,19 @@ document.addEventListener('DOMContentLoaded', function() {
             offset: 100
         });
     }
-    
+
     // Gallery filter functionality
     const filterButtons = document.querySelectorAll('.filter-btn');
     const galleryItems = document.querySelectorAll('.gallery-item');
-    
+
     filterButtons.forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function () {
             const filter = this.getAttribute('data-filter');
-            
+
             // Update active button
             filterButtons.forEach(btn => btn.classList.remove('active'));
             this.classList.add('active');
-            
+
             // Filter gallery items
             galleryItems.forEach(item => {
                 if (filter === 'all' || item.classList.contains(filter)) {
@@ -152,25 +152,25 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
-    
+
     // Contact form handling
     const contactForm = document.querySelector('#contact-form');
     if (contactForm) {
-        contactForm.addEventListener('submit', function(e) {
+        contactForm.addEventListener('submit', function (e) {
             e.preventDefault();
-            
+
             const submitBtn = this.querySelector('button[type="submit"]');
             const originalText = submitBtn.textContent;
-            
+
             // Show loading state
             submitBtn.innerHTML = '<span class="loading"></span> Sending...';
             submitBtn.disabled = true;
-            
+
             // Simulate form submission (replace with actual form handling)
             setTimeout(() => {
                 submitBtn.textContent = 'Message Sent!';
                 submitBtn.style.backgroundColor = '#28a745';
-                
+
                 setTimeout(() => {
                     submitBtn.textContent = originalText;
                     submitBtn.style.backgroundColor = '';
@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 2000);
         });
     }
-    
+
     // Lazy loading for images
     const images = document.querySelectorAll('img[data-src]');
     const imageObserver = new IntersectionObserver((entries, observer) => {
@@ -193,15 +193,15 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-    
+
     images.forEach(img => imageObserver.observe(img));
-    
+
     // Typing animation for hero text
     const typingText = document.querySelector('.typing-text');
     if (typingText) {
         const text = typingText.textContent;
         typingText.textContent = '';
-        
+
         let i = 0;
         const typeWriter = () => {
             if (i < text.length) {
@@ -210,10 +210,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 setTimeout(typeWriter, 100);
             }
         };
-        
+
         setTimeout(typeWriter, 1000);
     }
-    
+
     // Parallax effect for hero section
     const hero = document.querySelector('.hero');
     if (hero) {
@@ -223,7 +223,7 @@ document.addEventListener('DOMContentLoaded', function() {
             hero.style.transform = `translateY(${rate}px)`;
         });
     }
-    
+
     // Counter animation
     const counters = document.querySelectorAll('.counter');
     const counterObserver = new IntersectionObserver((entries) => {
@@ -233,7 +233,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const target = parseInt(counter.getAttribute('data-target'));
                 const increment = target / 100;
                 let current = 0;
-                
+
                 const updateCounter = () => {
                     if (current < target) {
                         current += increment;
@@ -243,13 +243,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         counter.textContent = target;
                     }
                 };
-                
+
                 updateCounter();
                 counterObserver.unobserve(counter);
             }
         });
     });
-    
+
     counters.forEach(counter => counterObserver.observe(counter));
 });
 
@@ -258,7 +258,7 @@ function showNotification(message, type = 'success') {
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
     notification.textContent = message;
-    
+
     notification.style.cssText = `
         position: fixed;
         top: 20px;
@@ -270,9 +270,9 @@ function showNotification(message, type = 'success') {
         z-index: 9999;
         animation: slideIn 0.3s ease;
     `;
-    
+
     document.body.appendChild(notification);
-    
+
     setTimeout(() => {
         notification.style.animation = 'slideOut 0.3s ease';
         setTimeout(() => {
@@ -299,3 +299,23 @@ document.head.appendChild(style);
 // Export functions for global use
 window.toggleTheme = toggleTheme;
 window.showNotification = showNotification;
+
+// Testimonial Banner Slider
+document.addEventListener('DOMContentLoaded', function () {
+    const slides = document.querySelectorAll('.testimonial-slide');
+    if (slides.length > 1) {
+        let currentSlide = 0;
+        const intervalTime = 5000; // 5 seconds
+
+        setInterval(() => {
+            // Remove active class from current
+            slides[currentSlide].classList.remove('active');
+
+            // Move to next
+            currentSlide = (currentSlide + 1) % slides.length;
+
+            // Add active class to next
+            slides[currentSlide].classList.add('active');
+        }, intervalTime);
+    }
+});

@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - SECRET_KEY=${SECRET_KEY}
+    volumes:
+      - ./instance:/app/instance
+      - ./static/uploads:/app/static/uploads

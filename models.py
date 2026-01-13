@@ -351,10 +351,20 @@ class ServiceTier(db.Model):
     price = db.Column(db.Float, nullable=False)
     description = db.Column(db.String(200), nullable=True)
     features = db.Column(db.Text, nullable=True)  # Comma separated
-
-    service = db.relationship('Service', backref=db.backref('tiers', lazy=True))
-    
-    service = db.relationship('Service', backref=db.backref('orders', lazy=True))
+    stripe_price_id = db.Column(db.String(100), nullable=True) # For Stripe integration
 
     def __repr__(self):
-        return f'<Order {self.id} - {self.status}>'
+        return f'<ServiceTier {self.name} - {self.service.title}>'
+
+class Payment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    stripe_session_id = db.Column(db.String(255), unique=True, nullable=False)
+    amount_cents = db.Column(db.Integer, nullable=False)
+    currency = db.Column(db.String(10), default='usd')
+    status = db.Column(db.String(20), default='pending')  # pending, paid, failed
+    customer_email = db.Column(db.String(120), nullable=True)
+    metadata_json = db.Column(db.Text, nullable=True) # JSON string of metadata
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<Payment {self.stripe_session_id} - {self.status}>'

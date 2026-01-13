@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">Dispute #{{ dispute.id }}</h3>
+                </div>
+                <div class="card-body">
+                    <p><strong>Order ID:</strong> <a href="{{ url_for('orders.order_details', order_id=dispute.order_id) }}">{{ dispute.order_id }}</a></p>
+                    <p><strong>Raised by:</strong> {{ dispute.raised_by.name }}</p>
+                    <p><strong>Status:</strong> <span class="badge bg-warning">{{ dispute.status }}</span></p>
+                    <hr>
+                    <h5>Reason for Dispute:</h5>
+                    <p>{{ dispute.reason }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Admin Actions</h5>
+                </div>
+                <div class="card-body">
+                    {% if current_user.is_admin %}
+                        <p>This is where admin actions to resolve the dispute would go.</p>
+                        <button class="btn btn-success">Resolve in favor of Buyer</button>
+                        <button class="btn btn-info">Resolve in favor of Seller</button>
+                    {% else %}
+                        <p>An administrator will review this dispute shortly.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

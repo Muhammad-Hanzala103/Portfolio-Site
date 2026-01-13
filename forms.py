@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, TextAreaField, SelectField, BooleanField, PasswordField, IntegerField, DateField, SelectMultipleField, FieldList, FormField
+from wtforms import StringField, TextAreaField, SelectField, BooleanField, PasswordField, IntegerField, DateField, SelectMultipleField, FieldList, FormField, SubmitField
 from wtforms.widgets import ListWidget, CheckboxInput
 from wtforms.validators import DataRequired, Email, Length, Optional, NumberRange, URL
 from flask_ckeditor import CKEditorField
@@ -111,14 +111,12 @@ class CommentForm(FlaskForm):
 class SettingsForm(FlaskForm):
     site_name = StringField('Site Name', validators=[DataRequired(), Length(max=100)])
     site_description = TextAreaField('Site Description', validators=[DataRequired()])
-    site_keywords = StringField('Site Keywords', validators=[Optional()])
     contact_email = StringField('Contact Email', validators=[DataRequired(), Email()])
-    phone_number = StringField('Phone Number', validators=[Optional()])
-    address = TextAreaField('Address', validators=[Optional()])
-    social_facebook = StringField('Facebook URL', validators=[Optional(), URL()])
-    social_twitter = StringField('Twitter URL', validators=[Optional(), URL()])
-    social_linkedin = StringField('LinkedIn URL', validators=[Optional(), URL()])
-    social_github = StringField('GitHub URL', validators=[Optional(), URL()])
-    social_instagram = StringField('Instagram URL', validators=[Optional(), URL()])
+    contact_phone = StringField('Contact Phone', validators=[Optional()])
+    social_media_facebook = StringField('Facebook URL', validators=[Optional(), URL()])
+    social_media_twitter = StringField('Twitter URL', validators=[Optional(), URL()])
+    social_media_instagram = StringField('Instagram URL', validators=[Optional(), URL()])
+    social_media_linkedin = StringField('LinkedIn URL', validators=[Optional(), URL()])
     google_analytics_id = StringField('Google Analytics ID', validators=[Optional()])
     maintenance_mode = BooleanField('Maintenance Mode')
+    submit = SubmitField('Save Settings')

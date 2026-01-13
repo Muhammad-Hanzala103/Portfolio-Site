@@ -9,8 +9,7 @@ api_bp = Blueprint('api', __name__)
 @api_bp.route('/projects', methods=['GET'])
 def get_projects():
     # Import models at runtime to avoid circular imports
-    from models import Project
-    from app import db
+    from models import Project, db
     
     projects = Project.query.all()
     result = []
@@ -32,8 +31,7 @@ def get_projects():
 # API route to get a specific project
 @api_bp.route('/projects/<int:project_id>', methods=['GET'])
 def get_project(project_id):
-    from models import Project
-    from app import db
+    from models import Project, db
     
     project = Project.query.get_or_404(project_id)
     
@@ -53,8 +51,7 @@ def get_project(project_id):
 # API route to get all skills
 @api_bp.route('/skills', methods=['GET'])
 def get_skills():
-    from models import Skill
-    from app import db
+    from models import Skill, db
     
     skills = Skill.query.all()
     result = []
@@ -73,8 +70,7 @@ def get_skills():
 # API route to get skills by category
 @api_bp.route('/skills/<string:category>', methods=['GET'])
 def get_skills_by_category(category):
-    from models import Skill
-    from app import db
+    from models import Skill, db
     
     skills = Skill.query.filter_by(category=category).all()
     result = []
@@ -93,8 +89,7 @@ def get_skills_by_category(category):
 # API route to get all gallery items
 @api_bp.route('/gallery', methods=['GET'])
 def get_gallery():
-    from models import Gallery
-    from app import db
+    from models import Gallery, db
     
     gallery_items = Gallery.query.all()
     result = []
@@ -113,8 +108,7 @@ def get_gallery():
 # API route to get gallery items by category
 @api_bp.route('/gallery/<string:category>', methods=['GET'])
 def get_gallery_by_category(category):
-    from models import Gallery
-    from app import db
+    from models import Gallery, db
     
     gallery_items = Gallery.query.filter_by(category=category).all()
     result = []
@@ -133,8 +127,7 @@ def get_gallery_by_category(category):
 # API route to get all testimonials
 @api_bp.route('/testimonials', methods=['GET'])
 def get_testimonials():
-    from models import Testimonial
-    from app import db
+    from models import Testimonial, db
     
     testimonials = Testimonial.query.all()
     result = []
@@ -155,8 +148,7 @@ def get_testimonials():
 # API route to get all services
 @api_bp.route('/services', methods=['GET'])
 def get_services():
-    from models import Service
-    from app import db
+    from models import Service, db
     
     services = Service.query.all()
     result = []
@@ -175,8 +167,7 @@ def get_services():
 # API route to get all blog posts
 @api_bp.route('/blog', methods=['GET'])
 def get_blog_posts():
-    from models import BlogPost
-    from app import db
+    from models import BlogPost, db
     
     posts = BlogPost.query.filter_by(published=True).all()
     result = []
@@ -196,8 +187,7 @@ def get_blog_posts():
 # API route to get a specific blog post
 @api_bp.route('/blog/<string:slug>', methods=['GET'])
 def get_blog_post(slug):
-    from models import BlogPost
-    from app import db
+    from models import BlogPost, db
     
     post = BlogPost.query.filter_by(slug=slug, published=True).first_or_404()
     
@@ -216,8 +206,7 @@ def get_blog_post(slug):
 # API route to submit contact form
 @api_bp.route('/contact', methods=['POST'])
 def submit_contact():
-    from models import Contact
-    from app import db
+    from models import Contact, db
     
     data = request.get_json()
     
@@ -238,12 +227,11 @@ def submit_contact():
 # API route to get site analytics
 @api_bp.route('/analytics', methods=['GET'])
 def get_analytics():
-    from models import SiteVisit
-    from app import db
+    from models import SiteVisit, db
     
     # Get visit data for the last 30 days
     thirty_days_ago = datetime.utcnow() - timedelta(days=30)
-    visits = SiteVisit.query.filter(SiteVisit.timestamp >= thirty_days_ago).all()
+    visits = SiteVisit.query.filter(SiteVisit.visit_date >= thirty_days_ago).all()
     
     # Process visit data
     visit_dates = {}
@@ -251,7 +239,7 @@ def get_analytics():
     
     for visit in visits:
         # Daily visits
-        date_str = visit.timestamp.strftime('%Y-%m-%d')
+        date_str = visit.visit_date.strftime('%Y-%m-%d')
         if date_str in visit_dates:
             visit_dates[date_str] += 1
         else:

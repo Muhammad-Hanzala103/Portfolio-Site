@@ -175,9 +175,74 @@ def create_breadcrumb(endpoint, **kwargs):
     
     return breadcrumbs
 
-def sanitize_filename(filename):
-    """Sanitize filename for safe storage."""
-    # Remove or replace unsafe characters
-    filename = re.sub(r'[^\w\s.-]', '', filename)
     filename = re.sub(r'\s+', '_', filename)
     return filename.lower()
+
+def generate_sitemap(app):
+    """
+    Generates XML sitemap including static pages and dynamic content.
+    """
+    # Import models locally to avoid circular imports
+    from models import Project, BlogPost
+
+    host = app.config.get('SITE_URL', 'http://localhost:5000')
+    pages = []
+
+    # Static pages
+    static_endpoints = [
+        'main.index', 
+        'main.about', 
+        'main.services', 
+        'main.projects', 
+        'main.blog', 
+        'main.contact'
+    ]
+
+    with app.app_context():
+        for endpoint in static_endpoints:
+            try:
+                url = url_for(endpoint, _external=True)
+                pages.append({
+                    'loc': url,
+                    'lastmod': datetime.now().strftime('%Y-%m-%d'),
+                    'changefreq': 'weekly',
+                    'priority': '0.8' if endpoint != 'main.index' else '1.0'
+                })
+            except:
+                pass
+
+        # Dynamic Projects
+        projects = Project.query.all()
+        for project in projects:
+            url = url_for('main.project_detail', project_id=project.id, _external=True)
+            pages.append({
+                'loc': url,
+                'lastmod': project.updated_at.strftime('%Y-%m-%d') if project.updated_at else datetime.now().strftime('%Y-%m-%d'),
+                'changefreq': 'monthly',
+                'priority': '0.7'
+            })
+
+        # Dynamic Blog Posts
+        posts = BlogPost.query.filter_by(published=True).all()
+        for post in posts:
+            url = url_for('main.blog_post', slug=post.slug, _external=True) # Assuming route is main.blog_post, param is slug
+            pages.append({
+                'loc': url,
+                'lastmod': post.updated_at.strftime('%Y-%m-%d') if post.updated_at else datetime.now().strftime('%Y-%m-%d'),
+                'changefreq': 'weekly',
+                'priority': '0.6'
+            })
+
+    sitemap_xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    sitemap_xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+
+    for page in pages:
+        sitemap_xml += '  <url>\n'
+        sitemap_xml += f'    <loc>{page["loc"]}</loc>\n'
+        sitemap_xml += f'    <lastmod>{page["lastmod"]}</lastmod>\n'
+        sitemap_xml += f'    <changefreq>{page["changefreq"]}</changefreq>\n'
+        sitemap_xml += f'    <priority>{page["priority"]}</priority>\n'
+        sitemap_xml += '  </url>\n'
+
+    sitemap_xml += '</urlset>'
+    return sitemap_xml

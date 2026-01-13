@@ -49,7 +49,10 @@ migrate = Migrate(app, db)
 login_manager = LoginManager(app)
 bcrypt = Bcrypt(app)
 ckeditor = CKEditor(app)
+ckeditor = CKEditor(app)
 cors = CORS(app)
+from flask_mail import Mail
+mail = Mail(app)
 
 # Configure login
 login_manager.login_view = 'admin.admin_login'
@@ -143,7 +146,9 @@ def track_visit():
 # Add context processor for templates
 @app.context_processor
 def inject_now():
-    return {'now': datetime.now()}
+    from models import Testimonial
+    featured_testimonials = Testimonial.query.filter_by(featured=True).order_by(Testimonial.order_index).all()
+    return {'now': datetime.now(), 'featured_testimonials': featured_testimonials}
 
 @app.after_request
 def add_cache_headers(response):
@@ -164,17 +169,57 @@ def add_cache_headers(response):
 
     return response
 
+# Flask CLI Commands
+@app.cli.command('create-admin')
+def create_admin():
+    """Create an admin user from command line."""
+    import click
+    from models import User
+    
+    username = click.prompt('Enter admin username', default='hanzala')
+    email = click.prompt('Enter admin email', default='hani75384@gmail.com')
+    password = click.prompt('Enter admin password', hide_input=True, confirmation_prompt=True)
+    
+    # Validate password (simple check for CLI)
+    if len(password) < 10:
+        click.echo('Error: Password must be at least 10 characters.')
+        return
+    
+    # Check if user exists
+    if User.query.filter_by(username=username).first():
+        click.echo(f'Error: Username {username} already exists.')
+        return
+    
+    if User.query.filter_by(email=email).first():
+        click.echo(f'Error: Email {email} already registered.')
+        return
+    
+    # Create admin user
+    hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+    admin = User(username=username, email=email, password=hashed_password, is_admin=True)
+    db.session.add(admin)
+    db.session.commit()
+    click.echo(f'Admin user {username} created successfully!')
+
+@app.cli.command('seed')
+def seed_database():
+    """Seed the database with sample data."""
+    from seed import run_seed
+    run_seed()
+    print('Database seeded successfully!')
+
 # Run the app
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
 
-        # Create admin user if none exists
+        # Create admin user if none exists (updated credentials per requirements)
         from models import User
         if User.query.count() == 0:
-            hashed_password = bcrypt.generate_password_hash('hani@62922').decode('utf-8')
-            admin = User(username='hani', email='hani75384@gmail.com', password=hashed_password, is_admin=True)
+            hashed_password = bcrypt.generate_password_hash('ChangeMe!2025').decode('utf-8')
+            admin = User(username='hanzala', email='hani75384@gmail.com', password=hashed_password, is_admin=True)
             db.session.add(admin)
             db.session.commit()
-            print('Admin user created!')
+            print('Admin user created! Username: hanzala | Password: ChangeMe!2025')
     app.run(debug=True)
+

@@ -1,112 +1,86 @@
 import stripe
+import json
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify
 from flask_login import login_required, current_user
+from models import db
+from models import Service, ServiceTier, Payment
 
 payment_bp = Blueprint('payment', __name__)
 
-@payment_bp.route('/booking/<int:service_id>', methods=['GET'])
-def booking_details(service_id):
-    from models import Service, ServiceTier
-    service = Service.query.get_or_404(service_id)
-    tier_id = request.args.get('tier_id')
-    selected_tier = None
-    if tier_id:
-        selected_tier = ServiceTier.query.get(tier_id)
-        
-    return render_template('booking_details.html', service=service, selected_tier=selected_tier)
+@payment_bp.route('/create-checkout-session', methods=['POST'])
+def create_checkout_session():
+    data = request.get_json() if request.is_json else request.form
+    service_id = data.get('service_id')
+    tier_id = data.get('tier_id')
+    email = data.get('email')
+    
+    # Optional fields for custom amounts or donations if needed later
+    amount = data.get('amount') 
 
-@payment_bp.route('/process-booking/<int:service_id>', methods=['POST'])
-def process_booking(service_id):
-    from models import Service, Order, ServiceTier
-    from app import db
-    
-    service = Service.query.get_or_404(service_id)
-    
-    # Get form data
-    email = request.form.get('email')
-    deadline = request.form.get('deadline')
-    project_details = request.form.get('project_details')
-    tier_id = request.form.get('tier_id')
-    
-    tier = None
-    price = 1000 # Default fallback
-    description = service.short_description
-    
-    if tier_id:
-        tier = ServiceTier.query.get(tier_id)
-        if tier:
-            price = int(tier.price * 100)
-            description = f"{tier.name} Package: {tier.description}"
-    
     domain_url = request.host_url.rstrip('/')
     stripe.api_key = current_app.config['STRIPE_SECRET_KEY']
 
     try:
-        # Create checkout session
-        checkout_session = stripe.checkout.Session.create(
-            payment_method_types=['card'],
-            line_items=[{
+        line_items = []
+        metadata = {
+            'customer_email': email
+        }
+
+        if service_id:
+            service = Service.query.get_or_404(service_id)
+            metadata['service_id'] = service.id
+            
+            price_amount = 0
+            product_name = service.title
+            description = service.short_description
+            
+            if tier_id:
+                tier = ServiceTier.query.get(tier_id)
+                if tier and tier.service_id == service.id:
+                    price_amount = int(tier.price * 100) # Cents
+                    product_name = f"{service.title} - {tier.name}"
+                    description = tier.description
+                    metadata['tier_id'] = tier.id
+            
+            if price_amount == 0 and amount:
+                 price_amount = int(float(amount) * 100)
+
+            line_items.append({
                 'price_data': {
                     'currency': 'usd',
                     'product_data': {
-                        'name': f"{service.title} ({tier.name if tier else 'Custom'})",
+                        'name': product_name,
                         'description': description,
-                        'images': [domain_url + url_for('static', filename=service.icon)] if service.icon and not service.icon.startswith('fa') else [],
                     },
-                    'unit_amount': price,
+                    'unit_amount': price_amount,
                 },
                 'quantity': 1,
-            }],
+            })
+        
+        else:
+            return jsonify({'error': 'Service ID required'}), 400
+
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=line_items,
             mode='payment',
             success_url=domain_url + url_for('payment.success') + '?session_id={CHECKOUT_SESSION_ID}',
             cancel_url=domain_url + url_for('payment.cancel'),
-            metadata={
-                'service_id': service.id,
-                'tier_id': tier.id if tier else '',
-                'customer_email': email,
-                'deadline': deadline,
-                'project_details': project_details[:500] # Truncate for metadata limit
-            }
-        )
-        
-        # Create pending order in DB
-        order = Order(
-            stripe_session_id=checkout_session.id,
-            amount=checkout_session.amount_total / 100,
-            currency=checkout_session.currency,
-            status='pending',
             customer_email=email,
-            service_id=service.id,
-            tier_name=tier.name if tier else 'Custom',
-            project_details=project_details,
-            deadline=deadline
+            metadata=metadata
         )
-        db.session.add(order)
-        db.session.commit()
 
-        return redirect(checkout_session.url, code=303)
+        return jsonify({'id': checkout_session.id, 'url': checkout_session.url})
+
     except Exception as e:
-        return str(e)
+        return jsonify({'error': str(e)}), 403
 
-@payment_bp.route('/payment/success')
-def success():
-    from models import Order
-    session_id = request.args.get('session_id')
-    if session_id:
-        order = Order.query.filter_by(stripe_session_id=session_id).first()
-        return render_template('payment/success.html', order=order)
-    return render_template('payment/success.html')
-
-@payment_bp.route('/payment/cancel')
-def cancel():
-    return render_template('payment/cancel.html')
-
-@payment_bp.route('/webhook', methods=['POST'])
+@payment_bp.route('/stripe/webhook', methods=['POST'])
 def webhook():
     payload = request.get_data(as_text=True)
     sig_header = request.headers.get('Stripe-Signature')
     endpoint_secret = current_app.config['STRIPE_WEBHOOK_SECRET']
-    
+
     try:
         event = stripe.Webhook.construct_event(
             payload, sig_header, endpoint_secret
@@ -115,22 +89,36 @@ def webhook():
         return 'Invalid payload', 400
     except stripe.error.SignatureVerificationError as e:
         return 'Invalid signature', 400
-        
+
     if event['type'] == 'checkout.session.completed':
         session = event['data']['object']
         handle_checkout_session(session)
-        
+
     return 'Success', 200
 
 def handle_checkout_session(session):
-    from models import Order
-    from app import db
+    # Check if payment already exists
+    existing_payment = Payment.query.filter_by(stripe_session_id=session['id']).first()
+    if existing_payment:
+        return
+
+    # Create new Payment record
+    payment = Payment(
+        stripe_session_id=session['id'],
+        amount_cents=session['amount_total'],
+        currency=session['currency'],
+        status=session['payment_status'],
+        customer_email=session.get('customer_details', {}).get('email'),
+        metadata_json=json.dumps(session.get('metadata', {}))
+    )
     
-    order = Order.query.filter_by(stripe_session_id=session['id']).first()
-    if order:
-        order.status = 'paid'
-        # If order wasn't created before (e.g. direct link), create it now
-        if not order.customer_email:
-             order.customer_email = session.get('customer_details', {}).get('email')
-        
-        db.session.commit()
+    db.session.add(payment)
+    db.session.commit()
+
+@payment_bp.route('/success')
+def success():
+    return render_template('payment/success.html')
+
+@payment_bp.route('/cancel')
+def cancel():
+    return render_template('payment/cancel.html')
