@@ -49,7 +49,7 @@ migrate = Migrate(app, db)
 login_manager = LoginManager(app)
 bcrypt = Bcrypt(app)
 ckeditor = CKEditor(app)
-ckeditor = CKEditor(app)
+
 cors = CORS(app)
 from flask_mail import Mail
 from extensions import limiter
