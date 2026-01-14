@@ -36,6 +36,37 @@
         document.documentElement.setAttribute('data-theme', savedTheme);
     </script>
 
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Muhammad Hanzala",
+      "url": "{{ request.url_root }}",
+      "sameAs": [
+        "https://www.linkedin.com/in/muhammad-hanzala-47439328a/",
+        "https://github.com/Muhammad-Hanzala103"
+      ],
+      "jobTitle": "Full Stack Developer",
+      "worksFor": {
+        "@type": "Organization",
+        "name": "Freelance"
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "url": "{{ request.url_root }}",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "{{ request.url_root }}search?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+
     {% block extra_css %}{% endblock %}
 </head>
 <body class="loading">

@@ -17,7 +17,14 @@ def save_picture(form_picture, folder, size=(800, 600)):
     """Save uploaded picture with random filename."""
     random_hex = secrets.token_hex(8)
     _, f_ext = os.path.splitext(form_picture.filename)
-    picture_fn = random_hex + f_ext
+    
+    # Check if it's an image that should be converted
+    is_image = f_ext.lower() in ['.png', '.jpg', '.jpeg', '.gif']
+    
+    if is_image:
+        picture_fn = random_hex + '.webp'
+    else:
+        picture_fn = random_hex + f_ext
     
     # Create folder if it doesn't exist
     upload_path = os.path.join(current_app.root_path, 'static', 'uploads', folder)
@@ -26,14 +33,27 @@ def save_picture(form_picture, folder, size=(800, 600)):
     picture_path = os.path.join(upload_path, picture_fn)
     
     # Resize image if it's an image file
-    if f_ext.lower() in ['.png', '.jpg', '.jpeg', '.gif']:
+    if is_image:
         try:
             img = Image.open(form_picture)
+            # Convert to RGB if necessary (e.g. for PNG with transparency if saving as JPG, but WebP handles RGBA)
+            # However, to be safe for consistent colors:
+            if img.mode in ('RGBA', 'LA'):
+                pass # WebP supports transparency
+            
             img.thumbnail(size, Image.Resampling.LANCZOS)
-            img.save(picture_path, optimize=True, quality=85)
+            img.save(picture_path, 'WEBP', optimize=True, quality=85)
         except Exception as e:
-            # If image processing fails, save original
-            form_picture.save(picture_path)
+            # Fallback (save original if conversion fails, though filename is already .webp so this might be tricky. 
+            # Better to log error and try saving as original extension? 
+            # For simplicity, if Exception, we just re-raise or save as original name)
+            current_app.logger.error(f"Image conversion failed: {e}")
+            # Fallback path
+            fallback_fn = random_hex + f_ext
+            fallback_path = os.path.join(upload_path, fallback_fn)
+            form_picture.seek(0)
+            form_picture.save(fallback_path)
+            return fallback_fn
     else:
         form_picture.save(picture_path)
     

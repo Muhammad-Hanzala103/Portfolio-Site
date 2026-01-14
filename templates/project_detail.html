@@ -31,13 +31,15 @@
             <div class="col-lg-8" data-aos="fade-right">
                 <div class="project-detail-image">
                     {% if project.image %}
-                        <img src="{{ url_for('static', filename=project.image) }}" alt="{{ project.title }}" class="img-fluid rounded">
+                    <img src="{{ url_for('static', filename=project.image) }}" alt="{{ project.title }}"
+                        class="img-fluid rounded">
                     {% else %}
-                        <img src="{{ url_for('static', filename='img/project-placeholder.jpg') }}" alt="{{ project.title }}" class="img-fluid rounded">
+                    <img src="{{ url_for('static', filename='img/project-placeholder.jpg') }}" alt="{{ project.title }}"
+                        class="img-fluid rounded">
                     {% endif %}
                 </div>
             </div>
-            
+
             <!-- Project Info -->
             <div class="col-lg-4" data-aos="fade-left">
                 <div class="project-detail-info">
@@ -55,9 +57,9 @@
                             <span class="info-label">Technologies:</span>
                             <span class="info-value">
                                 {% if project.technologies %}
-                                    {{ project.technologies }}
+                                {{ project.technologies }}
                                 {% else %}
-                                    Various Technologies
+                                Various Technologies
                                 {% endif %}
                             </span>
                         </li>
@@ -65,30 +67,30 @@
                             <span class="info-label">Category:</span>
                             <span class="info-value">
                                 {% if project.technologies %}
-                                    {{ project.technologies.split(',')[0] }}
+                                {{ project.technologies.split(',')[0] }}
                                 {% else %}
-                                    Web Development
+                                Web Development
                                 {% endif %}
                             </span>
                         </li>
                     </ul>
-                    
+
                     <div class="project-links mt-4">
                         {% if project.github_link %}
-                            <a href="{{ project.github_link }}" target="_blank" class="btn btn-outline-primary me-2">
-                                <i class="fab fa-github"></i> View Code
-                            </a>
+                        <a href="{{ project.github_link }}" target="_blank" class="btn btn-outline-primary me-2">
+                            <i class="fab fa-github"></i> View Code
+                        </a>
                         {% endif %}
                         {% if project.live_link %}
-                            <a href="{{ project.live_link }}" target="_blank" class="btn btn-primary">
-                                <i class="fas fa-external-link-alt"></i> Live Demo
-                            </a>
+                        <a href="{{ project.live_link }}" target="_blank" class="btn btn-primary">
+                            <i class="fas fa-external-link-alt"></i> Live Demo
+                        </a>
                         {% endif %}
                     </div>
                 </div>
             </div>
         </div>
-        
+
         <!-- Project Description -->
         <div class="row mt-5">
             <div class="col-lg-12" data-aos="fade-up">
@@ -97,22 +99,22 @@
                     <div class="project-description">
                         {{ project.description|safe }}
                     </div>
-                    
+
                     <!-- Project Technologies -->
                     <div class="project-technologies mt-5">
                         <h3>Technologies Used</h3>
                         <div class="tech-tags">
                             {% if project.technologies %}
-                                {% for tech in project.technologies.split(',') %}
-                                    <span class="badge bg-primary">{{ tech.strip() }}</span>
-                                {% endfor %}
+                            {% for tech in project.technologies.split(',') %}
+                            <span class="badge bg-primary">{{ tech.strip() }}</span>
+                            {% endfor %}
                             {% endif %}
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        
+
         <!-- Project Gallery -->
         <div class="row mt-5">
             <div class="col-lg-12" data-aos="fade-up">
@@ -121,18 +123,24 @@
                     <div class="row gallery-images mt-4">
                         <!-- Placeholder for project gallery images -->
                         <div class="col-md-4 mb-4">
-                            <a href="{{ url_for('static', filename='img/project-gallery-1.jpg') }}" class="gallery-item" data-lightbox="project-gallery">
-                                <img src="{{ url_for('static', filename='img/project-gallery-1.jpg') }}" alt="Gallery Image 1" class="img-fluid rounded">
+                            <a href="{{ url_for('static', filename='img/project-gallery-1.jpg') }}" class="gallery-item"
+                                data-lightbox="project-gallery">
+                                <img src="{{ url_for('static', filename='img/project-gallery-1.jpg') }}"
+                                    alt="Gallery Image 1" class="img-fluid rounded">
                             </a>
                         </div>
                         <div class="col-md-4 mb-4">
-                            <a href="{{ url_for('static', filename='img/project-gallery-2.jpg') }}" class="gallery-item" data-lightbox="project-gallery">
-                                <img src="{{ url_for('static', filename='img/project-gallery-2.jpg') }}" alt="Gallery Image 2" class="img-fluid rounded">
+                            <a href="{{ url_for('static', filename='img/project-gallery-2.jpg') }}" class="gallery-item"
+                                data-lightbox="project-gallery">
+                                <img src="{{ url_for('static', filename='img/project-gallery-2.jpg') }}"
+                                    alt="Gallery Image 2" class="img-fluid rounded">
                             </a>
                         </div>
                         <div class="col-md-4 mb-4">
-                            <a href="{{ url_for('static', filename='img/project-gallery-3.jpg') }}" class="gallery-item" data-lightbox="project-gallery">
-                                <img src="{{ url_for('static', filename='img/project-gallery-3.jpg') }}" alt="Gallery Image 3" class="img-fluid rounded">
+                            <a href="{{ url_for('static', filename='img/project-gallery-3.jpg') }}" class="gallery-item"
+                                data-lightbox="project-gallery">
+                                <img src="{{ url_for('static', filename='img/project-gallery-3.jpg') }}"
+                                    alt="Gallery Image 3" class="img-fluid rounded">
                             </a>
                         </div>
                     </div>
@@ -157,22 +165,23 @@
         <div class="row">
             <!-- Placeholder for related projects -->
             {% for i in range(3) %}
-                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
-                    <div class="project-box">
-                        <div class="project-img">
-                            <img src="{{ url_for('static', filename='img/project-placeholder.jpg') }}" alt="Related Project" class="img-fluid">
-                            <div class="project-overlay">
-                                <div class="project-links">
-                                    <a href="#"><i class="fas fa-info-circle"></i></a>
-                                </div>
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+                <div class="project-box">
+                    <div class="project-img">
+                        <img src="{{ url_for('static', filename='img/project-placeholder.jpg') }}" alt="Related Project"
+                            class="img-fluid">
+                        <div class="project-overlay">
+                            <div class="project-links">
+                                <a href="#"><i class="fas fa-info-circle"></i></a>
                             </div>
                         </div>
-                        <div class="project-info">
-                            <h3>Related Project {{ loop.index }}</h3>
-                            <p>This is a placeholder for a related project.</p>
-                        </div>
+                    </div>
+                    <div class="project-info">
+                        <h3>Related Project {{ loop.index }}</h3>
+                        <p>This is a placeholder for a related project.</p>
                     </div>
                 </div>
+            </div>
             {% endfor %}
         </div>
     </div>
@@ -201,12 +210,31 @@
 {% block extra_js %}
 <script>
     // Initialize lightbox for project gallery
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         lightbox.option({
             'resizeDuration': 200,
             'wrapAround': true,
             'albumLabel': 'Image %1 of %2'
         });
     });
+</script>
+
+<!-- Project Schema -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareSourceCode",
+  "name": "{{ project.title }}",
+  "author": {
+    "@type": "Person",
+    "name": "Muhammad Hanzala"
+  },
+  "description": "{{ project.short_description }}",
+  "programmingLanguage": "{{ project.technologies }}",
+  {% if project.github_link %}
+  "codeRepository": "{{ project.github_link }}",
+  {% endif %}
+  "datePublished": "{{ project.created_at.strftime('%Y-%m-%d') if project.created_at else '' }}"
+}
 </script>
 {% endblock %}

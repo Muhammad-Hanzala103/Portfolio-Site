@@ -52,7 +52,10 @@ ckeditor = CKEditor(app)
 ckeditor = CKEditor(app)
 cors = CORS(app)
 from flask_mail import Mail
+from extensions import limiter
+
 mail = Mail(app)
+limiter.init_app(app)
 
 # Configure login
 login_manager.login_view = 'admin.admin_login'

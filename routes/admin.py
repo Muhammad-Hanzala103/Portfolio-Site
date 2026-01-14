@@ -8,6 +8,7 @@ import os
 from datetime import datetime, timedelta
 import uuid
 import re
+from extensions import limiter
 
 # Create blueprint first, import models and db later to avoid circular imports
 
@@ -238,6 +239,7 @@ def reset_password(token):
 
 # Admin login
 @admin_bp.route('/login', methods=['GET', 'POST'])
+@limiter.limit("5 per minute")
 def admin_login():
     # Import models and extensions at runtime to avoid circular imports
     from models import User
