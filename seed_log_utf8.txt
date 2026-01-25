@@ -1,0 +1,408 @@
+﻿python.exe : C:\New 
+folder\New 
+folder\Chrome 
+Downloads\New 
+folder\Portfolio Site
+\.venv\Lib\site-packa
+ges\flask_limiter\ext
+ension.py:336: 
+UserWarning: Using 
+the in-memory 
+storage for tracking 
+rate limits as no 
+storage was 
+explicitly 
+specified. This is 
+not recommended for 
+production use. See: 
+https://flask-limiter
+.readthedocs.io#confi
+guring-a-storage-back
+end for 
+documentation about 
+configuring the 
+storage backend.
+At line:1 char:1
++ & "c:/New 
+folder/New 
+folder/Chrome 
+Downloads/New 
+folder/Portfolio Sit 
+...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (C:\New    
+ folder\N...torag    
+e backend.:Strin    
+g) [], RemoteExc    
+eption
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+  warnings.warn(
+Traceback (most 
+recent call last):
+  File "C:\New 
+folder\New 
+folder\Chrome 
+Downloads\New 
+folder\Portfolio Site
+\.venv\Lib\site-packa
+ges\sqlalchemy\engine
+\base.py", line 
+1967, in 
+_exec_single_context
+    self.dialect.do_e
+xecute(
+    ~~~~~~~~~~~~~~~~~
+~~~~~~^
+        cursor, 
+str_statement, effect
+ive_parameters, 
+context
+        ^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\New 
+folder\New 
+folder\Chrome 
+Downloads\New 
+folder\Portfolio Site
+\.venv\Lib\site-packa
+ges\sqlalchemy\engine
+\default.py", line 
+951, in do_execute
+    cursor.execute(st
+atement, parameters)
+    ~~~~~~~~~~~~~~^^^
+^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalEr
+ror: no such table: 
+site_settings
+
+The above exception 
+was the direct cause 
+of the following 
+exception:
+
+Traceback (most 
+recent call last):
+  File "C:\New 
+folder\New 
+folder\Chrome 
+Downloads\New 
+folder\Portfolio Site
+\seed_settings.py", 
+line 36, in <module>
+    seed_settings()
+    ~~~~~~~~~~~~~^^
+  File "C:\New 
+folder\New 
+folder\Chrome 
+Downloads\New 
+folder\Portfolio Site
+\seed_settings.py", 
+line 22, in 
+seed_settings
+    existing = SiteSe
+ttings.query.filter_b
+y(key=d['key']).first
+()
+  File "C:\New 
+folder\New 
+folder\Chrome 
+Downloads\New 
+folder\Portfolio Site
+\.venv\Lib\site-packa
+ges\sqlalchemy\orm\qu
+ery.py", line 2759, 
+in first
+    return self.limit
+(1)._iter().first()  
+# type: ignore
+           
+~~~~~~~~~~~~~~~~~~~^^
+  File "C:\New 
+folder\New 
+folder\Chrome 
+Downloads\New 
+folder\Portfolio Site
+\.venv\Lib\site-packa
+ges\sqlalchemy\orm\qu
+ery.py", line 2857, 
+in _iter
+    result: Union[Sca
+larResult[_T], 
+Result[_T]] = 
+self.session.execute(
+                     
+                     
+        
+~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+        params,
+        ^^^^^^^
+        execution_opt
+ions={"_sa_orm_load_o
+ptions": 
+self.load_options},
+        ^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^
+    )
+    ^
+  File "C:\New 
+folder\New 
+folder\Chrome 
+Downloads\New 
+folder\Portfolio Site
+\.venv\Lib\site-packa
+ges\sqlalchemy\orm\se
+ssion.py", line 
+2351, in execute
+    return self._exec
+ute_internal(
+           ~~~~~~~~~~
+~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_a
+dd_event,
+        ^^^^^^^^^^^^^
+^^^^^^^^^
+    )
+    ^
+  File "C:\New 
+folder\New 
+folder\Chrome 
+Downloads\New 
+folder\Portfolio Site
+\.venv\Lib\site-packa
+ges\sqlalchemy\orm\se
+ssion.py", line 
+2249, in 
+_execute_internal
+    result: 
+Result[Any] = compile
+_state_cls.orm_execut
+e_statement(
+                     
+     ~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "C:\New 
+folder\New 
+folder\Chrome 
+Downloads\New 
+folder\Portfolio Site
+\.venv\Lib\site-packa
+ges\sqlalchemy\orm\co
+ntext.py", line 306, 
+in 
+orm_execute_statement
+    result = 
+conn.execute(
+        statement, 
+params or {}, executi
+on_options=execution_
+options
+    )
+  File "C:\New 
+folder\New 
+folder\Chrome 
+Downloads\New 
+folder\Portfolio Site
+\.venv\Lib\site-packa
+ges\sqlalchemy\engine
+\base.py", line 
+1419, in execute
+    return meth(
+        self,
+        
+distilled_parameters,
+        
+execution_options or 
+NO_OPTIONS,
+    )
+  File "C:\New 
+folder\New 
+folder\Chrome 
+Downloads\New 
+folder\Portfolio Site
+\.venv\Lib\site-packa
+ges\sqlalchemy\sql\el
+ements.py", line 
+526, in _execute_on_c
+onnection
+    return connection
+._execute_clauseeleme
+nt(
+           ~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~^
+        self, 
+distilled_params, 
+execution_options
+        ^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^
+    )
+    ^
+  File "C:\New 
+folder\New 
+folder\Chrome 
+Downloads\New 
+folder\Portfolio Site
+\.venv\Lib\site-packa
+ges\sqlalchemy\engine
+\base.py", line 
+1641, in _execute_cla
+useelement
+    ret = self._execu
+te_context(
+        dialect,
+    ...<8 lines>...
+        
+cache_hit=cache_hit,
+    )
+  File "C:\New 
+folder\New 
+folder\Chrome 
+Downloads\New 
+folder\Portfolio Site
+\.venv\Lib\site-packa
+ges\sqlalchemy\engine
+\base.py", line 
+1846, in 
+_execute_context
+    return self._exec
+_single_context(
+           ~~~~~~~~~~
+~~~~~~~~~~~~~~~^
+        dialect, 
+context, statement, 
+parameters
+        ^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^
+    )
+    ^
+  File "C:\New 
+folder\New 
+folder\Chrome 
+Downloads\New 
+folder\Portfolio Site
+\.venv\Lib\site-packa
+ges\sqlalchemy\engine
+\base.py", line 
+1986, in 
+_exec_single_context
+    self._handle_dbap
+i_exception(
+    ~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~^
+        e, 
+str_statement, effect
+ive_parameters, 
+cursor, context
+        ^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\New 
+folder\New 
+folder\Chrome 
+Downloads\New 
+folder\Portfolio Site
+\.venv\Lib\site-packa
+ges\sqlalchemy\engine
+\base.py", line 
+2355, in _handle_dbap
+i_exception
+    raise sqlalchemy_
+exception.with_traceb
+ack(exc_info[2]) 
+from e
+  File "C:\New 
+folder\New 
+folder\Chrome 
+Downloads\New 
+folder\Portfolio Site
+\.venv\Lib\site-packa
+ges\sqlalchemy\engine
+\base.py", line 
+1967, in 
+_exec_single_context
+    self.dialect.do_e
+xecute(
+    ~~~~~~~~~~~~~~~~~
+~~~~~~^
+        cursor, 
+str_statement, effect
+ive_parameters, 
+context
+        ^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\New 
+folder\New 
+folder\Chrome 
+Downloads\New 
+folder\Portfolio Site
+\.venv\Lib\site-packa
+ges\sqlalchemy\engine
+\default.py", line 
+951, in do_execute
+    cursor.execute(st
+atement, parameters)
+    ~~~~~~~~~~~~~~^^^
+^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.Operat
+ionalError: (sqlite3.
+OperationalError) no 
+such table: 
+site_settings
+[SQL: SELECT 
+site_settings.id AS 
+site_settings_id, 
+site_settings."key" 
+AS 
+site_settings_key, 
+site_settings.value 
+AS 
+site_settings_value, 
+site_settings.categor
+y AS site_settings_ca
+tegory, site_settings
+.description AS site_
+settings_description 
+FROM site_settings 
+WHERE 
+site_settings."key" 
+= ?
+ LIMIT ? OFFSET ?]
+[parameters: 
+('site_name', 1, 0)]
+(Background on this 
+error at: https://sql
+alche.me/e/20/e3q8)

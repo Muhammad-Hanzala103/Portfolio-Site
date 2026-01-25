@@ -3,14 +3,62 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <h1>Dashboard</h1>
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Overview</li>
-        </ol>
-    </nav>
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1>Dashboard</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Overview</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('admin.site_settings') }}" class="btn btn-primary d-flex align-items-center">
+            <i class="fas fa-sliders-h me-2"></i> Update Site Info
+        </a>
+        <a href="{{ url_for('main.index') }}" target="_blank" class="btn btn-outline-info d-flex align-items-center">
+            <i class="fas fa-external-link-alt me-2"></i> View Live Site
+        </a>
+    </div>
+</div>
+
+<!-- Ultimate Management Row -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card bg-violet bg-opacity-10 border-violet border-opacity-25 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title text-violet fw-bold mb-4"><i class="fas fa-rocket me-2"></i> Quick UI Management
+                </h5>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <a href="{{ url_for('admin.new_project') }}"
+                            class="btn btn-violet w-100 py-3 d-flex flex-column align-items-center gap-2">
+                            <i class="fas fa-plus-circle fa-2x"></i> New Project
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('admin.new_gallery_item') }}"
+                            class="btn btn-info w-100 py-3 d-flex flex-column align-items-center gap-2">
+                            <i class="fas fa-camera fa-2x"></i> Upload Media
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('admin.new_service') }}"
+                            class="btn btn-success w-100 py-3 d-flex flex-column align-items-center gap-2">
+                            <i class="fas fa-shopping-cart fa-2x"></i> Add Service
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('admin.new_testimonial') }}"
+                            class="btn btn-warning text-white w-100 py-3 d-flex flex-column align-items-center gap-2">
+                            <i class="fas fa-star fa-2x"></i> Add Testimonial
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Stats Cards -->
@@ -30,7 +78,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="col-xl-3 col-md-6 mb-4">
         <div class="card stat-card success">
             <div class="card-body">
@@ -46,7 +94,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="col-xl-3 col-md-6 mb-4">
         <div class="card stat-card info">
             <div class="card-body">
@@ -62,14 +110,15 @@
             </div>
         </div>
     </div>
-    
+
     <div class="col-xl-3 col-md-6 mb-4">
         <div class="card stat-card warning">
             <div class="card-body">
                 <div class="row align-items-center">
                     <div class="col">
                         <div class="stat-card-title">Messages</div>
-                        <div class="stat-card-value">{{ stats.messages }} {% if stats.unread_messages > 0 %}<small class="text-danger">({{ stats.unread_messages }} unread)</small>{% endif %}</div>
+                        <div class="stat-card-value">{{ stats.messages }} {% if stats.unread_messages > 0 %}<small
+                                class="text-danger">({{ stats.unread_messages }} unread)</small>{% endif %}</div>
                     </div>
                     <div class="col-auto">
                         <i class="fas fa-envelope stat-card-icon"></i>
@@ -94,7 +143,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Additional Stats -->
     <div class="col-lg-4">
         <div class="card">
@@ -146,28 +195,28 @@
                         </thead>
                         <tbody>
                             {% if recent_messages %}
-                                {% for message in recent_messages %}
-                                    <tr>
-                                        <td>{{ message.name }}</td>
-                                        <td>
-                                            <a href="{{ url_for('admin.view_message', message_id=message.id) }}">
-                                                {{ message.subject }}
-                                            </a>
-                                        </td>
-                                        <td>{{ message.created_at.strftime('%Y-%m-%d') }}</td>
-                                        <td>
-                                            {% if message.is_read %}
-                                                <span class="badge bg-success">Read</span>
-                                            {% else %}
-                                                <span class="badge bg-danger">Unread</span>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                {% endfor %}
+                            {% for message in recent_messages %}
+                            <tr>
+                                <td>{{ message.name }}</td>
+                                <td>
+                                    <a href="{{ url_for('admin.view_message', message_id=message.id) }}">
+                                        {{ message.subject }}
+                                    </a>
+                                </td>
+                                <td>{{ message.created_at.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    {% if message.is_read %}
+                                    <span class="badge bg-success">Read</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Unread</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
                             {% else %}
-                                <tr>
-                                    <td colspan="4" class="text-center">No messages found</td>
-                                </tr>
+                            <tr>
+                                <td colspan="4" class="text-center">No messages found</td>
+                            </tr>
                             {% endif %}
                         </tbody>
                     </table>
@@ -175,7 +224,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Recent Site Activity -->
     <div class="col-lg-6">
         <div class="card">
@@ -194,17 +243,17 @@
                         </thead>
                         <tbody>
                             {% if recent_visits %}
-                                {% for visit in recent_visits %}
-                                    <tr>
-                                        <td>{{ visit.page }}</td>
-                                        <td>{{ visit.count }}</td>
-                                        <td>{{ visit.last_visit.strftime('%Y-%m-%d %H:%M') }}</td>
-                                    </tr>
-                                {% endfor %}
+                            {% for visit in recent_visits %}
+                            <tr>
+                                <td>{{ visit.page }}</td>
+                                <td>{{ visit.count }}</td>
+                                <td>{{ visit.last_visit.strftime('%Y-%m-%d %H:%M') }}</td>
+                            </tr>
+                            {% endfor %}
                             {% else %}
-                                <tr>
-                                    <td colspan="3" class="text-center">No activity found</td>
-                                </tr>
+                            <tr>
+                                <td colspan="3" class="text-center">No activity found</td>
+                            </tr>
                             {% endif %}
                         </tbody>
                     </table>
@@ -222,81 +271,88 @@
     var visitsChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: {{ visit_dates|tojson }},
-            datasets: [{
-                label: 'Site Visits',
-                data: {{ visit_counts|tojson }},
-                backgroundColor: 'rgba(78, 115, 223, 0.05)',
-                borderColor: 'rgba(78, 115, 223, 1)',
-                pointBackgroundColor: 'rgba(78, 115, 223, 1)',
-                pointBorderColor: '#fff',
-                pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: 'rgba(78, 115, 223, 1)',
-                borderWidth: 2,
-                fill: true
+            labels: {{ visit_dates| tojson }},
+    datasets: [{
+        label: 'Site Visits',
+        data: {{ visit_counts| tojson }},
+        backgroundColor: 'rgba(78, 115, 223, 0.05)',
+        borderColor: 'rgba(78, 115, 223, 1)',
+        pointBackgroundColor: 'rgba(78, 115, 223, 1)',
+        pointBorderColor: '#fff',
+        pointHoverBackgroundColor: '#fff',
+        pointHoverBorderColor: 'rgba(78, 115, 223, 1)',
+        borderWidth: 2,
+        fill: true
             }]
         },
-        options: {
-            maintainAspectRatio: false,
+    options: {
+        maintainAspectRatio: false,
             layout: {
-                padding: {
-                    left: 10,
+            padding: {
+                left: 10,
                     right: 25,
-                    top: 25,
-                    bottom: 0
-                }
-            },
-            scales: {
-                x: {
-                    grid: {
-                        display: false,
+                        top: 25,
+                            bottom: 0
+            }
+        },
+        scales: {
+            x: {
+                grid: {
+                    display: false,
                         drawBorder: false
-                    },
-                    ticks: {
-                        maxTicksLimit: 7
-                    }
                 },
-                y: {
-                    ticks: {
-                        maxTicksLimit: 5,
-                        padding: 10,
-                        beginAtZero: true
-                    },
-                    grid: {
-                        color: "rgba(0, 0, 0, 0.05)",
-                    }
+                ticks: {
+                    maxTicksLimit: 7
                 }
             },
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    backgroundColor: "rgb(255, 255, 255)",
-                    bodyColor: "#858796",
-                    titleColor: "#6e707e",
-                    titleMarginBottom: 10,
-                    borderColor: '#dddfeb',
-                    borderWidth: 1,
-                    xPadding: 15,
-                    yPadding: 15,
-                    displayColors: false,
-                    caretPadding: 10,
-                    callbacks: {
-                        label: function(context) {
-                            var label = context.dataset.label || '';
-                            if (label) {
-                                label += ': ';
-                            }
-                            if (context.parsed.y !== null) {
-                                label += context.parsed.y + ' visits';
-                            }
-                            return label;
-                        }
+            display: false,
+                drawBorder: false
+        },
+        ticks: {
+            maxTicksLimit: 7
+        }
+    },
+    y: {
+        ticks: {
+            maxTicksLimit: 5,
+                padding: 10,
+                    beginAtZero: true
+        },
+        grid: {
+            color: "rgba(0, 0, 0, 0.05)",
                     }
+    }
+        },
+    plugins: {
+        legend: {
+            display: false
+        },
+        tooltip: {
+            backgroundColor: "rgb(255, 255, 255)",
+                bodyColor: "#858796",
+                    titleColor: "#6e707e",
+                        titleMarginBottom: 10,
+                            borderColor: '#dddfeb',
+                                borderWidth: 1,
+                                    xPadding: 15,
+                                        yPadding: 15,
+                                            displayColors: false,
+                                                caretPadding: 10,
+                                                    callbacks: {
+                label: function(context) {
+                    var label = context.dataset.label || '';
+                    if (label) {
+                        label += ': ';
+                    }
+                    if (context.parsed.y !== null) {
+                        label += context.parsed.y + ' visits';
+                    }
+                    return label;
                 }
             }
         }
+    }
+    }
     });
 </script>
 {% endblock %}

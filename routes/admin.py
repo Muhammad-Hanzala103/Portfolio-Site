@@ -197,6 +197,27 @@ def admin_register():
         return redirect(url_for('admin.admin_login'))
     
     return render_template('admin/register.html')
+def send_reset_email(user):
+    from flask_mail import Message
+    from app import app, mail
+    
+    token = user.get_reset_token()
+    msg = Message('Password Reset Request',
+                  sender=app.config['MAIL_USERNAME'],
+                  recipients=[user.email])
+    
+    reset_url = url_for('admin.reset_password', token=token, _external=True)
+    msg.body = f'''To reset your password, visit the following link:
+{reset_url}
+
+If you did not make this request then simply ignore this email and no changes will be made.
+'''
+    try:
+        mail.send(msg)
+        return True
+    except Exception as e:
+        print(f"Error sending reset email: {e}")
+        return False
 
 @admin_bp.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
@@ -206,9 +227,10 @@ def forgot_password():
         email = request.form.get('email')
         user = User.query.filter_by(email=email).first()
         if user:
-            token = user.get_reset_token()
-            # In a real app, you would email this token to the user
-            flash(f'Password reset link: {url_for("admin.reset_password", token=token, _external=True)}', 'info')
+            if send_reset_email(user):
+                flash('An email has been sent with instructions to reset your password.', 'info')
+            else:
+                flash('There was an issue sending the reset email. Please try again later or contact support.', 'danger')
         else:
             flash('Email address not found.', 'danger')
         return redirect(url_for('admin.forgot_password'))
@@ -238,6 +260,54 @@ def reset_password(token):
     return render_template('admin/reset_password.html')
 
 # Admin login
+@admin_bp.route('/login/google')
+def google_login():
+    from app import google
+    redirect_uri = url_for('admin.google_authorize', _external=True)
+    return google.authorize_redirect(redirect_uri)
+
+@admin_bp.route('/authorize')
+def google_authorize():
+    from app import google
+    try:
+        token = google.authorize_access_token()
+        resp = google.get('https://www.googleapis.com/oauth2/v3/userinfo').json()
+        email = resp.get('email')
+        name = resp.get('name', '')
+
+        # Check if user exists
+        user = User.query.filter_by(email=email).first()
+        
+        if not user:
+            # Automatic registration if allowed
+            if current_app.config.get('ALLOW_REGISTRATION', False):
+                username = email.split('@')[0]
+                # Ensure unique username
+                counter = 1
+                base_username = username
+                while User.query.filter_by(username=username).first():
+                    username = f"{base_username}{counter}"
+                    counter += 1
+                
+                user = User(
+                    username=username,
+                    email=email,
+                    password=uuid.uuid4().hex, # Random password
+                    is_admin=False # Default to non-admin
+                )
+                db.session.add(user)
+                db.session.commit()
+            else:
+                flash('Registration is currently disabled.', 'danger')
+                return redirect(url_for('admin.admin_login'))
+
+        login_user(user)
+        flash(f'Logged in as {user.username}', 'success')
+        return redirect(url_for('admin.dashboard'))
+    except Exception as e:
+        flash(f'Error during Google login: {str(e)}', 'danger')
+        return redirect(url_for('admin.admin_login'))
+
 @admin_bp.route('/login', methods=['GET', 'POST'])
 @limiter.limit("5 per minute")
 def admin_login():
@@ -1475,6 +1545,37 @@ def update_comment_settings():
         flash('Error updating settings.', 'danger')
     
     return redirect(url_for('admin.comments'))
+
+@admin_bp.route('/site-settings', methods=['GET', 'POST'])
+@login_required
+def site_settings():
+    from models import SiteSettings
+    from app import db
+    
+    if request.method == 'POST':
+        for key, value in request.form.items():
+            if key.startswith('setting_'):
+                setting_key = key.replace('setting_', '')
+                setting = SiteSettings.query.filter_by(key=setting_key).first()
+                if setting:
+                    setting.value = value
+        
+        try:
+            db.session.commit()
+            flash('Site settings updated successfully!', 'success')
+            return redirect(url_for('admin.site_settings'))
+        except Exception as e:
+            db.session.rollback()
+            flash('Error updating settings: ' + str(e), 'danger')
+            
+    settings = SiteSettings.query.order_by(SiteSettings.category).all()
+    categories = {}
+    for s in settings:
+        if s.category not in categories:
+            categories[s.category] = []
+        categories[s.category].append(s)
+        
+    return render_template('admin/settings.html', categories=categories)
 
 
 

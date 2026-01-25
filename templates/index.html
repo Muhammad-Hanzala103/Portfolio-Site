@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
-{% block title %}Muhammad Hanzala - Full Stack Developer & Digital Creator{% endblock %}
+{% block title %}{{ site_settings.get('site_name', 'Muhammad Hanzala') }} - {{ site_settings.get('tagline', 'Full Stack
+Developer') }}{% endblock %}
 
 {% block content %}
 <!-- Hero Section with Profile Photo -->
@@ -8,14 +9,16 @@
     <div class="container">
         <div class="hero-content">
             <div class="hero-image reveal-text">
-                <img src="{{ url_for('static', filename='img/profile.jpg') }}" alt="Muhammad Hanzala">
+                <img src="{{ url_for('static', filename='img/profile.jpg') }}"
+                    alt="{{ site_settings.get('site_name', 'Muhammad Hanzala') }}">
             </div>
             <div class="hero-text reveal-text">
                 <p class="section-label">Welcome to my Portfolio</p>
-                <h1>Hi, I'm <span class="gradient-text">Muhammad Hanzala</span></h1>
-                <p class="tagline">Full Stack Developer & Digital Creator</p>
-                <p class="lead">I craft high-performance web applications, stunning 3D visuals, and engaging digital
-                    experiences. Some people call me Hani.</p>
+                <h1>Hi, I'm <span class="gradient-text">{{ site_settings.get('site_name', 'Muhammad Hanzala') }}</span>
+                </h1>
+                <p class="tagline">{{ site_settings.get('tagline', 'Full Stack Developer & Digital Creator') }}</p>
+                <p class="lead">{{ site_settings.get('bio_lead', 'I craft high-performance web applications, stunning 3D
+                    visuals, and engaging digital experiences. Some people call me Hani.') }}</p>
 
                 <div class="hero-cta">
                     <a href="{{ url_for('main.projects') }}" class="btn btn-primary btn-lg">
@@ -36,12 +39,12 @@
         <div class="d-flex flex-wrap gap-4 justify-content-center">
             <div class="glass-panel stat-card tilt-card" style="flex: 1; min-width: 250px; max-width: 300px;">
                 <i class="fas fa-code"></i>
-                <h3>2+</h3>
+                <h3>{{ site_settings.get('experience_years', '2+') }}</h3>
                 <p>Years Experience</p>
             </div>
             <div class="glass-panel stat-card tilt-card" style="flex: 1; min-width: 250px; max-width: 300px;">
                 <i class="fas fa-project-diagram"></i>
-                <h3>20+</h3>
+                <h3>{{ site_settings.get('projects_completed', '20+') }}</h3>
                 <p>Projects Completed</p>
             </div>
             <div class="glass-panel stat-card tilt-card" style="flex: 1; min-width: 250px; max-width: 300px;">
@@ -152,20 +155,26 @@
             <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
                 <a href="{{ platform.url }}" target="_blank" class="text-decoration-none">
                     <div class="glass-panel platform-card h-100 p-0 overflow-hidden hover-lift">
-                        <div class="platform-header p-3 d-flex align-items-center justify-content-between" style="background: rgba(255,255,255,0.05);">
-                            <span class="platform-badge {% if platform.platform_name == 'Fiverr' %}bg-fiverr{% elif platform.platform_name == 'Upwork' %}bg-primary{% else %}bg-linkedin{% endif %} btn-sm text-white px-3 py-1 rounded-pill" style="font-size: 0.7rem; font-weight: bold;">
+                        <div class="platform-header p-3 d-flex align-items-center justify-content-between"
+                            style="background: rgba(255,255,255,0.05);">
+                            <span
+                                class="platform-badge {% if platform.platform_name == 'Fiverr' %}bg-fiverr{% elif platform.platform_name == 'Upwork' %}bg-primary{% else %}bg-linkedin{% endif %} btn-sm text-white px-3 py-1 rounded-pill"
+                                style="font-size: 0.7rem; font-weight: bold;">
                                 {{ platform.platform_name }}
                             </span>
                             <div class="rating-stars text-warning">
-                                <i class="fas fa-star"></i> {{ platform.rating }} <span class="text-muted small">({{ platform.reviews_count }}+)</span>
+                                <i class="fas fa-star"></i> {{ platform.rating }} <span class="text-muted small">({{
+                                    platform.reviews_count }}+)</span>
                             </div>
                         </div>
-                        
+
                         <div class="platform-thumb" style="height: 200px; overflow: hidden; position: relative;">
                             {% if platform.thumbnail %}
-                            <img src="{{ url_for('static', filename=platform.thumbnail) }}" alt="{{ platform.title }}" class="w-100 h-100 object-fit-cover transition-transform">
+                            <img src="{{ url_for('static', filename=platform.thumbnail) }}" alt="{{ platform.title }}"
+                                class="w-100 h-100 object-fit-cover transition-transform">
                             {% else %}
-                            <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-dark text-white-50">
+                            <div
+                                class="w-100 h-100 d-flex align-items-center justify-content-center bg-dark text-white-50">
                                 <i class="fas fa-external-link-alt fa-3x"></i>
                             </div>
                             {% endif %}
@@ -178,7 +187,8 @@
                             <h4 class="h5 mb-2 text-primary">{{ platform.title }}</h4>
                             <p class="text-muted small mb-0">{{ platform.description|truncate(120) }}</p>
                             <div class="mt-3 d-flex align-items-center gap-2">
-                                <span class="badge bg-secondary opacity-75 font-weight-normal" style="font-weight: 400;">{{ platform.service_type }}</span>
+                                <span class="badge bg-secondary opacity-75 font-weight-normal"
+                                    style="font-weight: 400;">{{ platform.service_type }}</span>
                             </div>
                         </div>
                     </div>

@@ -38,7 +38,7 @@
             <div class="modal fade" id="serviceModal{{ service.id }}" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-lg modal-dialog-centered">
                     <div class="modal-content glass-panel"
-                        style="background: #09090b; border: 1px solid rgba(255,255,255,0.1);">
+                        style="background: var(--bg-secondary); border: 1px solid var(--border-strong);">
                         <div class="modal-header border-bottom border-secondary">
                             <h5 class="modal-title">{{ service.title }}</h5>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
@@ -51,7 +51,8 @@
                             <div class="row g-3">
                                 {% for tier in service.tiers %}
                                 <div class="col-md-4">
-                                    <div class="p-3 border border-secondary rounded h-100 text-center hover-bg-glass">
+                                    <div
+                                        class="p-3 border border-violet border-opacity-25 rounded h-100 text-center hover-glow-violet glass-panel">
                                         <h5 class="mb-1">{{ tier.name }}</h5>
                                         <h3 class="gradient-text mb-3">${{ tier.price }}</h3>
                                         <p class="small text-muted mb-3">{{ tier.description }}</p>

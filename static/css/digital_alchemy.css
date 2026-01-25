@@ -1215,3 +1215,152 @@ textarea.form-control {
     .footer-contact li { justify-content: center; }
     .social-links { justify-content: center; }
 }
+
+/* ============================================
+   14. LIGHT MODE VISIBILITY FIXES
+   ============================================ */
+
+[data-theme=" light\] .glass-panel {
+ background: rgba(255, 255, 255, 0.95);
+ border: 1px solid rgba(0, 0, 0, 0.1);
+ box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme=\light\] .text-white,
+[data-theme=\light\] .text-white-50 {
+ color: var(--text-primary) !important;
+}
+
+[data-theme=\light\] .gradient-text {
+ background: linear-gradient(135deg, #6366f1, #8b5cf6);
+ -webkit-background-clip: text;
+ -webkit-text-fill-color: transparent;
+}
+
+[data-theme=\light\] .btn-alchemy {
+ background: linear-gradient(135deg, #6366f1, #8b5cf6);
+ color: white;
+}
+
+[data-theme=\light\] .footer {
+ background: #f1f5f9;
+ color: var(--text-primary);
+}
+
+[data-theme=\light\] .footer h5,
+[data-theme=\light\] .footer-links a {
+ color: var(--text-primary);
+}
+
+[data-theme=\light\] .nav-links a {
+ color: var(--text-secondary);
+}
+
+/* ============================================
+ 15. SPACING \u0026 PADDING FIXES
+ ============================================ */
+
+.section {
+ padding: 4rem 0;
+}
+
+.page-header {
+ padding: 6rem 0 3rem 0;
+}
+
+.footer {
+ padding: 3rem 0 2rem 0;
+}
+
+.footer-links li {
+ margin-bottom: 0.75rem;
+}
+
+.footer-contact li {
+ margin-bottom: 1rem;
+}
+
+.glass-panel {
+ padding: 1.5rem;
+ margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+ .section {
+ padding: 2.5rem 0;
+ }
+ .page-header {
+ padding: 4rem 0 2rem 0;
+ }
+ .footer {
+ padding: 2rem 0 1rem 0;
+ }
+}
+
+/* ============================================
+   16. PREMIUM INDUSTRIAL REFINEMENTS
+   ============================================ */
+
+/* Smooth Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--bg-elevated);
+    border-radius: var(--radius-full);
+    border: 2px solid var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-primary);
+}
+
+/* Enhanced Glassmorphism */
+.glass-panel {
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
+}
+
+.hover-lift:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-lg), var(--shadow-glow);
+    border-color: rgba(99, 102, 241, 0.4);
+}
+
+/* Premium Button Animations */
+.btn-alchemy {
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.btn-alchemy::after {
+    content: " \;
+ position: absolute;
+ top: 0;
+ left: -100%;
+ width: 100%;
+ height: 100%;
+ background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+ transition: 0.5s;
+ z-index: -1;
+}
+
+.btn-alchemy:hover::after {
+ left: 100%;
+}
+
+/* Section Transitions */
+.section {
+ opacity: 1;
+ transform: none;
+ transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}

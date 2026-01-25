@@ -666,6 +666,21 @@
                     <span>Profile</span>
                 </a>
             </li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'admin.site_settings' %}active{% endif %}"
+                    href="{{ url_for('admin.site_settings') }}">
+                    <i class="fas fa-fw fa-sliders-h"></i>
+                    <span>Site Settings</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="/admin_panel" target="_blank">
+                    <i class="fas fa-fw fa-user-shield"></i>
+                    <span>Advanced Control</span>
+                </a>
+            </li>
         </ul>
     </div>
 

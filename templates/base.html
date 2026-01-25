@@ -4,19 +4,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Muhammad Hanzala - Portfolio{% endblock %}</title>
+    <title>{% block title %}{{ site_settings.get('site_name', 'Muhammad Hanzala') }} - Portfolio{% endblock %}</title>
 
     <!-- SEO Meta Tags -->
     <meta name="description"
-        content="{% block meta_description %}Professional Portfolio of Muhammad Hanzala - Full Stack Developer, UI/UX Designer & Digital Creator{% endblock %}">
+        content="{% block meta_description %}Professional Portfolio of {{ site_settings.get('site_name', 'Muhammad Hanzala') }} - {{ site_settings.get('tagline', 'Full Stack Developer') }}{% endblock %}">
     <meta name="keywords"
-        content="Muhammad Hanzala, Hani, Full Stack Developer, Python, Flask, React, 3D Design, Portfolio">
-    <meta name="author" content="Muhammad Hanzala">
+        content="{{ site_settings.get('site_name', 'Muhammad Hanzala') }}, Hani, Full Stack Developer, Python, Flask, React, 3D Design, Portfolio">
+    <meta name="author" content="{{ site_settings.get('site_name', 'Muhammad Hanzala') }}">
     <meta name="robots" content="index, follow">
 
     <!-- Open Graph -->
-    <meta property="og:title" content="Muhammad Hanzala | Full Stack Developer">
-    <meta property="og:description" content="Crafting high-performance digital experiences and scalable solutions.">
+    <meta property="og:title" content="{{ site_settings.get('site_name', 'Muhammad Hanzala') }} | Full Stack Developer">
+    <meta property="og:description" content="{{ site_settings.get('tagline', 'Digital Creator') }}">
     <meta property="og:image" content="{{ url_for('static', filename='img/og-preview.jpg', _external=True) }}">
     <meta property="og:url" content="{{ request.url }}">
     <meta property="og:type" content="website">
@@ -51,7 +51,7 @@
     {
       "@context": "https://schema.org",
       "@type": "Person",
-      "name": "Muhammad Hanzala",
+      "name": "{{ site_settings.get('site_name', 'Muhammad Hanzala') }}",
       "url": "{{ request.url_root }}",
       "sameAs": [
         "https://www.linkedin.com/in/muhammad-hanzala-47439328a/",
@@ -95,11 +95,6 @@
             <a href="{{ url_for('main.index') }}" class="logo">Muhammad Hanzala</a>
 
             <div class="d-flex align-items-center gap-3">
-                <!-- Theme Toggle (Mobile) -->
-                <button class="theme-toggle d-md-none" id="themeToggleMobile" aria-label="Toggle Theme">
-                    <i class="fas fa-sun"></i>
-                </button>
-
                 <div class="hamburger" id="hamburger">
                     <span></span>
                     <span></span>
@@ -190,9 +185,10 @@
                 <!-- Branding & About -->
                 <div class="col-lg-4 col-md-6">
                     <div class="footer-brand mb-4">
-                        <span class="gradient-text h3 fw-bold">Muhammad Hanzala</span>
-                        <p class="text-muted mt-3">Crafting high-performance digital experiences and scalable solutions.
-                            Based in Pakistan, available globally.</p>
+                        <span class="gradient-text h3 fw-bold">{{ site_settings.get('site_name', 'Muhammad Hanzala')
+                            }}</span>
+                        <p class="text-muted mt-3">{{ site_settings.get('bio_lead', 'Crafting high-performance digital
+                            experiences and scalable solutions.') }}</p>
                     </div>
                     <div class="social-links d-flex gap-3">
                         <a href="https://github.com/Muhammad-Hanzala103" target="_blank" class="social-icon"><i
@@ -206,7 +202,7 @@
                 </div>
 
                 <!-- Quick Links -->
-                <div class="col-lg-2 col-md-6 col-6">
+                <div class="col-lg-2 col-md-3 col-6">
                     <h5 class="mb-4">Navigation</h5>
                     <ul class="list-unstyled footer-links">
                         <li><a href="{{ url_for('main.index') }}">Home</a></li>
@@ -217,7 +213,7 @@
                 </div>
 
                 <!-- Professional Platforms -->
-                <div class="col-lg-2 col-md-6 col-6">
+                <div class="col-lg-2 col-md-3 col-6">
                     <h5 class="mb-4">Ecosystem</h5>
                     <ul class="list-unstyled footer-links">
                         <li><a href="https://www.fiverr.com/mr0_0hani" target="_blank">Fiverr Pro</a></li>
@@ -229,11 +225,14 @@
 
                 <!-- Contact Info -->
                 <div class="col-lg-4 col-md-6">
-                    <h5 class="mb-4">Contact Detail</h5>
+                    <h5 class="mb-4">Contact Details</h5>
                     <ul class="list-unstyled footer-contact">
-                        <li><i class="fas fa-map-marker-alt text-primary me-2"></i> Bahawalpur, Punjab, Pakistan</li>
-                        <li><i class="fas fa-phone text-primary me-2"></i> +92 3XX XXXXXXX</li>
-                        <li><i class="fas fa-envelope text-primary me-2"></i> hani75384@gmail.com</li>
+                        <li><i class="fas fa-map-marker-alt text-primary me-2"></i> {{ site_settings.get('location',
+                            'Islamabad, Pakistan') }}</li>
+                        <li><i class="fas fa-phone text-primary me-2"></i> {{ site_settings.get('phone', '+92 301
+                            5855940') }}</li>
+                        <li><i class="fas fa-envelope text-primary me-2"></i> {{ site_settings.get('email',
+                            'hani75384@gmail.com') }}</li>
                     </ul>
                     <div class="mt-4">
                         <a href="{{ url_for('main.download_cv') }}"
@@ -247,7 +246,8 @@
             <hr class="my-5 border-secondary opacity-10">
 
             <div class="footer-bottom text-center">
-                <p class="text-muted small mb-0">&copy; {{ now.year }} Muhammad Hanzala. All Rights Reserved. Crafted
+                <p class="text-muted small mb-0">&copy; {{ now.year }} {{ site_settings.get('site_name', 'Muhammad
+                    Hanzala') }}. All Rights Reserved. Crafted
                     with <i class="fas fa-heart text-danger"></i> & <i class="fab fa-python text-primary"></i></p>
             </div>
         </div>
@@ -318,10 +318,11 @@
                 scale: 1.00,
                 scaleMobile: 1.00,
                 color: 0x6366f1,
-                backgroundColor: currentTheme === 'light' ? 0xf8fafc : 0x23232e,
-                points: 12.00,
-                maxDistance: 22.00,
-                spacing: 18.00
+                backgroundColor: currentTheme === 'light' ? 0xf8fafc : 0x16161d,
+                points: 15.00,
+                maxDistance: 24.00,
+                spacing: 16.00,
+                showDots: false
             });
         } catch (e) {
             console.log("Vanta JS failed to load", e);

@@ -21,16 +21,21 @@ load_dotenv()
 # Initialize Flask app
 app = Flask(__name__, static_folder='static', static_url_path='/static')
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-for-testing')
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'hani75384@gmail.com'  # Email for website and reset password notifications
-app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD', 'your-email-password')
-app.config['SITE_LOCATION'] = 'Jhelum, Punjab, Pakistan'  # Updated site location
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql://username:password@localhost:5432/portfolio')
+app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
+app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
+app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'True').lower() == 'true'
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME', 'hani75384@gmail.com')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+app.config['SITE_LOCATION'] = os.environ.get('SITE_LOCATION', 'Islamabad, Pakistan')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///portfolio.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max upload
+
+# Registration and Auth
+app.config['ALLOW_REGISTRATION'] = True # Enabled as per user request
+app.config['GOOGLE_OAUTH_CLIENT_ID'] = os.environ.get('GOOGLE_OAUTH_CLIENT_ID')
+app.config['GOOGLE_OAUTH_CLIENT_SECRET'] = os.environ.get('GOOGLE_OAUTH_CLIENT_SECRET')
 
 # Security configurations
 app.config['PERMANENT_SESSION_LIFETIME'] = 7200  # 2 hours session timeout
@@ -42,8 +47,9 @@ app.config['WTF_CSRF_TIME_LIMIT'] = 3600  # 1 hour CSRF token timeout
 # Ensure upload directory exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# Import db from models to avoid circular imports
 from models import db
+from authlib.integrations.flask_client import OAuth
+
 # Initialize extensions
 db.init_app(app)
 csrf = CSRFProtect(app)
@@ -51,6 +57,17 @@ migrate = Migrate(app, db)
 login_manager = LoginManager(app)
 bcrypt = Bcrypt(app)
 ckeditor = CKEditor(app)
+
+oauth = OAuth(app)
+google = oauth.register(
+    name='google',
+    client_id=app.config.get('GOOGLE_OAUTH_CLIENT_ID'),
+    client_secret=app.config.get('GOOGLE_OAUTH_CLIENT_SECRET'),
+    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+    client_kwargs={
+        'scope': 'openid email profile'
+    }
+)
 
 cors = CORS(app)
 Compress(app) # Enable Gzip Compression for peak performance
@@ -103,6 +120,17 @@ from routes.admin import admin_bp
 from routes.api import api_bp
 from routes.payment import payment_bp
 
+# Context Processor to make site settings available globally
+@app.context_processor
+def inject_settings():
+    try:
+        from models import SiteSettings
+        settings_rows = SiteSettings.query.all()
+        settings_dict = {s.key: s.value for s in settings_rows}
+        return {'site_settings': settings_dict}
+    except Exception:
+        return {'site_settings': {}}
+
 # Register blueprints
 app.register_blueprint(main_bp)
 app.register_blueprint(admin_bp, url_prefix='/admin')
@@ -127,10 +155,11 @@ class SecureModelView(ModelView):
 
 # Import models (after db initialization to avoid circular imports)
 from models import User
-from models import Contact, SiteVisit, Project, Skill, Gallery, Testimonial, Service, BlogPost, FAQ
+from models import Contact, SiteVisit, Project, Skill, Gallery, Testimonial, Service, BlogPost, FAQ, SiteSettings
 
 # Add models to admin
 admin.add_view(SecureModelView(User, db.session))
+admin.add_view(SecureModelView(SiteSettings, db.session))
 admin.add_view(SecureModelView(Project, db.session))
 admin.add_view(SecureModelView(Skill, db.session))
 admin.add_view(SecureModelView(Gallery, db.session))

@@ -189,7 +189,9 @@ class Gallery(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=True)
-    image = db.Column(db.String(255), nullable=False)
+    image = db.Column(db.String(255), nullable=True) # Cover image
+    video_url = db.Column(db.String(500), nullable=True) # YouTube/Vimeo link
+    is_video = db.Column(db.Boolean, default=False)
     featured = db.Column(db.Boolean, default=False)
     order_index = db.Column(db.Integer, default=0)
     category_id = db.Column(db.Integer, db.ForeignKey('gallery_category.id'), nullable=True)
@@ -411,3 +413,14 @@ class Newsletter(db.Model):
 
     def __repr__(self):
         return f'<Newsletter {self.email}>'
+
+class SiteSettings(db.Model):
+    """Ultimate Admin configuration persistence."""
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(50), unique=True, index=True, nullable=False)
+    value = db.Column(db.Text, nullable=True)
+    category = db.Column(db.String(50), default="General") # General, SEO, Social, Contact
+    description = db.Column(db.String(255), nullable=True)
+    
+    def __repr__(self):
+        return f"<SiteSetting {self.key}: {self.value}>"
