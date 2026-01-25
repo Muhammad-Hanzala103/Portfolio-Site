@@ -22,8 +22,8 @@ project_technologies = db.Table('project_technologies',
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
+    username = db.Column(db.String(50), unique=True, index=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, index=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -110,7 +110,7 @@ class Tag(db.Model):
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
-    slug = db.Column(db.String(120), unique=True, nullable=False)
+    slug = db.Column(db.String(120), unique=True, index=True, nullable=False)
     description = db.Column(db.Text, nullable=False)
     short_description = db.Column(db.String(300), nullable=True)
     long_description = db.Column(db.Text, nullable=True)  # Rich text content
@@ -259,8 +259,8 @@ class BlogPost(db.Model):
     content = db.Column(db.Text, nullable=False)
     excerpt = db.Column(db.String(300), nullable=True)
     featured_image = db.Column(db.String(255), nullable=True)
-    published = db.Column(db.Boolean, default=False)
-    featured = db.Column(db.Boolean, default=False)
+    published = db.Column(db.Boolean, default=False, index=True)
+    featured = db.Column(db.Boolean, default=False, index=True)
     views = db.Column(db.Integer, default=0)
     reading_time = db.Column(db.Integer, default=0)  # in minutes
     category_id = db.Column(db.Integer, db.ForeignKey('blog_category.id'), nullable=True)
@@ -368,3 +368,46 @@ class Payment(db.Model):
 
     def __repr__(self):
         return f'<Payment {self.stripe_session_id} - {self.status}>'
+
+class ExternalPlatform(db.Model):
+    """Model for Fiverr, Upwork, LinkedIn projects/gigs integration."""
+    id = db.Column(db.Integer, primary_key=True)
+    platform_name = db.Column(db.String(50), nullable=False) # Fiverr, Upwork, LinkedIn
+    title = db.Column(db.String(200), nullable=False)
+    url = db.Column(db.String(500), nullable=False)
+    thumbnail = db.Column(db.String(255), nullable=True)
+    description = db.Column(db.Text, nullable=True)
+    service_type = db.Column(db.String(100), nullable=True) # e.g. "Web Development"
+    rating = db.Column(db.Float, default=5.0)
+    reviews_count = db.Column(db.Integer, default=0)
+    order_index = db.Column(db.Integer, default=0)
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<ExternalPlatform {self.platform_name}: {self.title}>'
+
+class Resume(db.Model):
+    """Model for managing professional resumes/CVs."""
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    file_path = db.Column(db.String(255), nullable=False)
+    version = db.Column(db.String(20), nullable=True) # e.g. "v1.2", "Jan 2025"
+    language = db.Column(db.String(20), default='English')
+    is_active = db.Column(db.Boolean, default=False)
+    download_count = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<Resume {self.title} ({self.version})>'
+
+class Newsletter(db.Model):
+    """Model for newsletter subscribers."""
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<Newsletter {self.email}>'

@@ -12,6 +12,8 @@ from flask_bcrypt import Bcrypt
 from flask_ckeditor import CKEditor
 from flask_cors import CORS
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from flask_compress import Compress
+from flask_talisman import Talisman
 
 # Load environment variables
 load_dotenv()
@@ -51,6 +53,27 @@ bcrypt = Bcrypt(app)
 ckeditor = CKEditor(app)
 
 cors = CORS(app)
+Compress(app) # Enable Gzip Compression for peak performance
+
+# Content Security Policy (Industrial Strength)
+csp = {
+    'default-src': [
+        '\'self\'',
+        '*.googleapis.com',
+        '*.gstatic.com',
+        'cdnjs.cloudflare.com',
+        'cdn.jsdelivr.net',
+        '*.vanta.js',
+        '*.threejs.org',
+        '*.fontawesome.com',
+        'ka-f.fontawesome.com'
+    ],
+    'img-src': ['\'self\'', 'data:', 'https:'],
+    'script-src': ['\'self\'', '\'unsafe-inline\'', '\'unsafe-eval\'', 'cdnjs.cloudflare.com', 'cdn.jsdelivr.net', 'unpkg.com'],
+    'style-src': ['\'self\'', '\'unsafe-inline\'', 'fonts.googleapis.com', 'cdnjs.cloudflare.com', 'cdn.jsdelivr.net'],
+}
+
+Talisman(app, content_security_policy=csp, force_https=(os.environ.get('FLASK_ENV') == 'production'))
 from flask_mail import Mail
 from extensions import limiter
 
@@ -60,6 +83,17 @@ limiter.init_app(app)
 # Configure login
 login_manager.login_view = 'admin.admin_login'
 login_manager.login_message_category = 'info'
+
+@app.template_filter('clean_ai')
+def clean_ai_filter(s):
+    if not s:
+        return s
+    import re
+    # Remove multiple dashes or underscores that AI use for dividers
+    s = re.sub(r'[_-]{2,}', ' ', s)
+    # Remove single dashes/underscores if they are between spaces
+    s = re.sub(r'\s+[-_]\s+', ' ', s)
+    return s.strip()
 
 # Import models will be done later to avoid circular imports
 

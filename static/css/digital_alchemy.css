@@ -1128,3 +1128,90 @@ textarea.form-control {
         width: 100%;
     }
 }
+/* ============================================
+   13. INDUSTRIAL POLISH COMPONENTS
+   ============================================ */
+
+.platform-card {
+    transition: all var(--transition-slow);
+    border: 1px solid var(--border-light);
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
+}
+
+.platform-card:hover {
+    transform: translateY(-8px);
+    border-color: var(--accent-primary);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+
+.platform-card .platform-thumb img {
+    transition: transform var(--transition-slow);
+}
+
+.platform-card:hover .platform-thumb img {
+    transform: scale(1.1);
+}
+
+.bg-fiverr { background-color: #1dbf73 !important; }
+.bg-linkedin { background-color: #0077b5 !important; }
+
+.platform-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity var(--transition-base);
+}
+
+.platform-card:hover .platform-overlay {
+    opacity: 1;
+}
+
+/* Professional Footer */
+.footer-links li {
+    margin-bottom: 12px;
+}
+
+.footer-links a {
+    color: var(--text-tertiary);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}`n
+.footer-links a:hover {
+    color: var(--accent-primary);
+    padding-left: 5px;
+}`n
+.footer-contact li {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    color: var(--text-secondary);
+}`n
+.social-icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-tertiary);
+    transition: all var(--transition-base);
+    text-decoration: none;
+}`n
+.social-icon:hover {
+    background: var(--accent-primary);
+    color: #fff;
+    transform: rotate(360deg);
+}
+
+/* Responsive Tweaks */
+@media (max-width: 991px) {
+    .footer { text-align: center; }
+    .footer-contact li { justify-content: center; }
+    .social-links { justify-content: center; }
+}

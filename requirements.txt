@@ -30,3 +30,4 @@ aiortc
 aiohttp
 cryptography
 
+Flask-Talisman==1.1.0

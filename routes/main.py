@@ -15,7 +15,6 @@ def index():
     from app import db
     
     # Get featured projects for homepage
-    # Get featured projects for homepage
     featured_projects = Project.query.filter_by(featured=True).limit(3).all()
     
     # Get skills grouped by category
@@ -31,13 +30,17 @@ def index():
     
     # Get featured services
     services = Service.query.filter_by(featured=True).limit(4).all()
-
     
+    # NEW: Get External Platforms (Fiverr, Upwork, LinkedIn)
+    from models import ExternalPlatform
+    external_platforms = ExternalPlatform.query.filter_by(is_active=True).order_by(ExternalPlatform.order_index).all()
+
     return render_template('index.html', 
                            featured_projects=featured_projects,
                            skill_categories=skill_categories,
                            testimonials=testimonials,
-                           services=services)
+                           services=services,
+                           external_platforms=external_platforms)
 
 @main_bp.route('/about')
 def about():
@@ -218,3 +221,24 @@ Sitemap: {}'''.format(url_for('main.sitemap', _external=True))
     
     response = Response(robots_txt, mimetype='text/plain')
     return response
+
+@main_bp.route('/newsletter-signup', methods=['POST'])
+def newsletter_signup():
+    from models import Newsletter
+    from app import db
+    
+    email = request.form.get('email')
+    if not email:
+        flash('Email is required for newsletter signup.', 'danger')
+        return redirect(request.referrer or url_for('main.index'))
+    
+    existing = Newsletter.query.filter_by(email=email).first()
+    if existing:
+        flash('You are already subscribed to our newsletter!', 'info')
+    else:
+        new_sub = Newsletter(email=email)
+        db.session.add(new_sub)
+        db.session.commit()
+        flash('Thank you for subscribing to my newsletter!', 'success')
+    
+    return redirect(request.referrer or url_for('main.index'))

@@ -1,16 +1,24 @@
 {% extends 'base.html' %}
 
-{% block title %}Server Error{% endblock %}
+{% block title %}500 - Server Error | Muhammad Hanzala{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 text-center">
-            <h1 class="display-1">500</h1>
-            <h2 class="mb-4">Server Error</h2>
-            <p class="lead">Something went wrong on our servers. We're working to fix the issue.</p>
-            <a href="{{ url_for('main.index') }}" class="btn btn-primary mt-4">Go to Homepage</a>
+<section class="section d-flex align-items-center justify-content-center" style="min-height: 80vh;">
+    <div class="container text-center">
+        <div class="glass-panel p-5 reveal-text" style="max-width: 600px; margin: 0 auto; border-radius: 30px;">
+            <h1 class="display-1 text-danger mb-4">500</h1>
+            <h2 class="h3 mb-3">Something Went Wrong</h2>
+            <p class="text-muted lead mb-5">Our servers are experiencing a temporary glitch. Please try again later or
+                contact me directly.</p>
+            <div class="d-flex gap-3 justify-content-center">
+                <a href="{{ url_for('main.index') }}" class="btn btn-primary btn-lg rounded-pill">
+                    <i class="fas fa-redo me-2"></i> Try Again
+                </a>
+                <a href="{{ url_for('main.contact') }}" class="btn btn-secondary btn-lg rounded-pill">
+                    Contact Support
+                </a>
+            </div>
         </div>
     </div>
-</div>
+</section>
 {% endblock %}

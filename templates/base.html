@@ -9,13 +9,23 @@
     <!-- SEO Meta Tags -->
     <meta name="description"
         content="{% block meta_description %}Professional Portfolio of Muhammad Hanzala - Full Stack Developer, UI/UX Designer & Digital Creator{% endblock %}">
+    <meta name="keywords"
+        content="Muhammad Hanzala, Hani, Full Stack Developer, Python, Flask, React, 3D Design, Portfolio">
     <meta name="author" content="Muhammad Hanzala">
     <meta name="robots" content="index, follow">
 
     <!-- Open Graph -->
-    <meta property="og:title" content="Muhammad Hanzala - Professional Portfolio">
-    <meta property="og:description" content="Full Stack Developer, UI/UX Designer & Digital Creator">
+    <meta property="og:title" content="Muhammad Hanzala | Full Stack Developer">
+    <meta property="og:description" content="Crafting high-performance digital experiences and scalable solutions.">
+    <meta property="og:image" content="{{ url_for('static', filename='img/og-preview.jpg', _external=True) }}">
+    <meta property="og:url" content="{{ request.url }}">
     <meta property="og:type" content="website">
+
+    <!-- Twitter SEO -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Muhammad Hanzala | Digital Creator">
+    <meta name="twitter:description" content="Scalable apps and stunning 3D visuals.">
+    <meta name="twitter:image" content="{{ url_for('static', filename='img/og-preview.jpg', _external=True) }}">
 
     <!-- Fonts - Inter (Professional) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -69,6 +79,7 @@
 
     {% block extra_css %}{% endblock %}
 </head>
+
 <body class="loading">
     <!-- Preloader -->
     <div id="preloader">
@@ -82,9 +93,9 @@
     <nav class="glass-nav">
         <div class="nav-container">
             <a href="{{ url_for('main.index') }}" class="logo">Muhammad Hanzala</a>
-            
+
             <div class="d-flex align-items-center gap-3">
-                 <!-- Theme Toggle (Mobile) -->
+                <!-- Theme Toggle (Mobile) -->
                 <button class="theme-toggle d-md-none" id="themeToggleMobile" aria-label="Toggle Theme">
                     <i class="fas fa-sun"></i>
                 </button>
@@ -108,7 +119,7 @@
                 <a href="{{ url_for('main.blog') }}"
                     class="{% if request.endpoint == 'main.blog' %}active{% endif %}">Blog</a>
                 <a href="{{ url_for('main.contact') }}" class="btn-alchemy">Contact</a>
-                
+
                 <!-- Theme Toggle (Desktop) -->
                 <button class="theme-toggle" id="themeToggle" aria-label="Toggle Theme">
                     <i class="fas fa-sun"></i>
@@ -147,15 +158,97 @@
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container text-center">
-            <p>&copy; {{ now.year }} Muhammad Hanzala. All Rights Reserved.</p>
-            <div class="social-links mt-3">
-                <a href="https://www.linkedin.com/in/muhammad-hanzala-47439328a/" target="_blank"><i
-                        class="fab fa-linkedin"></i></a>
-                <a href="https://github.com/Muhammad-Hanzala103" target="_blank" style="margin-left: 1rem;"><i
-                        class="fab fa-github"></i></a>
+    <!-- Newsletter Section (Pre-Footer) -->
+    <section class="section" style="background: var(--bg-tertiary);">
+        <div class="container">
+            <div class="glass-panel p-5 text-center"
+                style="border-radius: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
+                <div class="row align-items-center">
+                    <div class="col-lg-6 text-lg-start mb-4 mb-lg-0">
+                        <h2 class="mb-2">Stay in the Loop</h2>
+                        <p class="text-muted mb-0">Get notified about my latest projects, tech articles, and digital
+                            experiments.</p>
+                    </div>
+                    <div class="col-lg-6">
+                        <form action="{{ url_for('main.newsletter_signup') }}" method="POST" class="d-flex gap-2">
+                            <input type="email" name="email"
+                                class="form-control form-control-lg bg-white bg-opacity-10 border-secondary text-white"
+                                placeholder="Enter your email" required
+                                style="border-radius: 50px; padding-left: 25px;">
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5">Join</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Professional Industrial Footer -->
+    <footer class="footer pt-5 pb-3">
+        <div class="container">
+            <div class="row g-5">
+                <!-- Branding & About -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="footer-brand mb-4">
+                        <span class="gradient-text h3 fw-bold">Muhammad Hanzala</span>
+                        <p class="text-muted mt-3">Crafting high-performance digital experiences and scalable solutions.
+                            Based in Pakistan, available globally.</p>
+                    </div>
+                    <div class="social-links d-flex gap-3">
+                        <a href="https://github.com/Muhammad-Hanzala103" target="_blank" class="social-icon"><i
+                                class="fab fa-github"></i></a>
+                        <a href="https://www.linkedin.com/in/muhammad-hanzala-47439328a/" target="_blank"
+                            class="social-icon"><i class="fab fa-linkedin"></i></a>
+                        <a href="https://www.fiverr.com/mr0_0hani" target="_blank" class="social-icon"><i
+                                class="fas fa-shopping-bag"></i></a>
+                        <a href="mailto:hani75384@gmail.com" class="social-icon"><i class="fas fa-envelope"></i></a>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div class="col-lg-2 col-md-6 col-6">
+                    <h5 class="mb-4">Navigation</h5>
+                    <ul class="list-unstyled footer-links">
+                        <li><a href="{{ url_for('main.index') }}">Home</a></li>
+                        <li><a href="{{ url_for('main.projects') }}">Portfolio</a></li>
+                        <li><a href="{{ url_for('main.services') }}">Services</a></li>
+                        <li><a href="{{ url_for('main.blog') }}">Blog</a></li>
+                    </ul>
+                </div>
+
+                <!-- Professional Platforms -->
+                <div class="col-lg-2 col-md-6 col-6">
+                    <h5 class="mb-4">Ecosystem</h5>
+                    <ul class="list-unstyled footer-links">
+                        <li><a href="https://www.fiverr.com/mr0_0hani" target="_blank">Fiverr Pro</a></li>
+                        <li><a href="https://www.upwork.com/" target="_blank">Upwork Talent</a></li>
+                        <li><a href="{{ url_for('main.gallery') }}">Design Gallery</a></li>
+                        <li><a href="{{ url_for('main.about') }}">About Me</a></li>
+                    </ul>
+                </div>
+
+                <!-- Contact Info -->
+                <div class="col-lg-4 col-md-6">
+                    <h5 class="mb-4">Contact Detail</h5>
+                    <ul class="list-unstyled footer-contact">
+                        <li><i class="fas fa-map-marker-alt text-primary me-2"></i> Bahawalpur, Punjab, Pakistan</li>
+                        <li><i class="fas fa-phone text-primary me-2"></i> +92 3XX XXXXXXX</li>
+                        <li><i class="fas fa-envelope text-primary me-2"></i> hani75384@gmail.com</li>
+                    </ul>
+                    <div class="mt-4">
+                        <a href="{{ url_for('main.download_cv') }}"
+                            class="btn btn-outline-primary btn-sm rounded-pill w-100">
+                            <i class="fas fa-download me-2"></i> Download Professional CV
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-5 border-secondary opacity-10">
+
+            <div class="footer-bottom text-center">
+                <p class="text-muted small mb-0">&copy; {{ now.year }} Muhammad Hanzala. All Rights Reserved. Crafted
+                    with <i class="fas fa-heart text-danger"></i> & <i class="fab fa-python text-primary"></i></p>
             </div>
         </div>
     </footer>
@@ -172,8 +265,8 @@
     <script>
         // Preloader
         window.addEventListener('load', () => {
-             document.body.classList.add('loaded');
-             document.body.classList.remove('loading');
+            document.body.classList.add('loaded');
+            document.body.classList.remove('loading');
         });
 
         // Theme Toggle Logic
@@ -188,8 +281,8 @@
             localStorage.setItem('theme', theme);
             const iconClass = theme === 'light' ? 'fa-moon' : 'fa-sun';
             icon.className = `fas ${iconClass}`;
-            if(iconMobile) iconMobile.className = `fas ${iconClass}`;
-            
+            if (iconMobile) iconMobile.className = `fas ${iconClass}`;
+
             // Re-init Vanta if exists (to change colors)
             if (window.vantaEffect) {
                 window.vantaEffect.setOptions({
@@ -205,7 +298,7 @@
         setTheme(currentTheme);
 
         [themeToggle, themeToggleMobile].forEach(btn => {
-            if(btn) {
+            if (btn) {
                 btn.addEventListener('click', () => {
                     const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
                     setTheme(newTheme);
