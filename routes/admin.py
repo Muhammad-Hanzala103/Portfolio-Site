@@ -8,7 +8,10 @@ import os
 from datetime import datetime, timedelta
 import uuid
 import re
+import random
+import string
 from extensions import limiter
+from flask_mail import Message
 
 # Create blueprint first, import models and db later to avoid circular imports
 
@@ -268,21 +271,21 @@ def google_login():
 
 @admin_bp.route('/authorize')
 def google_authorize():
-    from app import google
+    from app import google, mail, db
+    from models import User, VerificationToken
     try:
         token = google.authorize_access_token()
         resp = google.get('https://www.googleapis.com/oauth2/v3/userinfo').json()
         email = resp.get('email')
         name = resp.get('name', '')
+        google_id = resp.get('sub') # Google's unique subject ID
 
-        # Check if user exists
-        user = User.query.filter_by(email=email).first()
+        # Check if user exists by google_id or email
+        user = User.query.filter((User.google_id == google_id) | (User.email == email)).first()
         
         if not user:
-            # Automatic registration if allowed
             if current_app.config.get('ALLOW_REGISTRATION', False):
                 username = email.split('@')[0]
-                # Ensure unique username
                 counter = 1
                 base_username = username
                 while User.query.filter_by(username=username).first():
@@ -292,22 +295,126 @@ def google_authorize():
                 user = User(
                     username=username,
                     email=email,
-                    password=uuid.uuid4().hex, # Random password
-                    is_admin=False # Default to non-admin
+                    full_name=name,
+                    google_id=google_id,
+                    email_verified=True, # Trusted email from Google
+                    is_admin=False
                 )
                 db.session.add(user)
                 db.session.commit()
+                
+                login_user(user)
+                flash('Successfully registered with Google! Please set a password for your account.', 'success')
+                return redirect(url_for('admin.set_initial_password'))
             else:
                 flash('Registration is currently disabled.', 'danger')
                 return redirect(url_for('admin.admin_login'))
-
+        
+        # If user exists, update google_id if missing
+        if not user.google_id:
+            user.google_id = google_id
+            db.session.commit()
+            
+        # Check for 2FA
+        if user.two_factor_enabled:
+            # Generate 2FA session token
+            session['2fa_user_id'] = user.id
+            return redirect(url_for('admin.verify_2fa'))
+            
         login_user(user)
-        flash(f'Logged in as {user.username}', 'success')
+        flash(f'Welcome back, {user.username}!', 'success')
         return redirect(url_for('admin.dashboard'))
+        
     except Exception as e:
-        flash(f'Error during Google login: {str(e)}', 'danger')
+        print(f"OAuth Error: {e}")
+        flash('Failed to authorize with Google.', 'danger')
         return redirect(url_for('admin.admin_login'))
 
+@admin_bp.route('/set-password', methods=['GET', 'POST'])
+@login_required
+def set_initial_password():
+    from app import bcrypt, db
+    if request.method == 'POST':
+        password = request.form.get('password')
+        confirm = request.form.get('confirm_password')
+        
+        if password != confirm:
+            flash('Passwords do not match.', 'danger')
+            return render_template('admin/set_password.html')
+            
+        is_valid, error = validate_password(password)
+        if not is_valid:
+            flash(error, 'danger')
+            return render_template('admin/set_password.html')
+            
+        current_user.password = bcrypt.generate_password_hash(password).decode('utf-8')
+        db.session.commit()
+        flash('Profile password set successfully!', 'success')
+        return redirect(url_for('admin.dashboard'))
+        
+    return render_template('admin/set_password.html')
+
+def send_otp_email(user, code, type_label="Registration"):
+    from app import app, mail
+    msg = Message(f'{type_label} - Your Verification Code',
+                  sender=app.config['MAIL_USERNAME'],
+                  recipients=[user.email])
+    
+    msg.body = f'''Your verification code is: {code}
+    
+This code will expire in 10 minutes. If you did not request this, please ignore this email.
+'''
+    try:
+        mail.send(msg)
+        return True
+    except Exception as e:
+        print(f"Error sending OTP: {e}")
+        return False
+
+@admin_bp.route('/verify-2fa', methods=['GET', 'POST'])
+def verify_2fa():
+    from models import User, VerificationToken
+    from app import db
+    user_id = session.get('2fa_user_id')
+    if not user_id:
+        return redirect(url_for('admin.admin_login'))
+        
+    user = User.query.get(user_id)
+    if not user:
+        return redirect(url_for('admin.admin_login'))
+
+    if request.method == 'POST':
+        code = request.form.get('otp')
+        token = VerificationToken.query.filter_by(user_id=user.id, code=code, token_type='2fa').first()
+        
+        if token and not token.is_expired():
+            db.session.delete(token)
+            db.session.commit()
+            session.pop('2fa_user_id', None)
+            login_user(user)
+            flash('Two-factor authentication successful!', 'success')
+            return redirect(url_for('admin.dashboard'))
+        else:
+            flash('Invalid or expired OTP.', 'danger')
+            
+    # Send OTP if not already sent (simple throttle)
+    existing_token = VerificationToken.query.filter_by(user_id=user.id, token_type='2fa').order_by(VerificationToken.created_at.desc()).first()
+    if not existing_token or (datetime.utcnow() - existing_token.created_at).total_seconds() > 60:
+        code = ''.join(random.choices(string.digits, k=6))
+        new_token = VerificationToken(
+            user_id=user.id,
+            code=code,
+            token_type='2fa',
+            expires_at=datetime.utcnow() + timedelta(minutes=10)
+        )
+        db.session.add(new_token)
+        db.session.commit()
+        send_otp_email(user, code, "Two-Factor Login")
+        flash('A verification code has been sent to your email.', 'info')
+
+    return render_template('admin/verify_otp.html', type='2FA')
+
+# Admin login
 @admin_bp.route('/login', methods=['GET', 'POST'])
 @limiter.limit("5 per minute")
 def admin_login():

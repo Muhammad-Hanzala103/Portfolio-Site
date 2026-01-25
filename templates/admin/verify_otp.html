@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Verify Security Code - Muhammad Hanzala{% endblock %}
+
+{% block content %}
+<section class="section py-7">
+    <div class="container d-flex justify-content-center">
+        <div class="glass-panel p-5 w-100 shadow-lg" style="max-width: 450px; border-radius: 24px;">
+            <div class="text-center mb-4">
+                <div class="icon-box bg-dark bg-opacity-50 text-white p-3 rounded-circle d-inline-flex mb-3 shadow">
+                    <i class="fas fa-shield-alt fa-2x"></i>
+                </div>
+                <h2 class="h3 fw-bold mb-2">Security Verification</h2>
+                <p class="text-muted small">Please enter the 6-digit code sent to your email.</p>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} mb-4 small">{{ message }}</div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <form method="POST" class="mt-4">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-group mb-4">
+                    <label class="text-muted small mb-2 text-uppercase tracking-wider fw-bold">Verification Code</label>
+                    <input type="text" name="otp"
+                        class="form-control bg-transparent text-white border-secondary border-opacity-25 py-3 text-center fs-3 tracking-widest fw-bold"
+                        placeholder="000000" maxlength="6" required autofocus>
+                </div>
+
+                <button type="submit" class="btn btn-alchemy w-100 py-3 mb-3">Verify & Proceed</button>
+
+                <div class="text-center">
+                    <p class="small text-muted mb-0">Didn't receive the code? <a href="#"
+                            class="text-white text-decoration-none fw-bold">Resend in 60s</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<style>
+    .tracking-widest {
+        letter-spacing: 0.5rem;
+    }
+
+    .btn-alchemy {
+        background: linear-gradient(135deg, #334155, #94a3b8);
+        border: none;
+        color: white;
+    }
+</style>
+{% endblock %}

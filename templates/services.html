@@ -19,7 +19,7 @@
             {% for service in services %}
             <div class="col-md-6 col-lg-4">
                 <div class="glass-panel p-4 h-100 hover-glow-violet d-flex flex-column">
-                    <div class="icon-box mb-4 text-violet bg-white bg-opacity-10 d-inline-flex p-3 rounded-circle">
+                    <div class="icon-box mb-4 text-gradient bg-white bg-opacity-10 d-inline-flex p-3 rounded-circle">
                         <i class="{{ service.icon }} fa-2x"></i>
                     </div>
                     <h3 class="h4 mb-3">{{ service.title }}</h3>
@@ -47,7 +47,7 @@
                         <div class="modal-body p-4">
                             <p class="text-white-50 mb-4">{{ service.description }}</p>
 
-                            <h6 class="text-violet mb-3 text-uppercase fw-bold small">Choose Your Tier</h6>
+                            <h6 class="text-gradient mb-3 text-uppercase fw-bold small">Choose Your Tier</h6>
                             <div class="row g-3">
                                 {% for tier in service.tiers %}
                                 <div class="col-md-4">

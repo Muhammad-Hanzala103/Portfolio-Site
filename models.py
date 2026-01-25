@@ -24,8 +24,12 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, index=True, nullable=False)
     email = db.Column(db.String(120), unique=True, index=True, nullable=False)
-    password = db.Column(db.String(255), nullable=False)
+    full_name = db.Column(db.String(100), nullable=True)
+    password = db.Column(db.String(255), nullable=True) # Nullable for Google-only users initially
     is_admin = db.Column(db.Boolean, default=False)
+    google_id = db.Column(db.String(100), unique=True, index=True, nullable=True)
+    email_verified = db.Column(db.Boolean, default=False)
+    two_factor_enabled = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -41,6 +45,20 @@ class User(db.Model, UserMixin):
         except:
             return None
         return User.query.get(user_id)
+
+class VerificationToken(db.Model):
+    """Model for 6-digit OTP codes (Email Verification & 2FA)."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    code = db.Column(db.String(6), nullable=False)
+    token_type = db.Column(db.String(20), nullable=False) # 'verify_email', '2fa'
+    expires_at = db.Column(db.DateTime, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    user = db.relationship('User', backref=db.backref('tokens', lazy=True, cascade="all, delete-orphan"))
+    
+    def is_expired(self):
+        return datetime.utcnow() > self.expires_at
 
     def __repr__(self):
         return f'<User {self.username}>'
