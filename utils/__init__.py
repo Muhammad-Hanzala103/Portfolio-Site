@@ -195,9 +195,6 @@ def create_breadcrumb(endpoint, **kwargs):
     
     return breadcrumbs
 
-    filename = re.sub(r'\s+', '_', filename)
-    return filename.lower()
-
 def generate_sitemap(app):
     """
     Generates XML sitemap including static pages and dynamic content.
