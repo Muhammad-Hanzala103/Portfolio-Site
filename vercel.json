@@ -1,20 +1,22 @@
 {
     "version": 2,
-    "rewrites": [
+    "builds": [
         {
-            "source": "/(.*)",
-            "destination": "/app.py"
+            "src": "app.py",
+            "use": "@vercel/python"
         }
     ],
-    "headers": [
+    "routes": [
         {
-            "source": "/static/(.*)",
-            "headers": [
-                {
-                    "key": "Cache-Control",
-                    "value": "public, max-age=31536000, immutable"
-                }
-            ]
+            "src": "/static/(.*)",
+            "headers": {
+                "Cache-Control": "public, max-age=31536000, immutable"
+            },
+            "dest": "/static/$1"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "/app.py"
         }
     ]
 }
