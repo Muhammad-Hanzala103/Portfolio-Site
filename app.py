@@ -146,7 +146,8 @@ def inject_settings():
             settings_dict['site_name'] = 'DaaviSpot'
         return {'site_settings': settings_dict}
     except Exception:
-        return {'site_settings': {'site_name': 'DaaviSpot'}}
+        # Failsafe for Vercel/Init
+        return {'site_settings': {'site_name': 'DaaviSpot', 'tagline': 'Digital Excellence'}}
 
 # Register blueprints
 app.register_blueprint(main_bp)
