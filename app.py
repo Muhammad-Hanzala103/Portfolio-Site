@@ -1,5 +1,6 @@
 import os
 from flask import Flask, render_template, redirect, url_for, flash, request, jsonify, abort
+from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_wtf import CSRFProtect
 from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -26,6 +27,7 @@ load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__, static_folder='static', static_url_path='/static')
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1, x_prefix=1)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-for-testing')
 app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
 app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
@@ -33,7 +35,12 @@ app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'True').lower() == '
 app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME', 'hani75384@gmail.com')
 app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
 app.config['SITE_LOCATION'] = os.environ.get('SITE_LOCATION', 'Islamabad, Pakistan')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///portfolio.db')
+
+# Database configuration with PostgreSQL compatibility fix
+db_url = os.environ.get('DATABASE_URL', 'sqlite:///portfolio.db')
+if db_url and db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max upload
@@ -200,14 +207,10 @@ def internal_server_error(e):
 def track_visit():
     from models import SiteVisit
 
-    # Force HTTPS in production
-    if os.environ.get('FLASK_ENV') == 'production' and not request.is_secure:
-        return redirect(request.url.replace('http://', 'https://', 1), code=301)
-
     # Skip tracking for static files and admin routes
-    if request.endpoint and (request.endpoint.startswith('static') or
-                           request.endpoint.startswith('admin') or
-                           request.endpoint.startswith('admin_panel')):
+    if not request.endpoint or request.endpoint.startswith('static') or \
+       request.endpoint.startswith('admin') or \
+       request.endpoint.startswith('admin_panel'):
         return
 
     # Track the visit
