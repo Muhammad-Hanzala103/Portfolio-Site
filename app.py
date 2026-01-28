@@ -51,8 +51,12 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['WTF_CSRF_TIME_LIMIT'] = 3600  # 1 hour CSRF token timeout
 # CSRF protection
 # Ensure upload directory exists (Skip in production/Vercel)
-if os.environ.get('FLASK_ENV') != 'production':
-    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+# Vercel filesystem is read-only, so we avoid creating directories at runtime.
+if os.environ.get('FLASK_ENV') != 'production' and os.environ.get('VERCEL') != '1':
+    try:
+        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    except Exception:
+        pass
 
 from models import db
 from authlib.integrations.flask_client import OAuth
@@ -207,19 +211,27 @@ def track_visit():
         return
 
     # Track the visit
-    visit = SiteVisit(
-        ip_address=request.remote_addr,
-        user_agent=request.user_agent.string,
-        page_visited=request.path
-    )
-    db.session.add(visit)
-    db.session.commit()
+    try:
+        visit = SiteVisit(
+            ip_address=request.remote_addr,
+            user_agent=request.user_agent.string,
+            page_visited=request.path
+        )
+        db.session.add(visit)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Visit tracking failed: {e}")
 
 # Add context processor for templates
 @app.context_processor
 def inject_now():
-    from models import Testimonial
-    featured_testimonials = Testimonial.query.filter_by(featured=True).order_by(Testimonial.order_index).all()
+    featured_testimonials = []
+    try:
+        from models import Testimonial
+        featured_testimonials = Testimonial.query.filter_by(featured=True).order_by(Testimonial.order_index).all()
+    except Exception:
+        pass
     return {'now': datetime.now(), 'featured_testimonials': featured_testimonials}
 
 @app.after_request
