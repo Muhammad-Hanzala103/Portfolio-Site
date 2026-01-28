@@ -12,6 +12,12 @@ from flask_bcrypt import Bcrypt
 from flask_ckeditor import CKEditor
 from flask_cors import CORS
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+
+# Default values (Overridden by DB)
+DEFAULT_SITE_NAME = 'DaaviSpot'
+DEFAULT_TAGLINE = 'Digital Excellence by Hanzala'
+
+
 from flask_compress import Compress
 from flask_talisman import Talisman
 
@@ -123,9 +129,12 @@ def inject_settings():
         from models import SiteSettings
         settings_rows = SiteSettings.query.all()
         settings_dict = {s.key: s.value for s in settings_rows}
+        # Fallback defaults if DB is empty
+        if 'site_name' not in settings_dict:
+            settings_dict['site_name'] = 'DaaviSpot'
         return {'site_settings': settings_dict}
     except Exception:
-        return {'site_settings': {}}
+        return {'site_settings': {'site_name': 'DaaviSpot'}}
 
 # Register blueprints
 app.register_blueprint(main_bp)
