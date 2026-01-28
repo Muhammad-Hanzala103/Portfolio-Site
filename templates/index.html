@@ -71,7 +71,8 @@ Developer') }}{% endblock %}
                     <div class="glass-panel project-card">
                         <div class="project-img-wrapper">
                             {% if project.image %}
-                            <img src="{{ url_for('static', filename=project.image) }}" alt="{{ project.title }}">
+                            <img src="{{ url_for('static', filename=project.image) }}" alt="{{ project.title }}"
+                                loading="lazy">
                             {% else %}
                             <div
                                 style="width: 100%; height: 100%; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center;">
@@ -171,7 +172,7 @@ Developer') }}{% endblock %}
                         <div class="platform-thumb" style="height: 200px; overflow: hidden; position: relative;">
                             {% if platform.thumbnail %}
                             <img src="{{ url_for('static', filename=platform.thumbnail) }}" alt="{{ platform.title }}"
-                                class="w-100 h-100 object-fit-cover transition-transform">
+                                class="w-100 h-100 object-fit-cover transition-transform" loading="lazy">
                             {% else %}
                             <div
                                 class="w-100 h-100 d-flex align-items-center justify-content-center bg-dark text-white-50">

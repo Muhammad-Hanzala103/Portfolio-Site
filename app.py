@@ -273,15 +273,20 @@ def seed_database():
 # Run the app
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()
+        # Only create DB locally if using SQLite
+        if 'sqlite' in app.config['SQLALCHEMY_DATABASE_URI']:
+            db.create_all()
 
-        # Create admin user if none exists (updated credentials per requirements)
-        from models import User
-        if User.query.count() == 0:
-            hashed_password = bcrypt.generate_password_hash('ChangeMe!2025').decode('utf-8')
-            admin = User(username='hanzala', email='hani75384@gmail.com', password=hashed_password, is_admin=True)
-            db.session.add(admin)
-            db.session.commit()
-            print('Admin user created! Username: hanzala | Password: ChangeMe!2025')
-    app.run(debug=True)
+            # Create admin user if none exists
+            from models import User
+            if User.query.count() == 0:
+                hashed_password = bcrypt.generate_password_hash('ChangeMe!2025').decode('utf-8')
+                admin = User(username='hanzala', email='hani75384@gmail.com', password=hashed_password, is_admin=True)
+                db.session.add(admin)
+                db.session.commit()
+                print('Local Admin created! Username: hanzala | Password: ChangeMe!2025')
+    
+    # Debug mode based on environment
+    is_debug = os.environ.get('FLASK_ENV') != 'production'
+    app.run(debug=is_debug)
 
