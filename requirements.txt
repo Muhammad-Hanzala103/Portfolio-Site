@@ -8,7 +8,6 @@ Flask-Bcrypt==1.0.1
 Flask-CKEditor==1.0.0
 Flask-CORS==6.0.1
 Flask-Compress==1.23
-Flask-Assets==2.1.0
 Flask-Limiter==3.5.0
 WTForms==3.2.1
 SQLAlchemy==2.0.44
