@@ -13,12 +13,23 @@ import string
 from extensions import limiter
 from flask_mail import Message
 
-# Create blueprint first, import models and db later to avoid circular imports
+from functools import wraps
 
+# Create blueprint first, import models and db later to avoid circular imports
 admin_bp = Blueprint('admin', __name__)
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_admin:
+            flash('Access denied. Administrators only.', 'danger')
+            return redirect(url_for('admin.profile'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 @admin_bp.route('/api/visits/daily')
 @login_required
+@admin_required
 def api_visits_daily():
     from models import SiteVisit
     from sqlalchemy import func
@@ -147,7 +158,9 @@ def admin_register():
         return redirect(url_for('admin.admin_login'))
     
     if current_user.is_authenticated:
-        return redirect(url_for('admin.dashboard'))
+        if current_user.is_admin:
+            return redirect(url_for('admin.dashboard'))
+        return redirect(url_for('admin.profile'))
     
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
@@ -232,11 +245,14 @@ def forgot_password():
         if user:
             if send_reset_email(user):
                 flash('An email has been sent with instructions to reset your password.', 'info')
+                return redirect(url_for('admin.forgot_password'))
             else:
                 flash('There was an issue sending the reset email. Please try again later or contact support.', 'danger')
         else:
             flash('Email address not found.', 'danger')
-        return redirect(url_for('admin.forgot_password'))
+        
+        # Re-render on failure to keep form data (Sticky Forms)
+        return render_template('admin/forgot_password.html')
     return render_template('admin/forgot_password.html')
 
 @admin_bp.route('/reset-password/<token>', methods=['GET', 'POST'])
@@ -323,7 +339,9 @@ def google_authorize():
             
         login_user(user)
         flash(f'Welcome back, {user.username}!', 'success')
-        return redirect(url_for('admin.dashboard'))
+        if user.is_admin:
+            return redirect(url_for('admin.dashboard'))
+        return redirect(url_for('admin.profile'))
         
     except Exception as e:
         print(f"OAuth Error: {e}")
@@ -350,7 +368,9 @@ def set_initial_password():
         current_user.password = bcrypt.generate_password_hash(password).decode('utf-8')
         db.session.commit()
         flash('Profile password set successfully!', 'success')
-        return redirect(url_for('admin.dashboard'))
+        if current_user.is_admin:
+            return redirect(url_for('admin.dashboard'))
+        return redirect(url_for('admin.profile'))
         
     return render_template('admin/set_password.html')
 
@@ -393,7 +413,9 @@ def verify_2fa():
             session.pop('2fa_user_id', None)
             login_user(user)
             flash('Two-factor authentication successful!', 'success')
-            return redirect(url_for('admin.dashboard'))
+            if user.is_admin:
+                return redirect(url_for('admin.dashboard'))
+            return redirect(url_for('admin.profile'))
         else:
             flash('Invalid or expired OTP.', 'danger')
             
@@ -423,7 +445,9 @@ def admin_login():
     from app import db, bcrypt
     
     if current_user.is_authenticated:
-        return redirect(url_for('admin.dashboard'))
+        if current_user.is_admin:
+            return redirect(url_for('admin.dashboard'))
+        return redirect(url_for('admin.profile'))
     
     if request.method == 'POST':
         username = request.form.get('username')
@@ -434,7 +458,11 @@ def admin_login():
         if user and bcrypt.check_password_hash(user.password, password):
             login_user(user)
             next_page = request.args.get('next')
-            return redirect(next_page or url_for('admin.dashboard'))
+            if next_page:
+                return redirect(next_page)
+            if user.is_admin:
+                return redirect(url_for('admin.dashboard'))
+            return redirect(url_for('admin.profile'))
         else:
             flash('Login failed. Please check your username and password.', 'danger')
     
@@ -1703,3 +1731,20 @@ def delete_comment(comment_id):
         flash('Error deleting comment.', 'danger')
     
     return redirect(url_for('admin.comments'))
+
+@admin_bp.route('/sync-platforms')
+@login_required
+@admin_required
+def sync_platforms():
+    from utils.platform_sync import sync_all_platforms
+    from models import ExternalPlatform
+    from app import db
+    
+    success, message = sync_all_platforms(db.session, ExternalPlatform)
+    
+    if success:
+        flash(message, 'success')
+    else:
+        flash(f'Sync Error: {message}', 'danger')
+        
+    return redirect(url_for('admin.dashboard'))

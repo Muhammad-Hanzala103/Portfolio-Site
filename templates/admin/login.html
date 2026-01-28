@@ -11,8 +11,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/digital_alchemy.css') }}">
 
     <style>
+        :root {
+            --accent-primary: #f59e0b;
+            --accent-secondary: #ffde21;
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -43,7 +49,7 @@
         }
 
         .auth-header {
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            background: linear-gradient(135deg, #f59e0b, #ffde21);
             padding: 32px;
             text-align: center;
         }
@@ -106,7 +112,7 @@
 
         .form-control:focus {
             outline: none;
-            border-color: #6366f1;
+            border-color: #f59e0b;
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
         }
 
@@ -140,7 +146,7 @@
             font-weight: 600;
             font-family: inherit;
             color: white;
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            background: linear-gradient(135deg, #f59e0b, #ffde21);
             border: none;
             border-radius: 12px;
             cursor: pointer;
@@ -159,7 +165,7 @@
         }
 
         .auth-footer a {
-            color: #6366f1;
+            color: #f59e0b;
             text-decoration: none;
             font-size: 0.9rem;
         }
@@ -184,7 +190,7 @@
         }
 
         .auth-links a:hover {
-            color: #6366f1;
+            color: #f59e0b;
         }
 
         .alert {
@@ -222,10 +228,21 @@
         .back-link:hover {
             color: white;
         }
+
+        #vanta-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
     </style>
 </head>
 
 <body>
+    <div id="vanta-bg"></div>
     <div class="auth-container">
         <div class="auth-card">
             <div class="auth-header">
@@ -254,7 +271,7 @@
                         <div class="input-wrapper">
                             <i class="fas fa-user"></i>
                             <input type="text" class="form-control" name="username" placeholder="Enter your username"
-                                required>
+                                required value="{{ request.form.get('username', '') }}">
                         </div>
                     </div>
 
@@ -302,6 +319,29 @@
             <i class="fas fa-arrow-left"></i> Back to Website
         </a>
     </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.net.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            VANTA.NET({
+                el: "#vanta-bg",
+                mouseControls: true,
+                touchControls: true,
+                gyroControls: false,
+                minHeight: 200.00,
+                minWidth: 200.00,
+                scale: 1.00,
+                scaleMobile: 1.00,
+                color: 0xf59e0b,
+                backgroundColor: 0x2a2a32,
+                points: 12.00,
+                maxDistance: 24.00,
+                spacing: 16.00
+            });
+        });
+    </script>
 </body>
 
 </html>

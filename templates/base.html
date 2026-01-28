@@ -6,6 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ site_settings.get('site_name', 'Muhammad Hanzala') }} - Portfolio{% endblock %}</title>
 
+    <!-- Theme Init (Critical Path) -->
+    <script>
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    </script>
+
     <!-- SEO Meta Tags -->
     <meta name="description"
         content="{% block meta_description %}Professional Portfolio of {{ site_settings.get('site_name', 'Muhammad Hanzala') }} - {{ site_settings.get('tagline', 'Full Stack Developer') }}{% endblock %}">
@@ -40,11 +46,25 @@
     <!-- Design System CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/digital_alchemy.css') }}">
 
-    <!-- Theme Init -->
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+
+    <!-- PWA Service Worker Registration -->
     <script>
-        const savedTheme = localStorage.getItem('theme') || 'dark';
-        document.documentElement.setAttribute('data-theme', savedTheme);
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register("{{ url_for('static', filename='sw.js') }}")
+                    .then(registration => {
+                        console.log('PWA ServiceWorker registered: ', registration.scope);
+                    })
+                    .catch(err => {
+                        console.log('PWA ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
     </script>
+
+    <!-- Theme Init Moved to Top -->
 
     <!-- JSON-LD Structured Data -->
     <script type="application/ld+json">
@@ -202,41 +222,49 @@
                 </div>
 
                 <!-- Quick Links -->
-                <div class="col-lg-2 col-md-3 col-6 ps-lg-5">
+                <div class="col-lg-3 col-md-4 col-12">
                     <h5 class="mb-4 text-white fw-bold">Navigation</h5>
                     <ul class="list-unstyled footer-links">
-                        <li class="mb-2"><a href="{{ url_for('main.index') }}"
-                                class="text-white-50 text-decoration-none hover-white transition-base">Home</a></li>
-                        <li class="mb-2"><a href="{{ url_for('main.projects') }}"
-                                class="text-white-50 text-decoration-none hover-white transition-base">Portfolio</a>
+                        <li class="mb-3"><a href="{{ url_for('main.index') }}"
+                                class="text-white-50 text-decoration-none hover-white transition-base d-flex align-items-center"><i
+                                    class="fas fa-chevron-right small me-2 opacity-50"></i> Home</a></li>
+                        <li class="mb-3"><a href="{{ url_for('main.projects') }}"
+                                class="text-white-50 text-decoration-none hover-white transition-base d-flex align-items-center"><i
+                                    class="fas fa-chevron-right small me-2 opacity-50"></i> Portfolio</a>
                         </li>
-                        <li class="mb-2"><a href="{{ url_for('main.services') }}"
-                                class="text-white-50 text-decoration-none hover-white transition-base">Services</a></li>
-                        <li class="mb-2"><a href="{{ url_for('main.blog') }}"
-                                class="text-white-50 text-decoration-none hover-white transition-base">Blog</a></li>
+                        <li class="mb-3"><a href="{{ url_for('main.services') }}"
+                                class="text-white-50 text-decoration-none hover-white transition-base d-flex align-items-center"><i
+                                    class="fas fa-chevron-right small me-2 opacity-50"></i> Services</a></li>
+                        <li class="mb-3"><a href="{{ url_for('main.blog') }}"
+                                class="text-white-50 text-decoration-none hover-white transition-base d-flex align-items-center"><i
+                                    class="fas fa-chevron-right small me-2 opacity-50"></i> Blog</a></li>
                     </ul>
                 </div>
 
                 <!-- Professional Platforms -->
-                <div class="col-lg-2 col-md-3 col-6 ps-lg-4">
+                <div class="col-lg-3 col-md-4 col-12">
                     <h5 class="mb-4 text-white fw-bold">Ecosystem</h5>
                     <ul class="list-unstyled footer-links">
-                        <li class="mb-2"><a href="https://www.fiverr.com/mr0_0hani" target="_blank"
-                                class="text-white-50 text-decoration-none hover-white transition-base">Fiverr Pro</a>
+                        <li class="mb-3"><a href="https://www.fiverr.com/mr0_0hani" target="_blank"
+                                class="text-white-50 text-decoration-none hover-white transition-base d-flex align-items-center"><i
+                                    class="fas fa-external-link-alt small me-2 opacity-50"></i> Fiverr Pro</a>
                         </li>
-                        <li class="mb-2"><a href="https://www.upwork.com/" target="_blank"
-                                class="text-white-50 text-decoration-none hover-white transition-base">Upwork Talent</a>
+                        <li class="mb-3"><a href="https://www.upwork.com/" target="_blank"
+                                class="text-white-50 text-decoration-none hover-white transition-base d-flex align-items-center"><i
+                                    class="fas fa-external-link-alt small me-2 opacity-50"></i> Upwork Talent</a>
                         </li>
-                        <li class="mb-2"><a href="{{ url_for('main.gallery') }}"
-                                class="text-white-50 text-decoration-none hover-white transition-base">Design
+                        <li class="mb-3"><a href="{{ url_for('main.gallery') }}"
+                                class="text-white-50 text-decoration-none hover-white transition-base d-flex align-items-center"><i
+                                    class="fas fa-image small me-2 opacity-50"></i> Design
                                 Gallery</a></li>
-                        <li class="mb-2"><a href="{{ url_for('main.about') }}"
-                                class="text-white-50 text-decoration-none hover-white transition-base">About Me</a></li>
+                        <li class="mb-3"><a href="{{ url_for('main.about') }}"
+                                class="text-white-50 text-decoration-none hover-white transition-base d-flex align-items-center"><i
+                                    class="fas fa-user small me-2 opacity-50"></i> About Me</a></li>
                     </ul>
                 </div>
 
                 <!-- Contact Info -->
-                <div class="col-lg-4 col-md-6">
+                <div class="col-lg-2 col-md-4 col-12">
                     <h5 class="mb-4">Contact Details</h5>
                     <ul class="list-unstyled footer-contact">
                         <li><i class="fas fa-map-marker-alt text-primary me-2"></i> {{ site_settings.get('location',
@@ -259,7 +287,11 @@
 
             <div class="footer-bottom text-center">
                 <p class="text-muted small mb-0">&copy; {{ now.year }} {{ site_settings.get('site_name', 'Muhammad
-                    Hanzala') }}. All Rights Reserved. Crafted
+                    Hanzala') }}. All Rights Reserved.
+                    <a href="{{ url_for('main.privacy') }}" class="text-muted ms-2 text-decoration-none">Privacy</a> •
+                    <a href="{{ url_for('main.terms') }}" class="text-muted ms-1 text-decoration-none">Terms</a>
+                </p>
+                <p class="text-muted small mt-2">Crafted
                     with <i class="fas fa-heart text-danger"></i> & <i class="fab fa-python text-primary"></i></p>
             </div>
         </div>

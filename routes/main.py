@@ -240,5 +240,17 @@ def newsletter_signup():
         db.session.add(new_sub)
         db.session.commit()
         flash('Thank you for subscribing to my newsletter!', 'success')
-    
     return redirect(request.referrer or url_for('main.index'))
+
+@main_bp.route('/privacy')
+def privacy():
+    return render_template('legal/privacy.html')
+
+@main_bp.route('/terms')
+def terms():
+    return render_template('legal/terms.html')
+
+@main_bp.route('/offline.html')
+def offline():
+    """Serve the offline fallback page from templates"""
+    return render_template('offline.html')

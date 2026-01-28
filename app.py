@@ -105,12 +105,8 @@ login_manager.login_message_category = 'info'
 def clean_ai_filter(s):
     if not s:
         return s
-    import re
-    # Remove multiple dashes or underscores that AI use for dividers
-    s = re.sub(r'[_-]{2,}', ' ', s)
-    # Remove single dashes/underscores if they are between spaces
-    s = re.sub(r'\s+[-_]\s+', ' ', s)
-    return s.strip()
+    from utils.text_sanitizer import scrub_text
+    return scrub_text(s)
 
 # Import models will be done later to avoid circular imports
 
