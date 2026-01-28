@@ -50,8 +50,9 @@ app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['WTF_CSRF_TIME_LIMIT'] = 3600  # 1 hour CSRF token timeout
 # CSRF protection
-# Ensure upload directory exists
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+# Ensure upload directory exists (Skip in production/Vercel)
+if os.environ.get('FLASK_ENV') != 'production':
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 from models import db
 from authlib.integrations.flask_client import OAuth
