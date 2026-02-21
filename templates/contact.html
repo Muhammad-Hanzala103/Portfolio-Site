@@ -23,8 +23,9 @@
                             class="glass-panel p-4 text-center h-100 shadow-sm border border-secondary border-opacity-10 hover-lift">
                             <div class="icon-box text-gradient mb-3"><i class="fas fa-envelope fa-xl"></i></div>
                             <h5 class="h6 fw-bold mb-2">Email</h5>
-                            <a href="mailto:hani75384@gmail.com"
-                                class="text-decoration-none text-white-50 small hover-white transition-base">hani75384@gmail.com</a>
+                            <a href="mailto:{{ site_settings.get('email', 'hani75384@gmail.com') }}"
+                                class="text-decoration-none text-white-50 small hover-white transition-base">{{
+                                site_settings.get('email', 'hani75384@gmail.com') }}</a>
                         </div>
                     </div>
                     <div class="col-6">
@@ -32,9 +33,9 @@
                             class="glass-panel p-4 text-center h-100 shadow-sm border border-secondary border-opacity-10 hover-lift">
                             <div class="icon-box text-secondary mb-3"><i class="fas fa-phone fa-xl"></i></div>
                             <h5 class="h6 fw-bold mb-2">Phone</h5>
-                            <a href="tel:+923015855940"
-                                class="text-decoration-none text-white-50 small hover-white transition-base">+92 301
-                                5855940</a>
+                            <a href="tel:{{ site_settings.get('phone', '+923015855940') }}"
+                                class="text-decoration-none text-white-50 small hover-white transition-base">{{
+                                site_settings.get('phone', '+92 301 5855940') }}</a>
                         </div>
                     </div>
                     <div class="col-6">
@@ -42,7 +43,8 @@
                             class="glass-panel p-4 text-center h-100 shadow-sm border border-secondary border-opacity-10 hover-lift">
                             <div class="icon-box text-secondary mb-3"><i class="fas fa-map-marker-alt fa-xl"></i></div>
                             <h5 class="h6 fw-bold mb-2">Location</h5>
-                            <p class="text-white-50 small mb-0">Islamabad, Pakistan</p>
+                            <p class="text-white-50 small mb-0">{{ site_settings.get('location', 'Islamabad, Pakistan')
+                                }}</p>
                         </div>
                     </div>
                     <div class="col-6">
@@ -50,13 +52,16 @@
                             class="glass-panel p-4 text-center h-100 shadow-sm border border-secondary border-opacity-10 hover-lift">
                             <h5 class="h6 fw-bold mb-3">Hire Me</h5>
                             <div class="d-flex justify-content-center gap-3">
-                                <a href="https://www.fiverr.com/mr0_0hani" target="_blank"
+                                <a href="{{ site_settings.get('fiverr_url', 'https://www.fiverr.com/mr0_0hani') }}"
+                                    target="_blank"
                                     class="btn btn-outline-light btn-sm rounded-circle d-flex align-items-center justify-content-center shadow-sm"
                                     style="width: 40px; height: 40px;"><i class="fas fa-comments"></i></a>
-                                <a href="https://www.upwork.com/" target="_blank"
+                                <a href="{{ site_settings.get('upwork_url', 'https://www.upwork.com/') }}"
+                                    target="_blank"
                                     class="btn btn-outline-light btn-sm rounded-circle d-flex align-items-center justify-content-center shadow-sm"
                                     style="width: 40px; height: 40px;"><i class="fas fa-briefcase"></i></a>
-                                <a href="https://www.linkedin.com/in/muhammad-hanzala-47439328a/" target="_blank"
+                                <a href="{{ site_settings.get('linkedin_url', 'https://www.linkedin.com/in/muhammad-hanzala-47439328a/') }}"
+                                    target="_blank"
                                     class="btn btn-outline-light btn-sm rounded-circle d-flex align-items-center justify-content-center shadow-sm"
                                     style="width: 40px; height: 40px;"><i class="fab fa-linkedin-in"></i></a>
                             </div>
@@ -131,23 +136,22 @@
         <div class="row justify-content-center">
             <div class="col-lg-8">
                 <div class="accordion" id="faqAccordion">
-                    {% set faqs = [
-                    {'q': 'What is your response time?', 'a': 'I typically respond within 24 hours.'},
-                    {'q': 'Do you offer maintenance?', 'a': 'Yes, I offer ongoing support packages.'},
-                    {'q': 'How do payments work?', 'a': '50% upfront, 50% on completion via Stripe or Upwork.'}
-                    ] %}
-                    {% for item in faqs %}
+                    {% for faq in faqs %}
                     <div class="glass-panel mb-3 p-0 overflow-hidden">
                         <div class="p-3 border-bottom border-secondary d-flex justify-content-between align-items-center cursor-pointer"
                             type="button" data-bs-toggle="collapse" data-bs-target="#faq{{ loop.index }}">
-                            <h5 class="mb-0 h6">{{ item.q }}</h5>
+                            <h5 class="mb-0 h6">{{ faq.question }}</h5>
                             <i class="fas fa-chevron-down text-muted"></i>
                         </div>
                         <div id="faq{{ loop.index }}" class="collapse" data-bs-parent="#faqAccordion">
                             <div class="p-3 text-white-50 small">
-                                {{ item.a }}
+                                {{ faq.answer }}
                             </div>
                         </div>
+                    </div>
+                    {% else %}
+                    <div class="glass-panel p-4 text-center">
+                        <p class="text-muted mb-0">No FAQs available yet.</p>
                     </div>
                     {% endfor %}
                 </div>
