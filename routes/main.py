@@ -193,7 +193,9 @@ def contact():
         flash('Your message has been sent! I will get back to you soon.', 'success')
         return redirect(url_for('main.contact'))
     
-    return render_template('contact.html')
+    from models import FAQ
+    faqs = FAQ.query.order_by(FAQ.order_index).all()
+    return render_template('contact.html', faqs=faqs)
 
 @main_bp.route('/download-cv')
 def download_cv():
