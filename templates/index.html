@@ -16,7 +16,8 @@ Developer') }}{% endblock %}
                 <p class="section-label">Welcome to my Portfolio</p>
                 <h1>Hi, I'm <span class="gradient-text">{{ site_settings.get('site_name', 'Muhammad Hanzala') }}</span>
                 </h1>
-                <p class="tagline">{{ site_settings.get('tagline', 'Full Stack Developer & Digital Creator') }}</p>
+                <p class="tagline">{{ site_settings.get('tagline', 'Full Stack Developer & Digital Creator') }} <span
+                        id="typed-tagline"></span></p>
                 <p class="lead">{{ site_settings.get('bio_lead', 'I craft high-performance web applications, stunning 3D
                     visuals, and engaging digital experiences. Some people call me Hani.') }}</p>
 
@@ -214,10 +215,12 @@ Developer') }}{% endblock %}
                 <a href="{{ url_for('main.contact') }}" class="btn btn-primary btn-lg">
                     <i class="fas fa-rocket"></i> Start a Project
                 </a>
-                <a href="https://www.fiverr.com/mr0_0hani" target="_blank" class="btn btn-secondary">
+                <a href="{{ site_settings.get('fiverr_url', 'https://www.fiverr.com/mr0_0hani') }}" target="_blank"
+                    class="btn btn-secondary">
                     <i class="fab fa-square"></i> Hire on Fiverr
                 </a>
-                <a href="https://www.upwork.com/" target="_blank" class="btn btn-secondary">
+                <a href="{{ site_settings.get('upwork_url', 'https://www.upwork.com/') }}" target="_blank"
+                    class="btn btn-secondary">
                     <i class="fab fa-square"></i> Hire on Upwork
                 </a>
             </div>
