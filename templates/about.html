@@ -47,17 +47,21 @@
                     <div class="col-md-6">
                         <ul class="list-unstyled text-white-50">
                             <li class="mb-3 border-bottom border-secondary pb-2"><strong
-                                    class="text-white">Name:</strong> Muhammad Hanzala</li>
+                                    class="text-white">Name:</strong> {{ site_settings.get('site_name', 'Muhammad
+                                Hanzala') }}</li>
                             <li class="mb-3 border-bottom border-secondary pb-2"><strong
-                                    class="text-white">Email:</strong> hani75384@gmail.com</li>
+                                    class="text-white">Email:</strong> {{ site_settings.get('email',
+                                'hani75384@gmail.com') }}</li>
                         </ul>
                     </div>
                     <div class="col-md-6">
                         <ul class="list-unstyled text-white-50">
                             <li class="mb-3 border-bottom border-secondary pb-2"><strong
-                                    class="text-white">Phone:</strong> +92 301 5855940</li>
+                                    class="text-white">Phone:</strong> {{ site_settings.get('phone', '+92 301 5855940')
+                                }}</li>
                             <li class="mb-3 border-bottom border-secondary pb-2"><strong
-                                    class="text-white">Location:</strong> Islamabad, Pakistan</li>
+                                    class="text-white">Location:</strong> {{ site_settings.get('location', 'Islamabad,
+                                Pakistan') }}</li>
                         </ul>
                     </div>
                 </div>
