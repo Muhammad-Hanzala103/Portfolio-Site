@@ -194,7 +194,7 @@ def contact():
         return redirect(url_for('main.contact'))
     
     from models import FAQ
-    faqs = FAQ.query.order_by(FAQ.order_index).all()
+    faqs = FAQ.query.order_by(FAQ.id).all()
     return render_template('contact.html', faqs=faqs)
 
 @main_bp.route('/download-cv')
