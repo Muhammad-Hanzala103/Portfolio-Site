@@ -151,6 +151,9 @@
         </div>
     </nav>
 
+    <!-- Mobile Nav Backdrop -->
+    <div class="nav-backdrop" id="navBackdrop"></div>
+
     <!-- Main Content -->
     <main>
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -371,18 +374,28 @@
         // Mobile Menu Toggle
         const hamburger = document.getElementById('hamburger');
         const navLinks = document.getElementById('navLinks');
+        const navBackdrop = document.getElementById('navBackdrop');
+
+        function closeMenu() {
+            hamburger.classList.remove('active');
+            navLinks.classList.remove('active');
+            if (navBackdrop) navBackdrop.classList.remove('active');
+        }
+
         if (hamburger && navLinks) {
             hamburger.addEventListener('click', () => {
                 hamburger.classList.toggle('active');
                 navLinks.classList.toggle('active');
+                if (navBackdrop) navBackdrop.classList.toggle('active');
             });
             // Close menu on link click
             navLinks.querySelectorAll('a').forEach(link => {
-                link.addEventListener('click', () => {
-                    hamburger.classList.remove('active');
-                    navLinks.classList.remove('active');
-                });
+                link.addEventListener('click', closeMenu);
             });
+            // Close menu when clicking backdrop
+            if (navBackdrop) {
+                navBackdrop.addEventListener('click', closeMenu);
+            }
         }
 
         // Global Animations
