@@ -146,8 +146,13 @@
 }
 
 @keyframes rotation {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 .loaded #preloader {
@@ -435,11 +440,13 @@ p {
 
 .card,
 .glass-panel {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-light);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: var(--radius-lg);
-    padding: var(--space-4);
-    transition: all var(--transition-base);
+    padding: var(--space-3);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
 }
 
 .card:hover,
@@ -1197,6 +1204,7 @@ textarea.form-control {
         width: 100%;
     }
 }
+
 /* ============================================
    13. INDUSTRIAL POLISH COMPONENTS
    ============================================ */
@@ -1211,7 +1219,7 @@ textarea.form-control {
 .platform-card:hover {
     transform: translateY(-8px);
     border-color: var(--accent-primary);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 }
 
 .platform-card .platform-thumb img {
@@ -1222,13 +1230,18 @@ textarea.form-control {
     transform: scale(1.1);
 }
 
-.bg-fiverr { background-color: #1dbf73 !important; }
-.bg-linkedin { background-color: #0077b5 !important; }
+.bg-fiverr {
+    background-color: #1dbf73 !important;
+}
+
+.bg-linkedin {
+    background-color: #0077b5 !important;
+}
 
 .platform-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(0,0,0,0.4);
+    background: rgba(0, 0, 0, 0.4);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1266,7 +1279,7 @@ textarea.form-control {
 .social-icon {
     width: 40px;
     height: 40px;
-    background: rgba(255,255,255,0.05);
+    background: rgba(255, 255, 255, 0.05);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -1284,9 +1297,17 @@ textarea.form-control {
 
 /* Responsive Tweaks */
 @media (max-width: 991px) {
-    .footer { text-align: center; }
-    .footer-contact li { justify-content: center; }
-    .social-links { justify-content: center; }
+    .footer {
+        text-align: center;
+    }
+
+    .footer-contact li {
+        justify-content: center;
+    }
+
+    .social-links {
+        justify-content: center;
+    }
 }
 
 /* ============================================
@@ -1336,49 +1357,10 @@ textarea.form-control {
 [data-theme="light"] .form-control {
     background: #fff;
     color: var(--text-primary);
-    border-color: rgba(0,0,0,0.15);
+    border-color: rgba(0, 0, 0, 0.15);
 }
 
-/* ============================================
- 15. SPACING \u0026 PADDING FIXES
- ============================================ */
-
-.section {
- padding: 4rem 0;
-}
-
-.page-header {
- padding: 6rem 0 3rem 0;
-}
-
-.footer {
- padding: 3rem 0 2rem 0;
-}
-
-.footer-links li {
- margin-bottom: 0.75rem;
-}
-
-.footer-contact li {
- margin-bottom: 1rem;
-}
-
-.glass-panel {
- padding: 1.5rem;
- margin-bottom: 1rem;
-}
-
-@media (max-width: 768px) {
- .section {
- padding: 2.5rem 0;
- }
- .page-header {
- padding: 4rem 0 2rem 0;
- }
- .footer {
- padding: 2rem 0 1rem 0;
- }
-}
+/* Spacing overrides consolidated into main definitions above */
 
 /* ============================================
    16. PREMIUM INDUSTRIAL REFINEMENTS
@@ -1410,14 +1392,7 @@ html {
     scrollbar-color: var(--bg-elevated) var(--bg-primary);
 }
 
-/* Enhanced Glassmorphism */
-.glass-panel {
-    backdrop-filter: blur(12px) saturate(180%);
-    -webkit-backdrop-filter: blur(12px) saturate(180%);
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
-}
+/* Glassmorphism consolidated into main .glass-panel definition above */
 
 .hover-lift:hover {
     transform: translateY(-8px);
@@ -1439,7 +1414,7 @@ html {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
     transition: 0.5s;
     z-index: -1;
 }
@@ -1450,33 +1425,90 @@ html {
 
 /* Section Transitions */
 .section {
- opacity: 1;
- transform: none;
- transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity: 1;
+    transform: none;
+    transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Industrial Utility Classes - Professional Overhaul */
-.text-violet, .text-indigo { color: var(--accent-secondary) !important; }
-.bg-violet, .bg-indigo { background: var(--accent-primary) !important; }
-.border-violet, .border-indigo { border-color: var(--accent-primary) !important; }
-.bg-gradient-violet { background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)) !important; }
-.text-gradient { background: linear-gradient(135deg, #f8fafc, var(--accent-secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.hover-lift:hover { transform: translateY(-5px); transition: transform var(--transition-base); }
-.hover-white:hover { color: white !important; }
+.text-violet,
+.text-indigo {
+    color: var(--accent-secondary) !important;
+}
+
+.bg-violet,
+.bg-indigo {
+    background: var(--accent-primary) !important;
+}
+
+.border-violet,
+.border-indigo {
+    border-color: var(--accent-primary) !important;
+}
+
+.bg-gradient-violet {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)) !important;
+}
+
+.text-gradient {
+    background: linear-gradient(135deg, #f8fafc, var(--accent-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hover-lift:hover {
+    transform: translateY(-5px);
+    transition: transform var(--transition-base);
+}
+
+.hover-white:hover {
+    color: white !important;
+}
 
 
 /* V3.5 Global Link & Contrast Fix */
-a { color: var(--accent-secondary); transition: all var(--transition-fast); }
-a:hover { color: var(--text-primary); text-decoration: none; }
+a {
+    color: var(--accent-secondary);
+    transition: all var(--transition-fast);
+}
+
+a:hover {
+    color: var(--text-primary);
+    text-decoration: none;
+}
 
 /* Specific fix for blue-shadow links appearing in user screenshots */
-.auth-page a, .footer a, .glass-panel a { color: var(--accent-secondary) !important; text-decoration: none !important; }
-.auth-page a:hover, .footer a:hover, .glass-panel a:hover { color: var(--text-primary) !important; }
+.auth-page a,
+.footer a,
+.glass-panel a {
+    color: var(--accent-secondary) !important;
+    text-decoration: none !important;
+}
+
+.auth-page a:hover,
+.footer a:hover,
+.glass-panel a:hover {
+    color: var(--text-primary) !important;
+}
 
 /* Section Label Contrast Boost */
-.section-label { color: #ffde21 !important; background: rgba(217, 119, 6, 0.1) !important; border: 1px solid rgba(217, 119, 6, 0.2) !important; }
+.section-label {
+    color: #ffde21 !important;
+    background: rgba(217, 119, 6, 0.1) !important;
+    border: 1px solid rgba(217, 119, 6, 0.2) !important;
+}
 
 /* Button Contrast */
-.btn-primary, .btn-alchemy { background: linear-gradient(135deg, #f59e0b, #ffde21) !important; border: none !important; color: #fff !important; font-weight: 700 !important; }
-.btn-primary:hover, .btn-alchemy:hover { filter: brightness(1.1); box-shadow: 0 4px 15px rgba(217, 119, 6, 0.4) !important; }
+.btn-primary,
+.btn-alchemy {
+    background: linear-gradient(135deg, #f59e0b, #ffde21) !important;
+    border: none !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+}
 
+.btn-primary:hover,
+.btn-alchemy:hover {
+    filter: brightness(1.1);
+    box-shadow: 0 4px 15px rgba(217, 119, 6, 0.4) !important;
+}
