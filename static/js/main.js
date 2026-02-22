@@ -12,7 +12,7 @@ function toggleTheme() {
     localStorage.setItem('theme', newTheme);
 
     // Update toggle button icon with animation
-    const toggleBtn = document.querySelector('#darkModeToggle');
+    const toggleBtn = document.querySelector('#themeToggle');
     if (toggleBtn) {
         const icon = toggleBtn.querySelector('i');
         if (icon) {
@@ -47,11 +47,11 @@ function toggleTheme() {
 // Enhanced theme initialization
 document.addEventListener('DOMContentLoaded', function () {
     // Load saved theme or default to light
-    const savedTheme = localStorage.getItem('theme') || 'light';
+    const savedTheme = localStorage.getItem('theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
 
     // Initialize toggle button with enhanced functionality
-    const toggleBtn = document.querySelector('#darkModeToggle');
+    const toggleBtn = document.querySelector('#themeToggle');
     if (toggleBtn) {
         const icon = toggleBtn.querySelector('i');
         if (icon) {
@@ -108,13 +108,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Navbar scroll effect
     window.addEventListener('scroll', function () {
-        const navbar = document.querySelector('.navbar');
+        const navbar = document.querySelector('.glass-nav');
         if (navbar) {
             if (window.scrollY > 50) {
-                navbar.style.background = 'rgba(255, 255, 255, 0.98)';
                 navbar.style.boxShadow = '0 2px 20px rgba(0, 0, 0, 0.15)';
             } else {
-                navbar.style.background = 'rgba(255, 255, 255, 0.95)';
                 navbar.style.boxShadow = '0 2px 20px rgba(0, 0, 0, 0.1)';
             }
         }
@@ -153,31 +151,15 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Contact form handling
+    // Contact form - add loading indicator (don't preventDefault, let the form submit normally)
     const contactForm = document.querySelector('#contact-form');
     if (contactForm) {
-        contactForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-
+        contactForm.addEventListener('submit', function () {
             const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.textContent;
-
-            // Show loading state
-            submitBtn.innerHTML = '<span class="loading"></span> Sending...';
-            submitBtn.disabled = true;
-
-            // Simulate form submission (replace with actual form handling)
-            setTimeout(() => {
-                submitBtn.textContent = 'Message Sent!';
-                submitBtn.style.backgroundColor = '#28a745';
-
-                setTimeout(() => {
-                    submitBtn.textContent = originalText;
-                    submitBtn.style.backgroundColor = '';
-                    submitBtn.disabled = false;
-                    contactForm.reset();
-                }, 2000);
-            }, 2000);
+            if (submitBtn) {
+                submitBtn.innerHTML = '<span class="loading"></span> Sending...';
+                submitBtn.disabled = true;
+            }
         });
     }
 
@@ -215,11 +197,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Parallax effect for hero section
-    const hero = document.querySelector('.hero');
+    const hero = document.querySelector('.hero-section');
     if (hero) {
         window.addEventListener('scroll', () => {
             const scrolled = window.pageYOffset;
-            const rate = scrolled * -0.5;
+            const rate = scrolled * -0.3;
             hero.style.transform = `translateY(${rate}px)`;
         });
     }
