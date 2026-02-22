@@ -454,6 +454,8 @@ def admin_login():
         password = request.form.get('password')
         
         user = User.query.filter_by(username=username).first()
+        if not user:
+            user = User.query.filter_by(email=username).first()
         
         if user and bcrypt.check_password_hash(user.password, password):
             login_user(user)
