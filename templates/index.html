@@ -38,17 +38,17 @@ Developer') }}{% endblock %}
 <section class="section">
     <div class="container">
         <div class="d-flex flex-wrap gap-4 justify-content-center">
-            <div class="glass-panel stat-card tilt-card" style="flex: 1; min-width: 250px; max-width: 300px;">
+            <div class="glass-panel stat-card tilt-card flex-card-stat">
                 <i class="fas fa-code"></i>
                 <h3>{{ site_settings.get('experience_years', '2+') }}</h3>
                 <p>Years Experience</p>
             </div>
-            <div class="glass-panel stat-card tilt-card" style="flex: 1; min-width: 250px; max-width: 300px;">
+            <div class="glass-panel stat-card tilt-card flex-card-stat">
                 <i class="fas fa-project-diagram"></i>
                 <h3>{{ site_settings.get('projects_completed', '20+') }}</h3>
                 <p>Projects Completed</p>
             </div>
-            <div class="glass-panel stat-card tilt-card" style="flex: 1; min-width: 250px; max-width: 300px;">
+            <div class="glass-panel stat-card tilt-card flex-card-stat">
                 <i class="fas fa-smile"></i>
                 <h3>100%</h3>
                 <p>Client Satisfaction</p>
@@ -67,31 +67,30 @@ Developer') }}{% endblock %}
 
         <div class="d-flex flex-wrap gap-4">
             {% for project in featured_projects %}
-            <div style="flex: 1; min-width: 300px; max-width: 400px;">
-                <a href="{{ url_for('main.project_detail', project_id=project.id) }}" style="text-decoration: none;">
+            <div class="flex-card-project">
+                <a href="{{ url_for('main.project_detail', project_id=project.id) }}" class="text-decoration-none">
                     <div class="glass-panel project-card">
                         <div class="project-img-wrapper">
                             {% if project.image %}
                             <img src="{{ url_for('static', filename=project.image) }}" alt="{{ project.title }}"
                                 loading="lazy">
                             {% else %}
-                            <div
-                                style="width: 100%; height: 100%; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-image" style="font-size: 3rem; color: var(--text-muted);"></i>
+                            <div class="project-placeholder">
+                                <i class="fas fa-image"></i>
                             </div>
                             {% endif %}
                             <div class="overlay">
-                                <span class="btn btn-primary rounded-circle" style="width: 48px; height: 48px;">
+                                <span class="btn btn-primary rounded-circle overlay-btn">
                                     <i class="fas fa-eye"></i>
                                 </span>
                             </div>
                         </div>
                         <div class="p-3">
-                            <span class="section-label" style="font-size: 0.7rem; padding: 4px 12px;">
+                            <span class="section-label category-label">
                                 {{ project.category.name if project.category else 'Project' }}
                             </span>
-                            <h4 class="mt-2" style="color: var(--text-primary);">{{ project.title }}</h4>
-                            <p class="text-muted" style="font-size: 0.9rem; margin: 0;">
+                            <h4 class="mt-2">{{ project.title }}</h4>
+                            <p class="text-muted small mb-0">
                                 {{ project.short_description|truncate(80) if project.short_description else '' }}
                             </p>
                         </div>
@@ -114,7 +113,7 @@ Developer') }}{% endblock %}
 </section>
 
 <!-- Services Section -->
-<section class="section" style="background: var(--bg-secondary);">
+<section class="section section-alt">
     <div class="container">
         <div class="section-header">
             <span class="section-label">Services</span>
@@ -123,7 +122,7 @@ Developer') }}{% endblock %}
 
         <div class="d-flex flex-wrap gap-4 justify-content-center">
             {% for service in services %}
-            <div style="flex: 1; min-width: 280px; max-width: 350px;">
+            <div class="flex-card-service">
                 <div class="glass-panel service-card hover-glow-violet">
                     <div class="icon-wrapper">
                         <i class="{{ service.icon if service.icon else 'fas fa-cog' }}"></i>
@@ -157,11 +156,10 @@ Developer') }}{% endblock %}
             <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
                 <a href="{{ platform.url }}" target="_blank" class="text-decoration-none">
                     <div class="glass-panel platform-card h-100 p-0 overflow-hidden hover-lift">
-                        <div class="platform-header p-3 d-flex align-items-center justify-content-between"
-                            style="background: rgba(255,255,255,0.05);">
+                        <div
+                            class="platform-header p-3 d-flex align-items-center justify-content-between platform-header-bg">
                             <span
-                                class="platform-badge {% if platform.platform_name == 'Fiverr' %}bg-fiverr{% elif platform.platform_name == 'Upwork' %}bg-primary{% else %}bg-linkedin{% endif %} btn-sm text-white px-3 py-1 rounded-pill"
-                                style="font-size: 0.7rem; font-weight: bold;">
+                                class="platform-badge {% if platform.platform_name == 'Fiverr' %}bg-fiverr{% elif platform.platform_name == 'Upwork' %}bg-primary{% else %}bg-linkedin{% endif %} btn-sm text-white px-3 py-1 rounded-pill badge-sm-bold">
                                 {{ platform.platform_name }}
                             </span>
                             <div class="rating-stars text-warning">
@@ -170,7 +168,7 @@ Developer') }}{% endblock %}
                             </div>
                         </div>
 
-                        <div class="platform-thumb" style="height: 200px; overflow: hidden; position: relative;">
+                        <div class="platform-thumb">
                             {% if platform.thumbnail %}
                             <img src="{{ url_for('static', filename=platform.thumbnail) }}" alt="{{ platform.title }}"
                                 class="w-100 h-100 object-fit-cover transition-transform" loading="lazy">
@@ -189,8 +187,8 @@ Developer') }}{% endblock %}
                             <h4 class="h5 mb-2 text-primary">{{ platform.title }}</h4>
                             <p class="text-muted small mb-0">{{ platform.description|truncate(120) }}</p>
                             <div class="mt-3 d-flex align-items-center gap-2">
-                                <span class="badge bg-secondary opacity-75 font-weight-normal"
-                                    style="font-weight: 400;">{{ platform.service_type }}</span>
+                                <span class="badge bg-secondary opacity-75 font-weight-normal">{{ platform.service_type
+                                    }}</span>
                             </div>
                         </div>
                     </div>
