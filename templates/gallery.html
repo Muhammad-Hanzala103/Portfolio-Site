@@ -8,37 +8,37 @@
         margin-bottom: 30px;
     }
 
-    .gallery-filter .filter-item {
+    .gallery-filter .filter-btn {
         display: inline-block;
         margin: 0 5px;
-        padding: 8px 15px;
+        padding: 8px 20px;
         background: transparent;
-        border: 1px solid #ddd;
+        border: 1px solid var(--border-default);
         border-radius: 30px;
-        color: #333;
+        color: var(--text-secondary);
         cursor: pointer;
         transition: all 0.3s ease;
+        font-size: 0.9rem;
     }
 
-    .gallery-filter .filter-item:hover,
-    .gallery-filter .filter-item.active {
-        background: var(--primary-color);
+    .gallery-filter .filter-btn:hover,
+    .gallery-filter .filter-btn.active {
+        background: var(--accent-primary);
         color: #fff;
-        border-color: var(--primary-color);
+        border-color: var(--accent-primary);
     }
 
     .gallery-item {
         margin-bottom: 30px;
         position: relative;
         overflow: hidden;
-        border-radius: 10px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        border-radius: var(--radius-lg);
         transition: all 0.3s ease;
     }
 
     .gallery-item:hover {
         transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        box-shadow: var(--shadow-lg);
     }
 
     .gallery-item img {
@@ -73,19 +73,19 @@
     .gallery-info {
         text-align: center;
         color: #fff;
-        padding: 10px 15px 15px 15px;
+        padding: 10px 15px;
     }
 
     .gallery-info h4 {
         margin-bottom: 10px;
-        font-size: 18px;
+        font-size: 1.1rem;
         transform: translateY(20px);
         opacity: 0;
         transition: all 0.3s ease 0.1s;
     }
 
     .gallery-info p {
-        font-size: 14px;
+        font-size: 0.85rem;
         margin-bottom: 0;
         transform: translateY(20px);
         opacity: 0;
@@ -98,149 +98,85 @@
         opacity: 1;
     }
 
-    .gallery-icon {
-        position: absolute;
-        bottom: 15px;
-        right: 15px;
-        width: 40px;
-        height: 40px;
-        background: var(--primary-color);
-        border-radius: 50%;
+    .gallery-placeholder {
+        width: 100%;
+        height: 250px;
+        background: var(--bg-tertiary);
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #fff;
-        font-size: 16px;
-        transform: translateY(50px);
-        opacity: 0;
-        transition: all 0.3s ease 0.3s;
     }
 
-    .gallery-item:hover .gallery-icon {
-        transform: translateY(0);
-        opacity: 1;
+    .gallery-placeholder i {
+        font-size: 3rem;
+        color: var(--text-muted);
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <!-- Page Header -->
-<!-- Page Header -->
-<section class="page-header"
-    style="background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1432821596592-e2c18b78144f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') no-repeat center center/cover;">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="page-header-content text-white">
-                    <h1>Gallery</h1>
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}"
-                                    class="text-white">Home</a></li>
-                            <li class="breadcrumb-item active text-white" aria-current="page">Gallery</li>
-                        </ol>
-                    </nav>
-                </div>
-            </div>
-        </div>
+<section class="page-header hero-section">
+    <div class="container text-center">
+        <h1 class="gradient-text display-1">Gallery</h1>
+        <p class="lead text-muted">Explore my visual projects, 3D renders, and design work</p>
     </div>
 </section>
 
 <!-- Gallery Section -->
-<section class="gallery-section section-padding">
+<section class="section">
     <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="section-title text-center" data-aos="fade-up">
-                    <h2>My Creative Portfolio</h2>
-                    <div class="divider"></div>
-                    <p>Explore my visual projects, 3D renders, and design work</p>
-                </div>
-            </div>
-        </div>
-
         <!-- Gallery Filter -->
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="gallery-filter text-center" data-aos="fade-up">
-                    <button class="filter-item active" data-filter="*">All</button>
-                    {% for category in categories %}
-                    <button class="filter-item" data-filter=".{{ category|lower|replace(' ', '-') }}">{{ category
-                        }}</button>
-                    {% endfor %}
-                </div>
-            </div>
+        <div class="gallery-filter text-center mb-5">
+            <button class="filter-btn active" data-filter="all">All</button>
+            {% for category in categories %}
+            <button class="filter-btn" data-filter="{{ category|lower|replace(' ', '-') }}">{{ category }}</button>
+            {% endfor %}
         </div>
 
         <!-- Gallery Items -->
-        <div class="row gallery-container">
+        <div class="row">
             {% if gallery_items %}
             {% for item in gallery_items %}
-            <div class="col-lg-4 col-md-6 gallery-grid-item {{ item.category|lower|replace(' ', '-') }}"
-                data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
-                <div class="gallery-item">
-                    <img src="{{ url_for('static', filename='uploads/' + item.image) if item.image else url_for('static', filename='img/default-gallery.jpg') }}"
-                        alt="{{ item.title }}">
+            <div class="col-lg-4 col-md-6 gallery-item-wrap {{ item.category|lower|replace(' ', '-') }}">
+                <div class="gallery-item glass-panel p-0">
+                    {% if item.image %}
+                    <img src="{{ url_for('static', filename='uploads/' + item.image) }}" alt="{{ item.title }}"
+                        loading="lazy">
+                    {% else %}
+                    <div class="gallery-placeholder">
+                        <i class="fas fa-image"></i>
+                    </div>
+                    {% endif %}
                     <div class="gallery-overlay">
                         <div class="gallery-info">
                             <h4>{{ item.title }}</h4>
                             <p>{{ item.description }}</p>
                         </div>
-                        <a href="{{ url_for('static', filename=item.image) }}" class="gallery-icon"
-                            data-lightbox="gallery" data-title="{{ item.title }} - {{ item.description }}">
-                            <i class="fas fa-search-plus"></i>
-                        </a>
                     </div>
                 </div>
             </div>
             {% endfor %}
             {% else %}
-            <!-- Placeholder Gallery Items -->
-            {% set categories = ['3D Renders', 'Web Design', 'UI/UX', 'Video Editing'] %}
-            {% for i in range(9) %}
-            {% set category = categories[i % 4] %}
-            <div class="col-lg-4 col-md-6 gallery-grid-item {{ category|lower|replace(' ', '-') }}" data-aos="fade-up"
-                data-aos-delay="{{ loop.index * 100 }}">
-                <div class="gallery-item">
-                    <div class="image-container">
-                        <img class="lazy" src="{{ url_for('static', filename='img/gallery-' ~ loop.index ~ '.jpg') }}"
-                            alt="{{ category }} portfolio showcase - Professional {{ category|lower }} design by Muhammad Hanzala"
-                            loading="lazy">
-                    </div>
-                    <div class="gallery-overlay">
-                        <div class="gallery-info">
-                            <h4>{{ category }} Project {{ loop.index }}</h4>
-                            <p>Professional {{ category|lower }} design showcasing creative excellence</p>
-                        </div>
-                        <a href="{{ url_for('static', filename='img/gallery-' ~ loop.index ~ '.jpg') }}"
-                            class="gallery-icon" data-lightbox="gallery"
-                            data-title="{{ category }} Project {{ loop.index }} - Professional {{ category|lower }} design showcasing creative excellence">
-                            <i class="fas fa-search-plus"></i>
-                        </a>
-                    </div>
+            <div class="col-12">
+                <div class="glass-panel p-5 text-center">
+                    <i class="fas fa-images fa-3x text-muted mb-3"></i>
+                    <h3>Gallery Coming Soon</h3>
+                    <p class="text-muted">Check back soon for visual content!</p>
                 </div>
             </div>
-            {% endfor %}
             {% endif %}
         </div>
     </div>
 </section>
 
 <!-- Call to Action -->
-<section class="cta-section section-padding bg-primary text-white">
+<section class="section section-alt">
     <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-8 col-md-7">
-                <div class="cta-content" data-aos="fade-right">
-                    <h2>Need custom visual content?</h2>
-                    <p>Let's discuss your project requirements!</p>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-5">
-                <div class="cta-btn text-md-end" data-aos="fade-left">
-                    <a href="{{ url_for('main.contact') }}" class="btn btn-light">Get In Touch</a>
-                </div>
-            </div>
+        <div class="glass-panel text-center p-5">
+            <h2>Need custom visual content?</h2>
+            <p class="lead mb-4">Let's discuss your project requirements!</p>
+            <a href="{{ url_for('main.contact') }}" class="btn btn-primary btn-lg rounded-pill">Get In Touch</a>
         </div>
     </div>
 </section>
@@ -248,26 +184,27 @@
 
 {% block extra_js %}
 <script>
+    // Gallery filter using vanilla JS (no jQuery/Isotope needed)
     document.addEventListener('DOMContentLoaded', function () {
-        // Initialize Isotope for filtering
-        var $grid = $('.gallery-container').isotope({
-            itemSelector: '.gallery-grid-item',
-            layoutMode: 'fitRows'
-        });
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const items = document.querySelectorAll('.gallery-item-wrap');
 
-        // Filter items on button click
-        $('.gallery-filter').on('click', '.filter-item', function () {
-            var filterValue = $(this).attr('data-filter');
-            $grid.isotope({ filter: filterValue });
-            $('.filter-item').removeClass('active');
-            $(this).addClass('active');
-        });
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', function () {
+                const filter = this.getAttribute('data-filter');
 
-        // Initialize lightbox
-        lightbox.option({
-            'resizeDuration': 200,
-            'wrapAround': true,
-            'albumLabel': 'Image %1 of %2'
+                filterBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                items.forEach(item => {
+                    if (filter === 'all' || item.classList.contains(filter)) {
+                        item.style.display = 'block';
+                        item.style.animation = 'fadeIn 0.5s ease';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
         });
     });
 </script>
